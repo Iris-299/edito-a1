@@ -1837,7 +1837,7 @@ function showSRSCard(){
     spellZone.style.display='block';
     spellInput.value='';
     spellInput.style.borderColor='';
-    spellInput.disabled=false;
+    setSpellEnterState(spellInput, 'ready');
     spellFb.textContent='';
     document.getElementById('srs-spell-next').style.display='none';
     document.getElementById('srs-spell-confirm').style.display='inline-block';
@@ -1894,7 +1894,7 @@ function checkSRSSpell(){
   const ok = val === frCore || val === c.fr;
 
   input.style.borderColor = ok ? '#1D9E75' : '#C04A20';
-  input.disabled = true;
+  setSpellEnterState(input, 'confirmed');
 
   // Show result and correct form
   document.getElementById('sc-back').textContent = c.fr;
@@ -1914,6 +1914,7 @@ function checkSRSSpell(){
   srsRevealed = true;
   // record result for SRS: ok→3(很熟 vibes), wrong→1(不认识)
   srsCurrentCard._spellResult = ok ? 3 : 1;
+  setTimeout(()=>input.focus(),0);
 }
 
 function showSRSSpellHint(){
@@ -1936,7 +1937,7 @@ function skipSRSSpell(){
   const fb = document.getElementById('srs-spell-fb');
   const input = document.getElementById('srs-spell-input');
   input.style.borderColor = '#C04A20';
-  input.disabled = true;
+  setSpellEnterState(input, 'confirmed');
   fb.innerHTML = `跳过 → <strong>${c.fr}</strong> (${c.zh})`;
   fb.style.color = 'var(--muted)';
   document.getElementById('sc-back').textContent = c.fr;
@@ -1945,6 +1946,7 @@ function skipSRSSpell(){
   document.getElementById('srs-spell-next').style.display = 'inline-block';
   srsRevealed = true;
   srsCurrentCard._spellResult = 1;
+  setTimeout(()=>input.focus(),0);
 }
 function rateSRS(rating){
   if(!srsCurrentCard)return;
@@ -2696,6 +2698,19 @@ function tpResult(correct){
   if(nextBtn){ nextBtn.style.display='inline-block'; nextBtn.focus(); }
 }
 
+function setSpellEnterState(input, state){
+  if(!input) return;
+  input.dataset.enterState = state || 'ready';
+  input.readOnly = state === 'confirmed';
+}
+
+function handleSpellEnter(input, confirmFn, nextFn, e){
+  if(e.key !== 'Enter') return;
+  e.preventDefault();
+  if(input.dataset.enterState === 'confirmed') nextFn();
+  else confirmFn();
+}
+
 // Gender practice card
 function renderTPGender(c){
   const bare=c.fr.replace(/^(le |la |l'|un |une )/i,'').split(' ')[0];
@@ -2727,13 +2742,14 @@ function renderTPSpell(c){
       <div style="font-size:26px;font-weight:700;margin-bottom:16px;">${c.zh}</div>
       <input id="tp-spell-in" class="spell-input" type="text" autocomplete="off" autocorrect="off"
         autocapitalize="off" spellcheck="false" placeholder="输入法语（需重音符号）…"
-        onkeydown="if(event.key==='Enter'&&!this.disabled)checkTPSpell()">
+        onkeydown="handleSpellEnter(this, checkTPSpell, showTodayPracticeCard, event)">
       <div style="display:flex;gap:6px;justify-content:center;margin-top:10px;flex-wrap:wrap;">
         <button onclick="checkTPSpell()" style="background:var(--accent);color:#fff;border:none;border-radius:8px;padding:8px 18px;font-size:13px;font-weight:600;cursor:pointer;">确认</button>
         <button onclick="showTPSpellHint()" style="background:var(--surface2);color:var(--muted);border:1.5px solid var(--border);border-radius:8px;padding:8px 12px;font-size:12px;cursor:pointer;">提示</button>
       </div>
       <div id="tp-spell-fb" style="min-height:20px;margin-top:10px;font-size:13px;font-weight:600;"></div>
     </div>`;
+  setSpellEnterState(document.getElementById('tp-spell-in'), 'ready');
   setTimeout(()=>document.getElementById('tp-spell-in')?.focus(),60);
 }
 function checkTPSpell(){
@@ -2744,7 +2760,7 @@ function checkTPSpell(){
   if(!val) return;
   const core=c.fr.replace(/^(le |la |les |l'|un |une |des )/i,'').trim();
   const ok=val===core||val===c.fr;
-  inp.disabled=true;
+  setSpellEnterState(inp, 'confirmed');
   inp.style.borderColor=ok?'#1D9E75':'#C04A20';
   if(ok){
     fb.textContent='✓ 正确！';fb.style.color='var(--accent2)';
@@ -2752,6 +2768,7 @@ function checkTPSpell(){
     fb.innerHTML=`✗ 正确拼写：<strong>${c.fr}</strong>`;fb.style.color='var(--warn)';
   }
   tpResult(ok);
+  setTimeout(()=>inp.focus(),0);
 }
 function showTPSpellHint(){
   const c=todaySession.practiceQueue[todaySession.practiceIdx];
@@ -2775,7 +2792,7 @@ function renderTPListen(c){
       </div>
       <input id="tp-listen-in" class="spell-input" type="text" autocomplete="off" autocorrect="off"
         spellcheck="false" placeholder="输入法语单词…"
-        onkeydown="if(event.key==='Enter'&&!this.disabled)checkTPListen()">
+        onkeydown="handleSpellEnter(this, checkTPListen, showTodayPracticeCard, event)">
       <div style="display:flex;gap:6px;justify-content:center;margin-top:10px;flex-wrap:wrap;">
         <button onclick="checkTPListen()" style="background:var(--accent);color:#fff;border:none;border-radius:8px;padding:8px 18px;font-size:13px;font-weight:600;cursor:pointer;">确认</button>
         <button onclick="showTPListenHint()" style="background:var(--surface2);color:var(--muted);border:1.5px solid var(--border);border-radius:8px;padding:8px 12px;font-size:12px;cursor:pointer;">提示</button>
@@ -2783,6 +2800,7 @@ function renderTPListen(c){
       </div>
       <div id="tp-listen-fb" style="min-height:20px;margin-top:10px;font-size:13px;font-weight:600;"></div>
     </div>`;
+  setSpellEnterState(document.getElementById('tp-listen-in'), 'ready');
   setTimeout(()=>{ speak(c.fr,0.85); document.getElementById('tp-listen-in')?.focus(); },300);
 }
 function normListen(s){
@@ -2799,7 +2817,7 @@ function checkTPListen(){
   if(!val) return;
   const core=c.fr.replace(/^(le |la |les |l'|un |une |des )/i,'').trim();
   const ok=normListen(val)===normListen(core)||normListen(val)===normListen(c.fr);
-  inp.disabled=true;
+  setSpellEnterState(inp, 'confirmed');
   inp.style.borderColor=ok?'#1D9E75':'#C04A20';
   if(ok){
     fb.textContent='✓ 正确！';fb.style.color='var(--accent2)';
@@ -2808,6 +2826,7 @@ function checkTPListen(){
     speak(c.fr);
   }
   tpResult(ok);
+  setTimeout(()=>inp.focus(),0);
 }
 function showTPListenHint(){
   const c=todaySession.practiceQueue[todaySession.practiceIdx];
@@ -2821,10 +2840,11 @@ function skipTPListen(){
   const c=todaySession.practiceQueue[todaySession.practiceIdx];
   const inp=document.getElementById('tp-listen-in');
   const fb=document.getElementById('tp-listen-fb');
-  if(inp){inp.disabled=true;inp.style.borderColor='#C04A20';}
+  if(inp){setSpellEnterState(inp, 'confirmed');inp.style.borderColor='#C04A20';}
   if(fb){fb.innerHTML=`跳过 → <strong>${c.fr}</strong> (${c.zh})`;fb.style.color='var(--muted)';}
   speak(c.fr);
   tpResult(false);
+  setTimeout(()=>inp?.focus(),0);
 }
 
 function endTodayPractice(){
@@ -2850,6 +2870,17 @@ document.addEventListener('keydown', function(e2){
   const tpNext=document.getElementById('tp-next-btn');
   if(tpNext&&tpNext.style.display!=='none'){
     if(e2.code==='Space'||e2.key===' '||e2.key==='Enter'){e2.preventDefault();showTodayPracticeCard();return;}
+  }
+
+  const tpPracticeVisible=document.getElementById('today-practice')&&
+    document.getElementById('today-practice').style.display!=='none';
+  if(tpPracticeVisible && todaySession.practiceMode==='gender'){
+    const c=todaySession.practiceQueue[todaySession.practiceIdx];
+    const tpNextVisible=tpNext&&tpNext.style.display!=='none';
+    if(c && c.g && !tpNextVisible){
+      if(e2.key==='ArrowLeft'){e2.preventDefault();checkTPGender('m',c.g,c.fr);return;}
+      if(e2.key==='ArrowRight'){e2.preventDefault();checkTPGender('f',c.g,c.fr);return;}
+    }
   }
 
   const cardsVisible=document.getElementById('today-cards')&&
@@ -2938,7 +2969,7 @@ function nextSpCard(){
     <div style="font-size:26px;font-weight:700;margin-bottom:16px;">${c.zh}</div>
     <input id="sp-in" class="spell-input" type="text" autocomplete="off" autocorrect="off"
       autocapitalize="off" spellcheck="false" placeholder="输入法语（需重音符号）…"
-      onkeydown="if(event.key==='Enter'&&!this.disabled)checkSp()">
+      onkeydown="handleSpellEnter(this, checkSp, advanceSp, event)">
     <div style="display:flex;gap:6px;justify-content:center;margin-top:10px;flex-wrap:wrap;">
       <button onclick="checkSp()" style="background:var(--accent);color:#fff;border:none;border-radius:8px;padding:8px 18px;font-size:13px;font-weight:600;cursor:pointer;">确认</button>
       <button onclick="showSpHint()" style="background:var(--surface2);color:var(--muted);border:1.5px solid var(--border);border-radius:8px;padding:8px 12px;font-size:12px;cursor:pointer;">提示</button>
@@ -2946,6 +2977,7 @@ function nextSpCard(){
     </div>
     <div id="sp-fb" style="min-height:20px;margin-top:10px;font-size:13px;font-weight:600;"></div>
   </div>`;
+  setSpellEnterState(document.getElementById('sp-in'), 'ready');
   setTimeout(()=>document.getElementById('sp-in')?.focus(),60);
 }
 function checkSp(){
@@ -2955,7 +2987,8 @@ function checkSp(){
   const val=inp.value.trim();if(!val)return;
   const core=c.fr.replace(/^(le |la |les |l'|un |une |des )/i,'').trim();
   const ok=val===core||val===c.fr;
-  inp.disabled=true;inp.style.borderColor=ok?'#1D9E75':'#C04A20';
+  setSpellEnterState(inp, 'confirmed');
+  inp.style.borderColor=ok?'#1D9E75':'#C04A20';
   if(ok){
     fb.textContent='✓ 正确！';fb.style.color='var(--accent2)';
     spRight++;
@@ -2967,6 +3000,7 @@ function checkSp(){
   spIdx++;updateSpStats();
   const nb=document.getElementById('sp-next-btn');
   if(nb){nb.style.display='inline-block';nb.focus();}
+  setTimeout(()=>inp.focus(),0);
 }
 function advanceSp(){
   const nb=document.getElementById('sp-next-btn');
