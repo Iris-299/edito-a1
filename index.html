@@ -3118,17 +3118,42 @@ async function syncPush(){
 async function syncPull(){
   const token = getSyncToken();
   if(!token){ syncLog('请先保存 GitHub Token', 'var(--warn)'); return; }
-  const gistId = getSyncGistId();
-  if(!gistId){ syncLog('没有云端记录，请先在另一设备推送一次', 'var(--warn)'); return; }
   if(syncBusy){ return; }
   syncBusy = true;
   syncSetBadge('同步中…', '#888780');
-  syncLog('正在拉取…');
+  syncLog('正在查找云端数据…');
   try{
+    let gistId = getSyncGistId();
+
+    // If no local Gist ID, search by listing user's gists
+    if(!gistId){
+      syncLog('正在查找 Gist…');
+      let page = 1, found = null;
+      while(!found && page <= 5){
+        const r = await fetch('https://api.github.com/gists?per_page=100&page='+page, {
+          headers:{
+            'Authorization':'Bearer '+token,
+            'Accept':'application/vnd.github+json'
+          }
+        });
+        if(!r.ok) throw new Error('HTTP '+r.status);
+        const list = await r.json();
+        if(!list.length) break;
+        found = list.find(function(g){
+          return g.description==='Édito A1 学习进度（自动同步）' && g.files && g.files[SYNC_FILE];
+        });
+        page++;
+      }
+      if(!found) throw new Error('找不到云端数据，请先在另一设备推送一次');
+      gistId = found.id;
+      localStorage.setItem(SYNC_GIST_KEY, gistId);
+      syncLog('找到 Gist，正在拉取…');
+    }
+
     const res = await fetch('https://api.github.com/gists/'+gistId, {
-      headers: {
-        'Authorization': 'Bearer '+token,
-        'Accept': 'application/vnd.github+json'
+      headers:{
+        'Authorization':'Bearer '+token,
+        'Accept':'application/vnd.github+json'
       }
     });
     if(!res.ok) throw new Error('HTTP '+res.status);
