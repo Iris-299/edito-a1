@@ -3041,6 +3041,10 @@ function syncSetBadge(text, color){
   else { el.style.background='#F0EDE8'; el.style.color='var(--muted)'; }
 }
 
+function hasLocalSyncData(){
+  return getCW().length > 0 || getCV().length > 0 || !!localStorage.getItem('edito_today_pool_v1') || Object.keys(srsDb).length > 0;
+}
+
 function syncSaveToken(){
   const inp = document.getElementById('sync-token-input');
   const token = inp ? inp.value.trim() : '';
@@ -3048,8 +3052,13 @@ function syncSaveToken(){
   localStorage.setItem(SYNC_TOKEN_KEY, token);
   inp.value = '';
   inp.placeholder = 'Token 已保存（重新输入可更新）';
-  syncLog('Token 已保存，正在推送…', 'var(--muted)');
-  syncPush();
+  if(hasLocalSyncData()){
+    syncLog('Token 已保存，正在推送…', 'var(--muted)');
+    syncPush();
+  } else {
+    syncLog('Token 已保存，可直接拉取云端数据', 'var(--muted)');
+    syncSetBadge('待拉取', '#C07020');
+  }
 }
 
 // Fetch a single Gist file's content via the API (avoids CORS raw_url issues)
@@ -3081,6 +3090,11 @@ async function syncPush(){
   syncSetBadge('同步中…', '#888780');
   syncLog('正在推送…');
   try{
+    const gistId = getSyncGistId();
+    if(!gistId && !hasLocalSyncData()){
+      throw new Error('本地没有可推送的数据，请先添加词汇后再推送，或直接拉取云端数据');
+    }
+
     const mainData = JSON.stringify({
       cw: getCW(),
       cv: getCV(),
@@ -3088,7 +3102,6 @@ async function syncPush(){
       ts: Date.now()
     });
     const srsData = JSON.stringify(srsDb);
-    const gistId = getSyncGistId();
     const url = gistId ? 'https://api.github.com/gists/'+gistId : 'https://api.github.com/gists';
     const method = gistId ? 'PATCH' : 'POST';
     const payload = {
@@ -3133,21 +3146,30 @@ async function syncPull(){
     // New device: search for the Gist by description
     if(!gistId){
       syncLog('新设备，正在搜索 Gist…');
-      let page = 1, found = null;
-      while(!found && page <= 5){
+      let page = 1, candidates = [];
+      while(page <= 5){
         const r = await fetch('https://api.github.com/gists?per_page=100&page='+page, {
           headers:{ 'Authorization':'Bearer '+token, 'Accept':'application/vnd.github+json' }
         });
         if(!r.ok) throw new Error('列表请求失败 HTTP '+r.status);
         const list = await r.json();
         if(!list.length) break;
-        found = list.find(function(g){
+        candidates = candidates.concat(list.filter(function(g){
           return g.description==='Edito A1 Sync' && g.files && g.files[SYNC_FILE_MAIN];
-        });
+        }));
         page++;
       }
-      if(!found) throw new Error('找不到云端数据，请先在另一设备推送一次');
-      gistId = found.id;
+
+      if(!candidates.length) throw new Error('找不到云端数据，请先在另一设备推送一次');
+      candidates.sort(function(a, b){
+        const aSize = (a.files && a.files[SYNC_FILE_MAIN] && a.files[SYNC_FILE_MAIN].size) || 0;
+        const bSize = (b.files && b.files[SYNC_FILE_MAIN] && b.files[SYNC_FILE_MAIN].size) || 0;
+        if(bSize !== aSize) return bSize - aSize;
+        const aTime = a.updated_at ? new Date(a.updated_at).getTime() : 0;
+        const bTime = b.updated_at ? new Date(b.updated_at).getTime() : 0;
+        return bTime - aTime;
+      });
+      gistId = candidates[0].id;
       localStorage.setItem(SYNC_GIST_KEY, gistId);
     }
 
