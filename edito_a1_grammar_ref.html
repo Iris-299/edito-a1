@@ -1,0 +1,2112 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Édito A1 — 语法手册</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --bg:#F5F4F0;--surface:#FFF;--border:#E3DDD4;--text:#1A1A18;--muted:#8C8578;
+  --mono:'JetBrains Mono',monospace;
+}
+body{font-family:'Inter',-apple-system,'PingFang SC','Microsoft YaHei',sans-serif;
+     background:var(--bg);color:var(--text);font-size:14px;line-height:1.6;}
+/* TOP */
+.topbar{position:fixed;top:0;left:0;right:0;z-index:200;background:#1A1A18;}
+.topbar-r1{display:flex;align-items:center;gap:10px;padding:0 1.5rem;height:48px;}
+.tl{color:#fff;font-weight:700;font-size:15px;letter-spacing:-.3px;flex-shrink:0;}
+.tl span{color:#A89FFF;}
+.sw{flex:1;max-width:320px;position:relative;}
+.sw input{width:100%;padding:6px 28px 6px 30px;border:none;border-radius:7px;
+  font-size:13px;font-family:inherit;background:rgba(255,255,255,.1);color:#fff;outline:none;}
+.sw input::placeholder{color:rgba(255,255,255,.35);}
+.sw input:focus{background:rgba(255,255,255,.18);}
+.si-ic{position:absolute;left:9px;top:50%;transform:translateY(-50%);font-size:12px;opacity:.4;pointer-events:none;}
+.sc-ic{position:absolute;right:8px;top:50%;transform:translateY(-50%);color:rgba(255,255,255,.4);cursor:pointer;font-size:14px;display:none;}
+.sinfo{color:rgba(255,255,255,.4);font-size:12px;}
+.chapter-nav{display:flex;gap:4px;padding:6px 1.5rem;overflow-x:auto;
+  border-top:1px solid rgba(255,255,255,.06);scrollbar-width:none;}
+.chapter-nav::-webkit-scrollbar{display:none;}
+.cnav-btn{flex-shrink:0;padding:4px 10px;border-radius:6px;border:1.5px solid rgba(255,255,255,.12);
+  background:transparent;color:rgba(255,255,255,.5);font-size:11px;font-weight:500;
+  cursor:pointer;font-family:inherit;white-space:nowrap;transition:all .12s;}
+.cnav-btn:hover{background:rgba(255,255,255,.08);color:rgba(255,255,255,.85);}
+.cnav-btn.active{color:#fff;font-weight:600;}
+/* MAIN */
+.main{padding-top:144px;}
+.main-inner{max-width:900px;margin:0 auto;padding:2rem 2rem 6rem;}
+/* CHAPTER */
+.chapter{display:none;}
+.chapter.active{display:block;animation:fadeIn .18s ease;}
+@keyframes fadeIn{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+.ch-hero{border-radius:14px;padding:1.4rem 1.6rem;margin-bottom:2rem;color:#fff;}
+.ch-hero h2{font-size:22px;font-weight:700;margin-bottom:3px;}
+.ch-hero p{font-size:13px;opacity:.85;}
+/* SECTION */
+.sec{margin-bottom:2.5rem;}
+.sec-title{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;
+  letter-spacing:.08em;border-bottom:2px solid var(--border);padding-bottom:6px;margin-bottom:14px;
+  display:flex;align-items:center;gap:8px;}
+.sec-badge{background:var(--border);color:var(--muted);font-size:10px;padding:2px 7px;border-radius:4px;font-weight:400;}
+/* GRIDS */
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;}
+.g4{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;}
+@media(max-width:700px){.g2,.g3,.g4{grid-template-columns:1fr;}}
+@media(max-width:900px){.g3{grid-template-columns:1fr 1fr;}.g4{grid-template-columns:1fr 1fr;}}
+/* CARD */
+.card{background:#fff;border:1px solid var(--border);border-radius:12px;padding:1rem 1.2rem;}
+.card-title{font-size:13px;font-weight:600;margin-bottom:10px;}
+/* TABLES */
+table.ct{width:100%;border-collapse:collapse;font-size:13px;}
+table.ct td{padding:5px 6px;border-bottom:1px solid #F0EDE8;}
+table.ct td:first-child{color:var(--muted);width:38%;}
+table.ct td:last-child{font-weight:500;font-family:var(--mono);}
+table.ct tr:last-child td{border:none;}
+.irr{color:#B03030;font-weight:600;}
+table.cmp{width:100%;border-collapse:collapse;font-size:13px;}
+table.cmp th{font-size:11px;color:var(--muted);font-weight:500;text-align:left;
+  padding:5px 10px;border-bottom:2px solid var(--border);}
+table.cmp td{padding:7px 10px;border-bottom:1px solid #F0EDE8;vertical-align:top;}
+table.cmp tr:last-child td{border:none;}
+table.cmp td:first-child{font-weight:500;white-space:nowrap;}
+table.cmp .ex{font-size:12px;color:var(--muted);font-style:italic;margin-top:2px;}
+table.vt{width:100%;border-collapse:collapse;font-size:13px;}
+table.vt th{font-size:10px;color:var(--muted);font-weight:600;text-transform:uppercase;
+  letter-spacing:.05em;padding:4px 8px;border-bottom:1px solid var(--border);text-align:left;}
+table.vt td{padding:5px 8px;border-bottom:1px solid #F0EDE8;}
+table.vt tr:last-child td{border:none;}
+table.vt td:first-child{font-weight:500;}
+table.vt td:last-child{color:var(--muted);font-size:12px;}
+table.art{width:100%;border-collapse:collapse;font-size:13px;}
+table.art th{font-size:11px;color:var(--muted);text-align:center;padding:5px 8px;border-bottom:1px solid var(--border);font-weight:500;}
+table.art td{text-align:center;padding:8px 6px;border-bottom:1px solid #F0EDE8;}
+table.art tr:last-child td{border:none;}
+.art-big{font-size:22px;font-weight:700;display:block;}
+.art-sm{font-size:11px;color:var(--muted);}
+/* RULES */
+.rule{border-radius:8px;padding:9px 13px;font-size:13px;margin-top:8px;line-height:1.8;}
+.r-purple{background:#EEEDFE;color:#3C3489;}
+.r-teal{background:#E1F5EE;color:#0F6E56;}
+.r-amber{background:#FEF3DD;color:#8C5A00;}
+.r-blue{background:#E6F1FB;color:#0C447C;}
+.r-red{background:#FCEAE6;color:#A32D2D;}
+/* PHRASES */
+.phrase{border-left:3px solid;border-radius:0 8px 8px 0;padding:8px 12px;margin-bottom:7px;}
+.ph-blue{border-color:#378ADD;background:#E6F1FB;}
+.ph-teal{border-color:#1D9E75;background:#E1F5EE;}
+.ph-purple{border-color:#534AB7;background:#EEEDFE;}
+.ph-amber{border-color:#C07020;background:#FEF3DD;}
+.ph-red{border-color:#C0284A;background:#FCEAE6;}
+.phr-fr{font-size:13px;font-weight:500;}
+.phr-zh{font-size:12px;color:#5F5E5A;margin-top:2px;}
+/* PILLS */
+.pill{display:inline-block;font-size:12px;font-weight:500;padding:3px 10px;border-radius:99px;margin:2px;}
+.pi-b{background:#E6F1FB;color:#0C447C;}
+.pi-t{background:#E1F5EE;color:#0F6E56;}
+.pi-p{background:#EEEDFE;color:#3C3489;}
+.pi-a{background:#FEF3DD;color:#8C5A00;}
+.pi-r{background:#FCEAE6;color:#A32D2D;}
+/* TEMPLATE */
+.tpl{background:#F5F4F0;border-left:3px solid #534AB7;border-radius:0 10px 10px 0;
+  padding:1rem 1.2rem;margin-top:8px;font-size:13px;line-height:2.2;}
+.tpl-l{display:inline-block;font-size:11px;font-weight:600;color:#534AB7;min-width:70px;}
+/* NUMBER GRID */
+.num-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(80px,1fr));gap:5px;}
+.num-cell{background:#F5F4F0;border-radius:7px;padding:6px 9px;font-size:12px;}
+.num-cell strong{display:block;font-size:15px;font-weight:700;}
+/* SEARCH */
+mark.hl{background:#FEF08A;color:inherit;border-radius:2px;}
+.search-view{display:none;}
+.search-view.active{display:block;}
+.sr-title{font-size:14px;font-weight:600;margin-bottom:1rem;}
+.sr-sec{background:#fff;border:1px solid var(--border);border-radius:12px;margin-bottom:.75rem;overflow:hidden;}
+.sr-hd{padding:.7rem 1.2rem;display:flex;align-items:center;gap:10px;cursor:pointer;border-bottom:1px solid var(--border);}
+.sr-hd:hover{background:#fafaf8;}
+.sr-badge{padding:3px 10px;border-radius:99px;font-size:10px;font-weight:700;color:#fff;flex-shrink:0;}
+.sr-ct{font-size:11px;color:var(--muted);margin-left:auto;}
+.sr-hits{padding:.5rem 1.2rem .75rem;font-size:13px;line-height:2.1;}
+.no-results{text-align:center;padding:3rem;color:var(--muted);font-size:13px;}
+@media(max-width:600px){
+  .main{padding-top:96px;}
+  .main-inner{padding:1.2rem 1rem 4rem;}
+  .topbar-r1{padding:0 1rem;height:44px;}
+  .chapter-nav{padding:5px 1rem;}
+}
+</style>
+</head>
+<body>
+
+<style id="global-nav-style">
+.global-nav{
+  position:fixed;top:0;left:0;right:0;height:40px;background:#111110;z-index:9999;
+  display:flex;align-items:center;padding:0 1rem;gap:8px;border-bottom:1px solid rgba(255,255,255,.08);
+}
+.global-nav a{
+  color:rgba(255,255,255,.55);font-size:12px;font-weight:500;text-decoration:none;
+  padding:5px 10px;border-radius:6px;transition:all .12s;white-space:nowrap;
+}
+.global-nav a:hover{background:rgba(255,255,255,.08);color:#fff;}
+.global-nav a.active{background:rgba(168,159,255,.15);color:#A89FFF;}
+.global-nav-logo{color:#fff;font-weight:700;font-size:13px;margin-right:4px;flex-shrink:0;}
+.global-nav-logo span{color:#A89FFF;}
+body{padding-top:40px!important;}
+</style>
+<nav class="global-nav"><div class="global-nav-logo">🇫🇷 <span>Édito A1</span></div><a href="index.html">📅 背单词</a><a href="edito_a1_full.html">📖 全册笔记</a><a href="edito_a1_grammar_ref.html" class="active">📝 语法手册</a></nav>
+<div class="topbar">
+  <div class="topbar-r1">
+    <div class="tl">🇫🇷 <span>Édito A1</span> 语法手册</div>
+    <div class="sw">
+      <span class="si-ic">🔍</span>
+      <input type="text" id="searchInput" placeholder="搜索语法点… (/ 聚焦)" oninput="onSearch(this.value)" autocomplete="off" spellcheck="false">
+      <span class="sc-ic" id="sClear" onclick="clearSearch()">✕</span>
+    </div>
+    <span class="sinfo" id="sInfo"></span>
+  </div>
+  <div class="chapter-nav" id="cnav"></div>
+</div>
+
+<main class="main">
+<div class="main-inner">
+<div id="chapView">
+
+<div class="chapter active" id="ch1">
+<div class="ch-hero" style="background:linear-gradient(135deg,#3B4FD4,#1D7FAD)">
+  <h2>① 冠词 &amp; 名词性别</h2>
+  <p>法语名词有阴阳性之分，冠词必须与名词配合 · 这是法语最基础也最重要的规则</p>
+</div>
+
+<div class="sec">
+  <div class="sec-title">不定冠词 <span class="sec-badge">第一次提到某事物</span></div>
+  <div class="card">
+    <table class="art">
+      <tr><th>阳性单数</th><th>阴性单数</th><th>复数（不分性）</th></tr>
+      <tr><td><span class="art-big">un</span><span class="art-sm">un ami · un bus</span></td>
+          <td><span class="art-big">une</span><span class="art-sm">une amie · une gare</span></td>
+          <td><span class="art-big">des</span><span class="art-sm">des amis · des bus</span></td></tr>
+    </table>
+    <div class="rule r-red">❌ 否定句后变 <strong>de / d'</strong>：Je n'ai pas <strong>d'</strong>ami. · pas <strong>de</strong> bus.</div>
+  </div>
+</div>
+
+<div class="sec">
+  <div class="sec-title">定冠词 <span class="sec-badge">再次提到 / 泛指概念</span></div>
+  <div class="card">
+    <table class="art">
+      <tr><th>阳性</th><th>阴性</th><th>复数</th><th>元音/哑h前</th></tr>
+      <tr><td><span class="art-big">le</span><span class="art-sm">le parc</span></td>
+          <td><span class="art-big">la</span><span class="art-sm">la gare</span></td>
+          <td><span class="art-big">les</span><span class="art-sm">les parcs</span></td>
+          <td><span class="art-big" style="color:#3B4FD4">l'</span><span class="art-sm">l'ami · l'école</span></td></tr>
+    </table>
+    <div class="rule r-amber" style="margin-top:8px">⚠️ 介词收缩：à+le=<strong>au</strong> · à+les=<strong>aux</strong> · de+le=<strong>du</strong> · de+les=<strong>des</strong><br>
+    Je vais <strong>au</strong> marché. · Je parle <strong>des</strong> amis. · Je reviens <strong>du</strong> bureau.</div>
+  </div>
+</div>
+
+<div class="sec">
+  <div class="sec-title">部分冠词 <span class="sec-badge">不可数名词 / 一部分</span></div>
+  <div class="card">
+    <div class="g3">
+      <div style="text-align:center;padding:14px;background:#F5F4F0;border-radius:10px">
+        <span style="font-size:26px;font-weight:700">du</span>
+        <div style="font-size:11px;color:var(--muted);margin-top:5px">阳性<br>du pain · du lait · du café</div>
+      </div>
+      <div style="text-align:center;padding:14px;background:#F5F4F0;border-radius:10px">
+        <span style="font-size:26px;font-weight:700">de la</span>
+        <div style="font-size:11px;color:var(--muted);margin-top:5px">阴性<br>de la viande · de la chance</div>
+      </div>
+      <div style="text-align:center;padding:14px;background:#F5F4F0;border-radius:10px">
+        <span style="font-size:26px;font-weight:700">de l'</span>
+        <div style="font-size:11px;color:var(--muted);margin-top:5px">元音/哑h前<br>de l'eau · de l'huile</div>
+      </div>
+    </div>
+    <div class="rule r-red" style="margin-top:10px">❌ 否定句后一律变 <strong>de / d'</strong>：Je ne mange pas <strong>de</strong> viande. · Tu ne bois pas <strong>d'</strong>eau ?</div>
+    <div class="rule r-teal">✓ aimer / préférer / détester / adorer 后用<strong>定冠词</strong>（泛指）：J'aime <strong>le</strong> café. · Il déteste <strong>la</strong> pluie.</div>
+  </div>
+</div>
+
+<div class="sec">
+  <div class="sec-title">判断阴阳性的线索</div>
+  <div class="g2">
+    <div class="card">
+      <div class="card-title">常见阳性词尾 → <em>le / un</em></div>
+      <div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:4px">
+        <span class="pill pi-b">-age (le voyage)</span>
+        <span class="pill pi-b">-ment (le moment)</span>
+        <span class="pill pi-b">-isme (le tourisme)</span>
+        <span class="pill pi-b">-eau (le gâteau)</span>
+        <span class="pill pi-b">-eur (le serveur)</span>
+        <span class="pill pi-b">-al (le journal)</span>
+        <span class="pill pi-b">-phone (le téléphone)</span>
+        <span class="pill pi-b">-isme (le cyclisme)</span>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">常见阴性词尾 → <em>la / une</em></div>
+      <div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:4px">
+        <span class="pill pi-r">-tion (la nation)</span>
+        <span class="pill pi-r">-té (la liberté)</span>
+        <span class="pill pi-r">-ure (la nature)</span>
+        <span class="pill pi-r">-ance (la chance)</span>
+        <span class="pill pi-r">-ette (la baguette)</span>
+        <span class="pill pi-r">-ie (la vie)</span>
+        <span class="pill pi-r">-eur (la couleur)*</span>
+        <span class="pill pi-r">-esse (la gentillesse)</span>
+      </div>
+      <div class="rule r-amber" style="margin-top:8px">⚠️ *-eur 有例外（le bonheur 幸福）。词尾只是线索，例外很多，要靠积累！</div>
+    </div>
+  </div>
+</div>
+
+<div class="sec">
+  <div class="sec-title">名词复数规律</div>
+  <div class="card">
+    <div class="g2">
+      <div>
+        <table class="cmp">
+          <tr><th>情况</th><th>规律</th><th>例子</th></tr>
+          <tr><td>一般情况</td><td>+ <strong>s</strong></td><td>ami → ami<strong>s</strong></td></tr>
+          <tr><td>已以 -s/-x/-z 结尾</td><td>不变</td><td>voix → voix</td></tr>
+          <tr><td>-eau / -au 结尾</td><td>+ <strong>x</strong></td><td>gâteau → gâteau<strong>x</strong></td></tr>
+          <tr><td>-al 结尾（大多数）</td><td>→ <strong>-aux</strong></td><td>journal → journ<strong>aux</strong></td></tr>
+          <tr><td>-eu 结尾（大多数）</td><td>+ <strong>x</strong></td><td>jeu → jeu<strong>x</strong></td></tr>
+          <tr><td>-ou 结尾（7个例外）</td><td>+ <strong>x</strong></td><td>genou → genou<strong>x</strong></td></tr>
+        </table>
+      </div>
+      <div>
+        <div class="rule r-amber" style="margin-bottom:8px">⚠️ -al 的例外（不变 -als）：<br>festival → festivals · carnaval → carnavals · bal → bals</div>
+        <div class="rule r-blue">7个 -ou → -oux：<br>bijou · caillou · chou · genou<br>hibou · joujou · pou<br>（其余 -ou 加 -s）</div>
+        <div class="rule r-purple" style="margin-top:8px">复数时冠词也变复数：<br>le/la/l' → <strong>les</strong><br>un/une → <strong>des</strong></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="sec">
+  <div class="sec-title">冠词总对比</div>
+  <div class="card">
+    <table class="cmp">
+      <tr><th>情况</th><th>用什么冠词</th><th>例句</th></tr>
+      <tr><td>第一次提到</td><td>不定冠词 un/une/des</td><td>J'ai vu <strong>un</strong> film.</td></tr>
+      <tr><td>再次提到 / 特指</td><td>定冠词 le/la/l'/les</td><td><strong>Le</strong> film était super.</td></tr>
+      <tr><td>泛指（喜欢某类事物）</td><td>定冠词 le/la/l'/les</td><td>J'aime <strong>le</strong> cinéma.</td></tr>
+      <tr><td>不可数的一部分</td><td>部分冠词 du/de la/de l'</td><td>Je bois <strong>du</strong> café.</td></tr>
+      <tr><td>否定句宾语</td><td>de / d'</td><td>Je ne bois pas <strong>de</strong> café.</td></tr>
+      <tr><td>数量词后</td><td>de / d'（不用冠词）</td><td>beaucoup <strong>de</strong> café · un verre <strong>d'</strong>eau</td></tr>
+    </table>
+  </div>
+</div>
+</div>
+
+<div class="chapter" id="ch2">
+<div class="ch-hero" style="background:linear-gradient(135deg,#1D7FAD,#1D9E75)">
+  <h2>② 动词变位体系</h2>
+  <p>现在时 · 反身动词 · 命令式 · 规律与不规则动词全览</p>
+</div>
+
+<div class="sec">
+  <div class="sec-title">三组规律动词 现在时</div>
+  <div class="g3">
+    <div class="card">
+      <div class="card-title">G1 &nbsp;-ER 动词 &nbsp;<small style="color:var(--muted)">parler 说话</small></div>
+      <table class="ct">
+        <tr><td>je</td><td>parl<strong>e</strong></td></tr>
+        <tr><td>tu</td><td>parl<strong>es</strong></td></tr>
+        <tr><td>il/elle</td><td>parl<strong>e</strong></td></tr>
+        <tr><td>nous</td><td>parl<strong>ons</strong></td></tr>
+        <tr><td>vous</td><td>parl<strong>ez</strong></td></tr>
+        <tr><td>ils/elles</td><td>parl<strong>ent</strong></td></tr>
+      </table>
+      <div class="rule r-purple" style="margin-top:8px">去掉 -er 加词尾<br>⚠️ manger: nous mange<strong>ons</strong></div>
+    </div>
+    <div class="card">
+      <div class="card-title">G2 &nbsp;-IR 动词 &nbsp;<small style="color:var(--muted)">finir 完成</small></div>
+      <table class="ct">
+        <tr><td>je</td><td>fin<strong>is</strong></td></tr>
+        <tr><td>tu</td><td>fin<strong>is</strong></td></tr>
+        <tr><td>il/elle</td><td>fin<strong>it</strong></td></tr>
+        <tr><td>nous</td><td>fin<strong>issons</strong></td></tr>
+        <tr><td>vous</td><td>fin<strong>issez</strong></td></tr>
+        <tr><td>ils/elles</td><td>fin<strong>issent</strong></td></tr>
+      </table>
+      <div class="rule r-blue" style="margin-top:8px">nous/vous/ils 加 -iss-<br>同类：choisir · réussir</div>
+    </div>
+    <div class="card">
+      <div class="card-title">G3 &nbsp;-RE 动词 &nbsp;<small style="color:var(--muted)">perdre 丢失</small></div>
+      <table class="ct">
+        <tr><td>je</td><td>perd<strong>s</strong></td></tr>
+        <tr><td>tu</td><td>perd<strong>s</strong></td></tr>
+        <tr><td>il/elle</td><td>perd <span style="color:var(--muted);font-size:11px">(无词尾)</span></td></tr>
+        <tr><td>nous</td><td>perd<strong>ons</strong></td></tr>
+        <tr><td>vous</td><td>perd<strong>ez</strong></td></tr>
+        <tr><td>ils/elles</td><td>perd<strong>ent</strong></td></tr>
+      </table>
+      <div class="rule r-amber" style="margin-top:8px">il/elle 无词尾<br>同类：répondre · attendre</div>
+    </div>
+  </div>
+</div>
+
+<div class="sec">
+  <div class="sec-title">必会不规则动词</div>
+  <div class="card">
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(185px,1fr));gap:12px;">
+      <div><div style="font-size:11px;color:var(--muted);margin-bottom:4px;font-weight:600">être 是</div>
+        <table class="ct" style="font-size:12px">
+          <tr><td>je</td><td class="irr">suis</td></tr><tr><td>tu</td><td class="irr">es</td></tr>
+          <tr><td>il/elle</td><td class="irr">est</td></tr><tr><td>nous</td><td class="irr">sommes</td></tr>
+          <tr><td>vous</td><td class="irr">êtes</td></tr><tr><td>ils</td><td class="irr">sont</td></tr>
+        </table></div>
+      <div><div style="font-size:11px;color:var(--muted);margin-bottom:4px;font-weight:600">avoir 有</div>
+        <table class="ct" style="font-size:12px">
+          <tr><td>j'</td><td class="irr">ai</td></tr><tr><td>tu</td><td class="irr">as</td></tr>
+          <tr><td>il/elle</td><td class="irr">a</td></tr><tr><td>nous</td><td class="irr">avons</td></tr>
+          <tr><td>vous</td><td class="irr">avez</td></tr><tr><td>ils</td><td class="irr">ont</td></tr>
+        </table></div>
+      <div><div style="font-size:11px;color:var(--muted);margin-bottom:4px;font-weight:600">aller 去</div>
+        <table class="ct" style="font-size:12px">
+          <tr><td>je</td><td class="irr">vais</td></tr><tr><td>tu</td><td class="irr">vas</td></tr>
+          <tr><td>il/elle</td><td class="irr">va</td></tr><tr><td>nous</td><td class="irr">allons</td></tr>
+          <tr><td>vous</td><td class="irr">allez</td></tr><tr><td>ils</td><td class="irr">vont</td></tr>
+        </table></div>
+      <div><div style="font-size:11px;color:var(--muted);margin-bottom:4px;font-weight:600">faire 做</div>
+        <table class="ct" style="font-size:12px">
+          <tr><td>je</td><td class="irr">fais</td></tr><tr><td>tu</td><td class="irr">fais</td></tr>
+          <tr><td>il/elle</td><td class="irr">fait</td></tr><tr><td>nous</td><td class="irr">faisons</td></tr>
+          <tr><td>vous</td><td class="irr">faites</td></tr><tr><td>ils</td><td class="irr">font</td></tr>
+        </table></div>
+      <div><div style="font-size:11px;color:var(--muted);margin-bottom:4px;font-weight:600">prendre 拿/坐</div>
+        <table class="ct" style="font-size:12px">
+          <tr><td>je</td><td class="irr">prends</td></tr><tr><td>tu</td><td class="irr">prends</td></tr>
+          <tr><td>il/elle</td><td class="irr">prend</td></tr><tr><td>nous</td><td class="irr">prenons</td></tr>
+          <tr><td>vous</td><td class="irr">prenez</td></tr><tr><td>ils</td><td class="irr">prennent</td></tr>
+        </table></div>
+      <div><div style="font-size:11px;color:var(--muted);margin-bottom:4px;font-weight:600">venir 来</div>
+        <table class="ct" style="font-size:12px">
+          <tr><td>je</td><td class="irr">viens</td></tr><tr><td>tu</td><td class="irr">viens</td></tr>
+          <tr><td>il/elle</td><td class="irr">vient</td></tr><tr><td>nous</td><td class="irr">venons</td></tr>
+          <tr><td>vous</td><td class="irr">venez</td></tr><tr><td>ils</td><td class="irr">viennent</td></tr>
+        </table></div>
+      <div><div style="font-size:11px;color:var(--muted);margin-bottom:4px;font-weight:600">pouvoir 能</div>
+        <table class="ct" style="font-size:12px">
+          <tr><td>je</td><td class="irr">peux</td></tr><tr><td>tu</td><td class="irr">peux</td></tr>
+          <tr><td>il/elle</td><td class="irr">peut</td></tr><tr><td>nous</td><td class="irr">pouvons</td></tr>
+          <tr><td>vous</td><td class="irr">pouvez</td></tr><tr><td>ils</td><td class="irr">peuvent</td></tr>
+        </table></div>
+      <div><div style="font-size:11px;color:var(--muted);margin-bottom:4px;font-weight:600">vouloir 想要</div>
+        <table class="ct" style="font-size:12px">
+          <tr><td>je</td><td class="irr">veux</td></tr><tr><td>tu</td><td class="irr">veux</td></tr>
+          <tr><td>il/elle</td><td class="irr">veut</td></tr><tr><td>nous</td><td class="irr">voulons</td></tr>
+          <tr><td>vous</td><td class="irr">voulez</td></tr><tr><td>ils</td><td class="irr">veulent</td></tr>
+        </table></div>
+      <div><div style="font-size:11px;color:var(--muted);margin-bottom:4px;font-weight:600">savoir 知道/会</div>
+        <table class="ct" style="font-size:12px">
+          <tr><td>je</td><td class="irr">sais</td></tr><tr><td>tu</td><td class="irr">sais</td></tr>
+          <tr><td>il/elle</td><td class="irr">sait</td></tr><tr><td>nous</td><td class="irr">savons</td></tr>
+          <tr><td>vous</td><td class="irr">savez</td></tr><tr><td>ils</td><td class="irr">savent</td></tr>
+        </table></div>
+      <div><div style="font-size:11px;color:var(--muted);margin-bottom:4px;font-weight:600">devoir 必须</div>
+        <table class="ct" style="font-size:12px">
+          <tr><td>je</td><td class="irr">dois</td></tr><tr><td>tu</td><td class="irr">dois</td></tr>
+          <tr><td>il/elle</td><td class="irr">doit</td></tr><tr><td>nous</td><td class="irr">devons</td></tr>
+          <tr><td>vous</td><td class="irr">devez</td></tr><tr><td>ils</td><td class="irr">doivent</td></tr>
+        </table></div>
+    </div>
+  </div>
+</div>
+
+<div class="sec">
+  <div class="sec-title">反身动词</div>
+  <div class="g2">
+    <div class="card">
+      <div class="card-title">现在时 &nbsp;<small style="color:var(--muted)">se lever 起床</small></div>
+      <table class="ct">
+        <tr><td>je</td><td class="irr">me lève</td></tr>
+        <tr><td>tu</td><td class="irr">te lèves</td></tr>
+        <tr><td>il/elle</td><td class="irr">se lève</td></tr>
+        <tr><td>nous</td><td>nous levons</td></tr>
+        <tr><td>vous</td><td>vous levez</td></tr>
+        <tr><td>ils/elles</td><td class="irr">se lèvent</td></tr>
+      </table>
+      <div class="rule r-purple">反身代词：me · te · se · nous · vous · se<br>元音前缩写：m' · t' · s'</div>
+    </div>
+    <div class="card">
+      <div class="card-title">常用反身动词</div>
+      <table class="vt">
+        <tr><th>动词</th><th>中文</th></tr>
+        <tr><td>se lever</td><td>起床</td></tr>
+        <tr><td>se coucher</td><td>睡觉</td></tr>
+        <tr><td>se réveiller</td><td>醒来</td></tr>
+        <tr><td>s'habiller</td><td>穿衣</td></tr>
+        <tr><td>se laver</td><td>洗漱</td></tr>
+        <tr><td>se promener</td><td>散步</td></tr>
+        <tr><td>s'appeler</td><td>叫做</td></tr>
+        <tr><td>se dépêcher</td><td>赶快</td></tr>
+        <tr><td>s'amuser</td><td>玩得开心</td></tr>
+        <tr><td>se perdre</td><td>迷路</td></tr>
+      </table>
+    </div>
+  </div>
+</div>
+
+<div class="sec">
+  <div class="sec-title">命令式</div>
+  <div class="g3">
+    <div class="card">
+      <div class="card-title">规律构成</div>
+      <table class="cmp">
+        <tr><th>人称</th><th>-ER</th><th>-IR/-RE</th></tr>
+        <tr><td>tu</td><td>Parle !</td><td>Finis ! / Prends !</td></tr>
+        <tr><td>nous</td><td>Parlons !</td><td>Finissons ! / Prenons !</td></tr>
+        <tr><td>vous</td><td>Parlez !</td><td>Finissez ! / Prenez !</td></tr>
+      </table>
+      <div class="rule r-amber">-ER 动词 tu 命令式<strong>去掉 s</strong><br>Mange ! (不是 Manges)</div>
+    </div>
+    <div class="card">
+      <div class="card-title">不规则命令式</div>
+      <table class="vt">
+        <tr><th>动词</th><th>tu / nous / vous</th></tr>
+        <tr><td>être</td><td>Sois / Soyons / Soyez</td></tr>
+        <tr><td>avoir</td><td>Aie / Ayons / Ayez</td></tr>
+        <tr><td>aller</td><td>Va / Allons / Allez</td></tr>
+        <tr><td>faire</td><td>Fais / Faisons / Faites</td></tr>
+        <tr><td>savoir</td><td>Sache / Sachons / Sachez</td></tr>
+      </table>
+    </div>
+    <div class="card">
+      <div class="card-title">反身动词命令式</div>
+      <div class="phrase ph-teal"><div class="phr-fr">Lève-toi ! / Levez-vous !</div><div class="phr-zh">起床！（肯定：代词后置连字符）</div></div>
+      <div class="phrase ph-red"><div class="phr-fr">Ne te lève pas ! / Ne vous levez pas !</div><div class="phr-zh">别起床！（否定：代词前置）</div></div>
+      <div class="rule r-purple">肯定命令：动词-代词（te→toi）<br>否定命令：ne + te/vous + 动词 + pas</div>
+    </div>
+  </div>
+</div>
+</div>
+
+<div class="chapter" id="ch3">
+<div class="ch-hero" style="background:linear-gradient(135deg,#1D9E75,#0F6E56)">
+  <h2>③ 时态全览</h2>
+  <p>近期将来 · 复合过去时 · 反身动词复合过去 · 半过去时 · 最近过去时 · 时态选择指南</p>
+</div>
+
+<div class="sec">
+  <div class="sec-title">近期将来时 futur proche <span class="sec-badge">打算 / 即将发生</span></div>
+  <div class="card">
+    <div class="rule r-blue" style="margin-bottom:10px">结构：<strong>aller（现在时变位）+ 动词原形</strong> &nbsp;·&nbsp; 否定：ne + aller + pas + 原形</div>
+    <div class="g2">
+      <table class="ct">
+        <tr><td>je vais partir</td><td>nous allons voyager</td></tr>
+        <tr><td>tu vas manger</td><td>vous allez finir</td></tr>
+        <tr><td>il/elle va faire</td><td>ils vont arriver</td></tr>
+      </table>
+      <div>
+        <div class="phrase ph-blue"><div class="phr-fr">Je vais partir demain.</div><div class="phr-zh">我明天要出发。</div></div>
+        <div class="phrase ph-blue"><div class="phr-fr">Il va pleuvoir.</div><div class="phr-zh">快要下雨了。</div></div>
+        <div class="phrase ph-red"><div class="phr-fr">Je ne vais pas sortir ce soir.</div><div class="phr-zh">我今晚不打算出门。</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="sec">
+  <div class="sec-title">复合过去时 passé composé <span class="sec-badge">已完成的具体动作</span></div>
+  <div class="card">
+    <div class="rule r-purple" style="margin-bottom:12px">结构：<strong>avoir 或 être（现在时）+ 过去分词</strong></div>
+    <div class="g2">
+      <div>
+        <div class="card-title">过去分词构成</div>
+        <table class="cmp" style="margin-bottom:10px">
+          <tr><th>原形</th><th>过去分词</th><th>例子</th></tr>
+          <tr><td>-er</td><td>→ <strong>-é</strong></td><td>parler → parlé</td></tr>
+          <tr><td>-ir</td><td>→ <strong>-i</strong></td><td>finir → fini</td></tr>
+          <tr><td>-re</td><td>→ <strong>-u</strong></td><td>perdre → perdu</td></tr>
+        </table>
+        <div class="card-title">不规则过去分词</div>
+        <table class="vt">
+          <tr><th>动词</th><th>过去分词</th></tr>
+          <tr><td>avoir</td><td>eu</td></tr>
+          <tr><td>être</td><td>été</td></tr>
+          <tr><td>faire</td><td>fait</td></tr>
+          <tr><td>voir</td><td>vu</td></tr>
+          <tr><td>prendre</td><td>pris</td></tr>
+          <tr><td>mettre</td><td>mis</td></tr>
+          <tr><td>venir</td><td>venu</td></tr>
+          <tr><td>vouloir</td><td>voulu</td></tr>
+          <tr><td>pouvoir</td><td>pu</td></tr>
+          <tr><td>savoir</td><td>su</td></tr>
+          <tr><td>lire</td><td>lu</td></tr>
+          <tr><td>écrire</td><td>écrit</td></tr>
+        </table>
+      </div>
+      <div>
+        <div class="card-title">用 être 的动词 <span style="background:#FCEAE6;color:#A32D2D;font-size:10px;padding:1px 6px;border-radius:4px;font-weight:600">过去分词要配合性数</span></div>
+        <div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:10px">
+          <span class="pill pi-t">aller ↔ venir</span>
+          <span class="pill pi-t">partir ↔ arriver</span>
+          <span class="pill pi-t">entrer ↔ sortir</span>
+          <span class="pill pi-t">monter ↔ descendre</span>
+          <span class="pill pi-t">naître ↔ mourir</span>
+          <span class="pill pi-t">rester · tomber</span>
+          <span class="pill pi-t">retourner · passer</span>
+          <span class="pill pi-p">+ 全部反身动词</span>
+        </div>
+        <div class="phrase ph-teal"><div class="phr-fr">Elle est parti<strong>e</strong> hier.</div><div class="phr-zh">她昨天走了。（阴性+e）</div></div>
+        <div class="phrase ph-teal"><div class="phr-fr">Ils sont parti<strong>s</strong> tôt.</div><div class="phr-zh">他们很早出发了。（复数+s）</div></div>
+        <div class="phrase ph-blue"><div class="phr-fr">J'ai vu Marie. Elle a mangé.</div><div class="phr-zh">avoir 动词，过去分词无需配合</div></div>
+        <div class="rule r-red">否定：Je n'ai <strong>pas</strong> mangé. / Il n'est <strong>pas</strong> parti.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="sec">
+  <div class="sec-title">反身动词复合过去时</div>
+  <div class="card">
+    <div class="rule r-purple" style="margin-bottom:10px">一律用 <strong>être</strong> 作助动词 &nbsp;·&nbsp; 过去分词与主语<strong>性数配合</strong></div>
+    <div class="g2">
+      <table class="ct">
+        <tr><td>je me suis</td><td>levé(e)</td></tr>
+        <tr><td>tu t'es</td><td>levé(e)</td></tr>
+        <tr><td>il s'est</td><td>levé</td></tr>
+        <tr><td>elle s'est</td><td>levée</td></tr>
+        <tr><td>nous nous sommes</td><td>levé(e)s</td></tr>
+        <tr><td>vous vous êtes</td><td>levé(e)(s)</td></tr>
+        <tr><td>ils se sont</td><td>levés</td></tr>
+        <tr><td>elles se sont</td><td>levées</td></tr>
+      </table>
+      <div>
+        <div class="phrase ph-purple"><div class="phr-fr">Je me suis blessé(e).</div><div class="phr-zh">我受伤了。</div></div>
+        <div class="phrase ph-purple"><div class="phr-fr">Elle s'est réveillée à 7h.</div><div class="phr-zh">她七点醒来。</div></div>
+        <div class="phrase ph-red"><div class="phr-fr">Je <strong>ne</strong> me suis <strong>pas</strong> levé(e).</div><div class="phr-zh">否定：ne 夹在 ne…pas 之间</div></div>
+        <div class="rule r-amber">⚠️ 例外：身体部位作宾语时，过去分词<strong>不配合</strong><br>Je me suis lavé <strong>les mains</strong>.<br>（不是 lavées，因为 les mains 是宾语，je 是主语）</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="sec">
+  <div class="sec-title">半过去时 imparfait <span class="sec-badge">状态 / 习惯 / 描述背景</span></div>
+  <div class="card">
+    <div class="rule r-blue" style="margin-bottom:10px">构成：<strong>nous 现在时词干 + -ais/-ais/-ait/-ions/-iez/-aient</strong></div>
+    <div class="g2">
+      <div>
+        <div style="font-size:12px;color:var(--muted);margin-bottom:6px">parler → nous parl<strong>ons</strong> → parl-</div>
+        <table class="ct">
+          <tr><td>je</td><td>parlais</td></tr>
+          <tr><td>tu</td><td>parlais</td></tr>
+          <tr><td>il/elle</td><td>parlait</td></tr>
+          <tr><td>nous</td><td>parlions</td></tr>
+          <tr><td>vous</td><td>parliez</td></tr>
+          <tr><td>ils</td><td>parlaient</td></tr>
+        </table>
+        <div class="rule r-amber" style="margin-top:8px">唯一特例：être → stem <strong>ét-</strong><br>j'étais / tu étais / il était…</div>
+      </div>
+      <div>
+        <div class="card-title">复合过去 vs 半过去</div>
+        <table class="cmp">
+          <tr><th>复合过去</th><th>半过去</th></tr>
+          <tr><td>完成的具体动作<br><span class="ex">J'ai mangé une pizza.</span></td><td>持续的状态或描述<br><span class="ex">La pizza était délicieuse.</span></td></tr>
+          <tr><td>突发事件<br><span class="ex">Il est tombé.</span></td><td>事件发生的背景<br><span class="ex">Il pleuvait quand je suis sorti.</span></td></tr>
+          <tr><td>次数明确的动作<br><span class="ex">Je l'ai vu trois fois.</span></td><td>重复的习惯<br><span class="ex">Avant, je courais chaque matin.</span></td></tr>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="sec">
+  <div class="sec-title">最近过去时 &amp; 时态总导图</div>
+  <div class="g2">
+    <div class="card">
+      <div class="card-title">最近过去 <small style="color:var(--muted)">venir de + 原形</small></div>
+      <div class="rule r-teal" style="margin-bottom:8px">表示"<strong>刚刚</strong>做了……"</div>
+      <div class="phrase ph-teal"><div class="phr-fr">Je viens de manger.</div><div class="phr-zh">我刚吃完。</div></div>
+      <div class="phrase ph-teal"><div class="phr-fr">Il vient d'arriver.</div><div class="phr-zh">他刚到。</div></div>
+      <div class="phrase ph-teal"><div class="phr-fr">Nous venons de finir.</div><div class="phr-zh">我们刚做完。</div></div>
+    </div>
+    <div class="card">
+      <div class="card-title">时态导图</div>
+      <table class="cmp">
+        <tr><th>时态</th><th>典型用法</th><th>关键词</th></tr>
+        <tr><td>venir de + inf</td><td>刚刚</td><td>il y a 5 min</td></tr>
+        <tr><td>passé composé</td><td>完成动作</td><td>hier · l'an dernier</td></tr>
+        <tr><td>imparfait</td><td>状态/习惯</td><td>avant · toujours</td></tr>
+        <tr><td>présent</td><td>现在</td><td>maintenant · aujourd'hui</td></tr>
+        <tr><td>futur proche</td><td>即将/打算</td><td>demain · bientôt</td></tr>
+      </table>
+    </div>
+  </div>
+</div>
+</div>
+
+<div class="chapter" id="ch4">
+<div class="ch-hero" style="background:linear-gradient(135deg,#C07020,#7C3DAA)">
+  <h2>④ 代词系统</h2>
+  <p>主有形容词 · COD直接宾语 · COI间接宾语 · 中性代词 en · y</p>
+</div>
+
+<div class="sec">
+  <div class="sec-title">主有形容词</div>
+  <div class="card">
+    <table class="cmp">
+      <tr><th>主语</th><th>阳性单数</th><th>阴性单数</th><th>复数</th></tr>
+      <tr><td>je</td><td>mon</td><td>ma (元音前用 mon)</td><td>mes</td></tr>
+      <tr><td>tu</td><td>ton</td><td>ta (元音前用 ton)</td><td>tes</td></tr>
+      <tr><td>il/elle</td><td>son</td><td>sa (元音前用 son)</td><td>ses</td></tr>
+      <tr><td>nous</td><td colspan="2">notre</td><td>nos</td></tr>
+      <tr><td>vous</td><td colspan="2">votre</td><td>vos</td></tr>
+      <tr><td>ils/elles</td><td colspan="2">leur</td><td>leurs</td></tr>
+    </table>
+    <div class="rule r-amber" style="margin-top:10px">与<strong>所修饰名词</strong>的性数配合，不与主语配合<br>阴性名词以元音/哑h开头：mon amie · ton école · son adresse</div>
+  </div>
+</div>
+
+<div class="sec">
+  <div class="sec-title">直接宾语代词 COD <span class="sec-badge">替换直接宾语（无介词）</span></div>
+  <div class="card">
+    <div class="g2">
+      <div>
+        <table class="cmp">
+          <tr><th>代词</th><th>替换</th></tr>
+          <tr><td>me / m'</td><td>我（直接宾语）</td></tr>
+          <tr><td>te / t'</td><td>你</td></tr>
+          <tr><td><strong>le / l'</strong></td><td>他 / 它（阳性）</td></tr>
+          <tr><td><strong>la / l'</strong></td><td>她 / 它（阴性）</td></tr>
+          <tr><td>nous</td><td>我们</td></tr>
+          <tr><td>vous</td><td>您 / 你们</td></tr>
+          <tr><td><strong>les</strong></td><td>他们 / 她们 / 它们</td></tr>
+        </table>
+      </div>
+      <div>
+        <div class="rule r-blue" style="margin-bottom:8px">位置：动词<strong>前</strong>（复合时态：助动词前）<br>否定：ne + 代词 + 动词 + pas</div>
+        <div class="phrase ph-blue"><div class="phr-fr">Tu vois Marie ? — Oui, je <strong>la</strong> vois.</div><div class="phr-zh">你见玛丽吗？— 我见她。</div></div>
+        <div class="phrase ph-blue"><div class="phr-fr">Il a acheté les livres ? — Oui, il <strong>les</strong> a achetés.</div><div class="phr-zh">复合过去时：COD前置→过去分词配合（livres=复数阳性→achetés）</div></div>
+        <div class="phrase ph-blue"><div class="phr-fr">Je <strong>ne le</strong> connais <strong>pas</strong>.</div><div class="phr-zh">我不认识他。</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="sec">
+  <div class="sec-title">间接宾语代词 COI <span class="sec-badge">替换 à + 人</span></div>
+  <div class="card">
+    <div class="g2">
+      <div>
+        <table class="cmp">
+          <tr><th>代词</th><th>替换</th></tr>
+          <tr><td>me / m'</td><td>à moi（我）</td></tr>
+          <tr><td>te / t'</td><td>à toi（你）</td></tr>
+          <tr><td><strong>lui</strong></td><td>à lui / à elle（单数，不分性）</td></tr>
+          <tr><td>nous</td><td>à nous</td></tr>
+          <tr><td>vous</td><td>à vous</td></tr>
+          <tr><td><strong>leur</strong></td><td>à eux / à elles（复数，不分性）</td></tr>
+        </table>
+        <div class="rule r-amber" style="margin-top:8px">⚠️ lui/leur 不区分阴阳性<br>过去分词<strong>不</strong>与 COI 配合（只与 COD 配合）</div>
+      </div>
+      <div>
+        <div class="phrase ph-purple"><div class="phr-fr">Je parle à Marie. → Je <strong>lui</strong> parle.</div><div class="phr-zh">我跟她说话。</div></div>
+        <div class="phrase ph-purple"><div class="phr-fr">Il téléphone à ses parents. → Il <strong>leur</strong> téléphone.</div><div class="phr-zh">他给父母打电话。</div></div>
+        <div class="phrase ph-purple"><div class="phr-fr">Elle m'a dit bonjour.</div><div class="phr-zh">她跟我打招呼了。</div></div>
+        <div class="rule r-blue">常见 COI 动词：parler à · téléphoner à · écrire à · répondre à · donner à · dire à · demander à</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="sec">
+  <div class="sec-title">中性代词 en &amp; y</div>
+  <div class="g2">
+    <div class="card">
+      <div class="card-title">代词 <strong>en</strong> <small style="color:var(--muted)">替换 de + 事物</small></div>
+      <div class="rule r-teal" style="margin-bottom:8px">替换：部分冠词结构 · 数量结构 · venir de 地点</div>
+      <div class="phrase ph-teal"><div class="phr-fr">Tu veux du café ? — Oui, j'<strong>en</strong> veux.</div><div class="phr-zh">要咖啡吗？— 要。（du café → en）</div></div>
+      <div class="phrase ph-teal"><div class="phr-fr">Il a des frères ? — Oui, il <strong>en</strong> a deux.</div><div class="phr-zh">有兄弟吗？— 有两个。（数量保留）</div></div>
+      <div class="phrase ph-teal"><div class="phr-fr">Tu viens de Paris ? — Oui, j'<strong>en</strong> viens.</div><div class="phr-zh">你从巴黎来吗？— 是的。</div></div>
+    </div>
+    <div class="card">
+      <div class="card-title">代词 <strong>y</strong> <small style="color:var(--muted)">替换 à / dans + 地点</small></div>
+      <div class="rule r-purple" style="margin-bottom:8px">替换：à + 地点 · dans + 地点 · aller à + 地点</div>
+      <div class="phrase ph-purple"><div class="phr-fr">Tu vas à Paris ? — Oui, j'<strong>y</strong> vais.</div><div class="phr-zh">你去巴黎吗？— 是，我去。</div></div>
+      <div class="phrase ph-purple"><div class="phr-fr">Il est au bureau ? — Oui, il <strong>y</strong> est.</div><div class="phr-zh">他在办公室吗？— 是的。</div></div>
+      <div class="rule r-amber">en / y 位置：动词前（否定：ne + en/y + 动词 + pas）</div>
+    </div>
+  </div>
+</div>
+</div>
+
+<div class="chapter" id="ch5">
+<div class="ch-hero" style="background:linear-gradient(135deg,#7C3DAA,#C0284A)">
+  <h2>⑤ 形容词 · 副词 · 比较</h2>
+  <p>性数配合 · 位置规则 · 比较级 · 最高级 · 频率副词</p>
+</div>
+
+<div class="sec">
+  <div class="sec-title">形容词性数配合</div>
+  <div class="g2">
+    <div class="card">
+      <div class="card-title">规律变化</div>
+      <table class="cmp">
+        <tr><th></th><th>单数</th><th>复数</th></tr>
+        <tr><td>阳性</td><td>grand</td><td>grands</td></tr>
+        <tr><td>阴性</td><td>grande</td><td>grandes</td></tr>
+      </table>
+      <div class="rule r-amber" style="margin-top:8px">特殊变化：<br>-eux → -euse &nbsp;heureux/heureuse<br>-er → -ère &nbsp;léger/légère<br>-if → -ive &nbsp;actif/active<br>-el → -elle &nbsp;naturel/naturelle<br>beau → belle &nbsp;·&nbsp; vieux → vieille<br>nouveau → nouvelle &nbsp;·&nbsp; blanc → blanche</div>
+    </div>
+    <div class="card">
+      <div class="card-title">位置规则</div>
+      <div class="rule r-purple" style="margin-bottom:8px">大多数形容词：<strong>名词后</strong><br>une voiture <strong>rouge</strong> · un livre <strong>intéressant</strong></div>
+      <div class="rule r-blue">名词<strong>前</strong>的形容词（BAGS）：<br><strong>B</strong>eauty: beau · joli<br><strong>A</strong>ge: jeune · vieux · nouveau<br><strong>G</strong>ood/Bad: bon · mauvais · grand · petit<br><br>un <strong>joli</strong> jardin · une <strong>petite</strong> maison<br>un <strong>vieux</strong> monsieur · un <strong>grand</strong> bâtiment</div>
+    </div>
+  </div>
+</div>
+
+<div class="sec">
+  <div class="sec-title">形容词特殊形式 &amp; 副词构成</div>
+  <div class="g2">
+    <div class="card">
+      <div class="card-title">beau / vieux / nouveau 元音前变形</div>
+      <div class="rule r-purple" style="margin-bottom:8px">阳性单数名词以<strong>元音或哑h</strong>开头时，用特殊形式</div>
+      <table class="cmp">
+        <tr><th>阳性（辅音前）</th><th>阳性（元音前）</th><th>阴性</th></tr>
+        <tr><td>beau</td><td><strong>bel</strong></td><td>belle</td></tr>
+        <tr><td>vieux</td><td><strong>vieil</strong></td><td>vieille</td></tr>
+        <tr><td>nouveau</td><td><strong>nouvel</strong></td><td>nouvelle</td></tr>
+      </table>
+      <div class="rule r-blue" style="margin-top:8px">un beau garçon · un <strong>bel</strong> homme<br>un vieux film · un <strong>vieil</strong> ami<br>un nouveau livre · un <strong>nouvel</strong> an</div>
+    </div>
+    <div class="card">
+      <div class="card-title">副词构成 <small style="color:var(--muted)">-ment</small></div>
+      <div class="rule r-teal" style="margin-bottom:8px">形容词<strong>阴性形式 + -ment</strong> = 副词</div>
+      <table class="cmp">
+        <tr><th>形容词（阳）</th><th>阴性</th><th>副词</th></tr>
+        <tr><td>lent</td><td>lente</td><td>lente<strong>ment</strong></td></tr>
+        <tr><td>heureux</td><td>heureuse</td><td>heureuse<strong>ment</strong></td></tr>
+        <tr><td>doux</td><td>douce</td><td>douce<strong>ment</strong></td></tr>
+        <tr><td>vrai</td><td>vraie</td><td>vraie<strong>ment</strong></td></tr>
+        <tr><td>facile</td><td>facile</td><td>facile<strong>ment</strong></td></tr>
+      </table>
+      <div class="rule r-amber" style="margin-top:6px">⚠️ 不规则副词：<br>bon → <strong>bien</strong> · mauvais → <strong>mal</strong><br>rapide → <strong>vite</strong>（不是 rapidement）</div>
+    </div>
+  </div>
+</div>
+
+<div class="sec">
+  <div class="sec-title">比较级 &amp; 最高级</div>
+  <div class="card">
+    <div class="g3">
+      <div class="phrase ph-blue"><div class="phr-fr"><strong>plus</strong> + adj + <strong>que</strong></div><div class="phr-zh">比……更……<br>Il est plus grand que moi.</div></div>
+      <div class="phrase ph-teal"><div class="phr-fr"><strong>aussi</strong> + adj + <strong>que</strong></div><div class="phr-zh">和……一样……<br>Elle est aussi grande que lui.</div></div>
+      <div class="phrase ph-amber"><div class="phr-fr"><strong>moins</strong> + adj + <strong>que</strong></div><div class="phr-zh">比……不那么……<br>Je suis moins rapide qu'elle.</div></div>
+    </div>
+    <div class="rule r-red" style="margin-top:10px">⚠️ 特殊比较级：<strong>bon → meilleur(e)</strong>（不用 plus bon）&nbsp;·&nbsp; <strong>bien → mieux</strong></div>
+    <div class="rule r-purple" style="margin-top:6px">数量比较：<strong>plus de / moins de / autant de</strong> + 名词<br>Il y a plus d'arbres à la campagne. · J'ai autant de travail que toi.</div>
+    <div style="margin-top:12px" class="g2">
+      <div class="phrase ph-blue"><div class="phr-fr">le/la/les <strong>plus</strong> + adj</div><div class="phr-zh">最……（最高级）<br>C'est la ville la plus belle. · le meilleur restaurant</div></div>
+      <div class="phrase ph-amber"><div class="phr-fr">le/la/les <strong>moins</strong> + adj</div><div class="phr-zh">最不……<br>C'est le chemin le moins long.</div></div>
+    </div>
+  </div>
+</div>
+
+<div class="sec">
+  <div class="sec-title">频率副词</div>
+  <div class="card">
+    <div style="display:flex;align-items:center;gap:0;flex-wrap:wrap;background:#F5F4F0;border-radius:10px;padding:12px;gap:2px">
+      <span class="pill pi-t">toujours 总是</span>
+      <span style="color:var(--muted)">→</span>
+      <span class="pill pi-b">souvent 经常</span>
+      <span style="color:var(--muted)">→</span>
+      <span class="pill pi-p">parfois 有时</span>
+      <span style="color:var(--muted)">→</span>
+      <span class="pill pi-a">rarement 很少</span>
+      <span style="color:var(--muted)">→</span>
+      <span class="pill pi-r">jamais 从不</span>
+    </div>
+    <div class="rule r-amber" style="margin-top:8px">位置：通常在<strong>动词后</strong>（简单时态）或<strong>助动词后</strong>（复合时态）<br>Je <strong>souvent</strong> mange au restaurant. ❌ &nbsp;→&nbsp; Je mange <strong>souvent</strong> au restaurant. ✓<br>Je n'ai <strong>jamais</strong> vu ce film. ✓</div>
+  </div>
+</div>
+</div>
+
+<div class="chapter" id="ch6">
+<div class="ch-hero" style="background:linear-gradient(135deg,#C0284A,#0F6E56)">
+  <h2>⑥ 核心句型</h2>
+  <p>否定句 · 疑问句 · 条件句 · 关系从句 · depuis/pendant/il y a · 义务与禁止</p>
+</div>
+
+<div class="sec">
+  <div class="sec-title">否定句全览</div>
+  <div class="card">
+    <div class="g2">
+      <table class="cmp">
+        <tr><th>结构</th><th>意思</th><th>例句</th></tr>
+        <tr><td>ne … pas</td><td>不</td><td>Je ne mange pas.</td></tr>
+        <tr><td>ne … jamais</td><td>从不</td><td>Je ne fume jamais.</td></tr>
+        <tr><td>ne … plus</td><td>不再</td><td>Il ne travaille plus ici.</td></tr>
+        <tr><td>ne … rien</td><td>什么都不</td><td>Je ne vois rien.</td></tr>
+        <tr><td>ne … personne</td><td>谁都不</td><td>Il n'a vu personne.</td></tr>
+        <tr><td>ne … que</td><td>只（限制）</td><td>Il ne mange que des légumes.</td></tr>
+        <tr><td>ne … ni … ni</td><td>既不…也不</td><td>Je n'ai ni faim ni soif.</td></tr>
+      </table>
+      <div>
+        <div class="rule r-amber" style="margin-bottom:8px">复合时态否定：<br>ne + 助动词 + pas/jamais/plus + 过去分词<br>Je n'ai <strong>pas</strong> mangé. · Ils ne sont <strong>jamais</strong> venus.</div>
+        <div class="rule r-red">⚠️ rien / personne / jamais 可独立作答：<br>— Tu as vu quelqu'un ? — Non, <strong>personne</strong>.<br>— Tu as mangé ? — Non, <strong>rien</strong>.</div>
+        <div class="rule r-purple">ne … que 是限制，不是否定，后面冠词不变：<br>Je ne bois <strong>que du</strong> thé.（我只喝茶）</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="sec">
+  <div class="sec-title">疑问句</div>
+  <div class="card">
+    <div class="g3">
+      <div>
+        <div class="card-title">三种问法</div>
+        <div class="phrase ph-blue"><div class="phr-fr">Tu parles français ? <small>↑语调</small></div><div class="phr-zh">口语最常用</div></div>
+        <div class="phrase ph-blue"><div class="phr-fr">Est-ce que tu parles français ?</div><div class="phr-zh">标准，所有情况通用</div></div>
+        <div class="phrase ph-blue"><div class="phr-fr">Parles-tu français ? <small>主谓倒装</small></div><div class="phr-zh">正式书面语</div></div>
+      </div>
+      <div>
+        <div class="card-title">疑问词</div>
+        <table class="vt">
+          <tr><th>疑问词</th><th>意思</th></tr>
+          <tr><td>qui</td><td>谁（人）</td></tr>
+          <tr><td>que / qu'est-ce que</td><td>什么（宾）</td></tr>
+          <tr><td>qu'est-ce qui</td><td>什么（主）</td></tr>
+          <tr><td>où</td><td>哪里</td></tr>
+          <tr><td>quand</td><td>什么时候</td></tr>
+          <tr><td>comment</td><td>怎么</td></tr>
+          <tr><td>pourquoi</td><td>为什么</td></tr>
+          <tr><td>combien (de)</td><td>多少</td></tr>
+        </table>
+      </div>
+      <div>
+        <div class="card-title">quel(le)(s) 哪个/什么</div>
+        <table class="cmp">
+          <tr><th></th><th>单数</th><th>复数</th></tr>
+          <tr><td>阳</td><td>quel</td><td>quels</td></tr>
+          <tr><td>阴</td><td>quelle</td><td>quelles</td></tr>
+        </table>
+        <div class="phrase ph-purple" style="margin-top:8px"><div class="phr-fr">Quel est ton prénom ?</div></div>
+        <div class="phrase ph-purple"><div class="phr-fr">Quelle heure est-il ?</div></div>
+        <div class="phrase ph-purple"><div class="phr-fr">Quels films aimes-tu ?</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="sec">
+  <div class="sec-title">感叹句</div>
+  <div class="card">
+    <div class="g2">
+      <div>
+        <div class="rule r-purple" style="margin-bottom:8px"><strong>Quel(le)(s) + 名词 + !</strong><br>与 quel 配合名词的性数</div>
+        <table class="cmp">
+          <tr><th></th><th>单数</th><th>复数</th></tr>
+          <tr><td>阳性</td><td>Quel beau jour !</td><td>Quels beaux jours !</td></tr>
+          <tr><td>阴性</td><td>Quelle bonne idée !</td><td>Quelles belles fleurs !</td></tr>
+        </table>
+      </div>
+      <div>
+        <div class="card-title">其他感叹表达</div>
+        <div class="phrase ph-blue"><div class="phr-fr">Comme c'est beau !</div><div class="phr-zh">多么漂亮啊！</div></div>
+        <div class="phrase ph-blue"><div class="phr-fr">Que c'est bon !</div><div class="phr-zh">真好吃！</div></div>
+        <div class="phrase ph-blue"><div class="phr-fr">C'est incroyable !</div><div class="phr-zh">太难以置信了！</div></div>
+        <div class="phrase ph-blue"><div class="phr-fr">Quel dommage !</div><div class="phr-zh">真可惜！</div></div>
+        <div class="phrase ph-blue"><div class="phr-fr">Quelle chance !</div><div class="phr-zh">真幸运！</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="sec">
+  <div class="sec-title">si 条件句 &amp; 关系从句 qui/que</div>
+  <div class="g2">
+    <div class="card">
+      <div class="card-title">si 条件句 <small style="color:var(--muted)">A1范围：现实条件</small></div>
+      <div class="rule r-blue" style="margin-bottom:8px"><strong>si + 现在时，现在时 / 近期将来 / 命令式</strong></div>
+      <div class="phrase ph-teal"><div class="phr-fr">Si tu as faim, mange quelque chose.</div><div class="phr-zh">如果你饿了，就吃点东西。</div></div>
+      <div class="phrase ph-teal"><div class="phr-fr">Si je réussis, je vais faire une fête.</div><div class="phr-zh">如果我成功，我要办派对。</div></div>
+      <div class="rule r-red">⚠️ si 后面<strong>绝对不用将来时</strong><br>❌ Si tu <del>seras</del> libre… ✓ Si tu <strong>es</strong> libre…</div>
+    </div>
+    <div class="card">
+      <div class="card-title">关系从句 qui / que</div>
+      <table class="cmp" style="margin-bottom:10px">
+        <tr><th>代词</th><th>在从句中充当</th><th>后接</th></tr>
+        <tr><td><strong>qui</strong></td><td>主语</td><td>动词</td></tr>
+        <tr><td><strong>que/qu'</strong></td><td>直接宾语</td><td>主语+动词</td></tr>
+      </table>
+      <div class="phrase ph-purple"><div class="phr-fr">C'est l'homme <strong>qui</strong> travaille ici.</div><div class="phr-zh">qui 是主语</div></div>
+      <div class="phrase ph-purple"><div class="phr-fr">C'est le film <strong>que</strong> j'aime.</div><div class="phr-zh">que 是宾语（我 = 主语）</div></div>
+      <div class="phrase ph-purple"><div class="phr-fr">Voilà la personne <strong>qu'</strong>il cherche.</div><div class="phr-zh">元音前缩写</div></div>
+    </div>
+  </div>
+</div>
+
+<div class="sec">
+  <div class="sec-title">时间介词 depuis · pendant · il y a</div>
+  <div class="card">
+    <div class="g3">
+      <div>
+        <div class="card-title">depuis <small style="color:var(--muted)">+ 现在时</small></div>
+        <div class="rule r-blue" style="margin-bottom:8px">从过去开始<strong>持续到现在</strong></div>
+        <div class="phrase ph-blue"><div class="phr-fr">J'étudie le français <strong>depuis</strong> 2 ans.</div><div class="phr-zh">我学法语已经两年了（还在学）</div></div>
+        <div class="phrase ph-blue"><div class="phr-fr">Elle est malade <strong>depuis</strong> lundi.</div><div class="phr-zh">她从周一就生病了</div></div>
+      </div>
+      <div>
+        <div class="card-title">pendant <small style="color:var(--muted)">+ 复合过去时</small></div>
+        <div class="rule r-teal" style="margin-bottom:8px">动作<strong>持续多久</strong>（已结束）</div>
+        <div class="phrase ph-teal"><div class="phr-fr">J'ai habité à Paris <strong>pendant</strong> 3 ans.</div><div class="phr-zh">我在巴黎住了三年（已离开）</div></div>
+        <div class="phrase ph-teal"><div class="phr-fr">Il a travaillé <strong>pendant</strong> 8 heures.</div><div class="phr-zh">他工作了8小时</div></div>
+      </div>
+      <div>
+        <div class="card-title">il y a <small style="color:var(--muted)">+ 复合过去时</small></div>
+        <div class="rule r-amber" style="margin-bottom:8px"><strong>多久以前</strong>发生的事</div>
+        <div class="phrase ph-amber"><div class="phr-fr">Je suis arrivé <strong>il y a</strong> 2 jours.</div><div class="phr-zh">我两天前到的</div></div>
+        <div class="phrase ph-amber"><div class="phr-fr">Il a téléphoné <strong>il y a</strong> une heure.</div><div class="phr-zh">他一小时前打过来了</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="sec">
+  <div class="sec-title">义务 · 建议 · 禁止</div>
+  <div class="card">
+    <div class="g3">
+      <div>
+        <div class="card-title">义务（必须）</div>
+        <div class="phrase ph-blue"><div class="phr-fr"><strong>Il faut</strong> + 原形</div><div class="phr-zh">非人称，须要……<br>Il faut réserver.</div></div>
+        <div class="phrase ph-blue"><div class="phr-fr"><strong>devoir</strong> + 原形</div><div class="phr-zh">有主语，必须……<br>Tu dois arriver à l'heure.</div></div>
+      </div>
+      <div>
+        <div class="card-title">允许（可以）</div>
+        <div class="phrase ph-teal"><div class="phr-fr"><strong>pouvoir</strong> + 原形</div><div class="phr-zh">可以……（允许）<br>On peut entrer.</div></div>
+        <div class="phrase ph-teal"><div class="phr-fr"><strong>Il est possible de</strong> + 原形</div><div class="phr-zh">有可能……<br>Il est possible de changer.</div></div>
+      </div>
+      <div>
+        <div class="card-title">禁止（不能）</div>
+        <div class="phrase ph-red"><div class="phr-fr"><strong>Il est interdit de</strong> + 原形</div><div class="phr-zh">禁止……<br>Il est interdit de fumer.</div></div>
+        <div class="phrase ph-red"><div class="phr-fr"><strong>Il ne faut pas</strong> + 原形</div><div class="phr-zh">不能/不应该……<br>Il ne faut pas courir ici.</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+<div class="chapter" id="ch7">
+<div class="ch-hero" style="background:linear-gradient(135deg,#0F6E56,#1D5FAD)">
+  <h2>⑦ 介词 &amp; 地点表达</h2>
+  <p>国家城市介词 · 位置介词 · 交通方式 · 问路指路 · 数字</p>
+</div>
+
+<div class="sec">
+  <div class="sec-title">国家 &amp; 城市介词 <span class="sec-badge" style="background:#FCEAE6;color:#A32D2D">必考</span></div>
+  <div class="card">
+    <div class="g4">
+      <div style="text-align:center;background:#F5F4F0;border-radius:10px;padding:14px">
+        <span style="font-size:28px;font-weight:700">à</span>
+        <div style="font-size:11px;color:var(--muted);margin-top:6px"><strong>城市</strong><br>à Paris · à Tokyo<br>à Toronto · à Lyon</div>
+      </div>
+      <div style="text-align:center;background:#F5F4F0;border-radius:10px;padding:14px">
+        <span style="font-size:28px;font-weight:700">en</span>
+        <div style="font-size:11px;color:var(--muted);margin-top:6px"><strong>阴性国家</strong><br>en France · en Chine<br>en Italie · en Espagne</div>
+      </div>
+      <div style="text-align:center;background:#F5F4F0;border-radius:10px;padding:14px">
+        <span style="font-size:28px;font-weight:700">au</span>
+        <div style="font-size:11px;color:var(--muted);margin-top:6px"><strong>阳性国家</strong><br>au Canada · au Japon<br>au Portugal · au Maroc</div>
+      </div>
+      <div style="text-align:center;background:#F5F4F0;border-radius:10px;padding:14px">
+        <span style="font-size:28px;font-weight:700">aux</span>
+        <div style="font-size:11px;color:var(--muted);margin-top:6px"><strong>复数国家</strong><br>aux États-Unis<br>aux Pays-Bas</div>
+      </div>
+    </div>
+    <div class="rule r-amber" style="margin-top:10px">来自：<strong>de / d' / du / des</strong><br>Je viens <strong>de</strong> France / <strong>d'</strong>Italie / <strong>du</strong> Canada / <strong>des</strong> États-Unis.</div>
+    <div class="rule r-purple" style="margin-top:6px">判断阴阳：国名以 -e 结尾通常为阴性（la France · la Chine · l'Italie），但例外：<br>le Mexique · le Cambodge · le Zimbabwe（-e 结尾但阳性）</div>
+  </div>
+</div>
+
+<div class="sec">
+  <div class="sec-title">位置介词</div>
+  <div class="card">
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:8px">
+      <div class="phrase ph-teal"><div class="phr-fr"><strong>sur</strong> la table</div><div class="phr-zh">在桌子上</div></div>
+      <div class="phrase ph-teal"><div class="phr-fr"><strong>sous</strong> le lit</div><div class="phr-zh">在床下</div></div>
+      <div class="phrase ph-teal"><div class="phr-fr"><strong>dans</strong> la cuisine</div><div class="phr-zh">在厨房里</div></div>
+      <div class="phrase ph-teal"><div class="phr-fr"><strong>devant</strong> la porte</div><div class="phr-zh">在门前</div></div>
+      <div class="phrase ph-teal"><div class="phr-fr"><strong>derrière</strong> le canapé</div><div class="phr-zh">在沙发后</div></div>
+      <div class="phrase ph-teal"><div class="phr-fr"><strong>à côté de</strong> la fenêtre</div><div class="phr-zh">在窗户旁边</div></div>
+      <div class="phrase ph-teal"><div class="phr-fr"><strong>en face de</strong> la gare</div><div class="phr-zh">在火车站对面</div></div>
+      <div class="phrase ph-teal"><div class="phr-fr"><strong>entre</strong> le lit et le bureau</div><div class="phr-zh">在床和桌子之间</div></div>
+      <div class="phrase ph-teal"><div class="phr-fr"><strong>au bout de</strong> la rue</div><div class="phr-zh">在街道尽头</div></div>
+      <div class="phrase ph-teal"><div class="phr-fr"><strong>au coin de</strong> la rue</div><div class="phr-zh">在街角</div></div>
+      <div class="phrase ph-teal"><div class="phr-fr"><strong>près de / loin de</strong></div><div class="phr-zh">在……附近/远处</div></div>
+      <div class="phrase ph-teal"><div class="phr-fr"><strong>au rez-de-chaussée / au 1er étage</strong></div><div class="phr-zh">在底层/一楼</div></div>
+    </div>
+  </div>
+</div>
+
+<div class="sec">
+  <div class="sec-title">交通介词 &amp; 问路</div>
+  <div class="g2">
+    <div class="card">
+      <div class="card-title">交通方式</div>
+      <div class="rule r-blue" style="margin-bottom:8px"><strong>en</strong> + 交通工具（可乘坐）</div>
+      <div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:10px">
+        <span class="pill pi-b">en voiture</span><span class="pill pi-b">en bus</span>
+        <span class="pill pi-b">en métro</span><span class="pill pi-b">en train</span>
+        <span class="pill pi-b">en avion</span><span class="pill pi-b">en bateau</span>
+        <span class="pill pi-b">en taxi</span><span class="pill pi-b">en vélo</span>
+      </div>
+      <div class="rule r-teal"><strong>à</strong> + 无发动机/步行</div>
+      <div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:6px">
+        <span class="pill pi-t">à pied</span><span class="pill pi-t">à vélo*</span><span class="pill pi-t">à cheval</span>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">问路 &amp; 指路</div>
+      <div class="phrase ph-blue"><div class="phr-fr">Excusez-moi, où est la poste ?</div></div>
+      <div class="phrase ph-blue"><div class="phr-fr">C'est loin d'ici ? Il y a un bus ?</div></div>
+      <div class="phrase ph-teal"><div class="phr-fr">Allez tout droit.</div><div class="phr-zh">一直往前走。</div></div>
+      <div class="phrase ph-teal"><div class="phr-fr">Tournez à droite / à gauche.</div><div class="phr-zh">向右/左转。</div></div>
+      <div class="phrase ph-teal"><div class="phr-fr">Traversez le pont / la rue.</div><div class="phr-zh">穿过桥/马路。</div></div>
+      <div class="phrase ph-teal"><div class="phr-fr">Prenez la deuxième rue à droite.</div><div class="phr-zh">走第二条右转街。</div></div>
+    </div>
+  </div>
+</div>
+
+<div class="sec">
+  <div class="sec-title">数字 0–100</div>
+  <div class="card">
+    <div class="num-grid">
+      <div class="num-cell"><strong>0</strong> zéro</div>
+      <div class="num-cell"><strong>1</strong> un/une</div>
+      <div class="num-cell"><strong>2</strong> deux</div>
+      <div class="num-cell"><strong>3</strong> trois</div>
+      <div class="num-cell"><strong>4</strong> quatre</div>
+      <div class="num-cell"><strong>5</strong> cinq</div>
+      <div class="num-cell"><strong>6</strong> six</div>
+      <div class="num-cell"><strong>7</strong> sept</div>
+      <div class="num-cell"><strong>8</strong> huit</div>
+      <div class="num-cell"><strong>9</strong> neuf</div>
+      <div class="num-cell"><strong>10</strong> dix</div>
+      <div class="num-cell"><strong>11</strong> onze</div>
+      <div class="num-cell"><strong>12</strong> douze</div>
+      <div class="num-cell"><strong>13</strong> treize</div>
+      <div class="num-cell"><strong>14</strong> quatorze</div>
+      <div class="num-cell"><strong>15</strong> quinze</div>
+      <div class="num-cell"><strong>16</strong> seize</div>
+      <div class="num-cell"><strong>17</strong> dix-sept</div>
+      <div class="num-cell"><strong>18</strong> dix-huit</div>
+      <div class="num-cell"><strong>19</strong> dix-neuf</div>
+      <div class="num-cell"><strong>20</strong> vingt</div>
+      <div class="num-cell"><strong>21</strong> vingt et un</div>
+      <div class="num-cell"><strong>30</strong> trente</div>
+      <div class="num-cell"><strong>40</strong> quarante</div>
+      <div class="num-cell"><strong>50</strong> cinquante</div>
+      <div class="num-cell"><strong>60</strong> soixante</div>
+      <div class="num-cell"><strong>70</strong> soixante-dix</div>
+      <div class="num-cell"><strong>71</strong> soixante et onze</div>
+      <div class="num-cell"><strong>80</strong> quatre-vingts</div>
+      <div class="num-cell"><strong>81</strong> quatre-vingt-un</div>
+      <div class="num-cell"><strong>90</strong> quatre-vingt-dix</div>
+      <div class="num-cell"><strong>100</strong> cent</div>
+    </div>
+    <div class="rule r-amber" style="margin-top:8px">⚠️ 70=soixante-dix（60+10）· 80=quatre-vingts（4×20，复数时有s）· 90=quatre-vingt-dix（80+10）</div>
+  </div>
+</div>
+</div>
+
+<div class="chapter" id="ch8">
+<div class="ch-hero" style="background:linear-gradient(135deg,#534AB7,#3B4FD4)">
+  <h2>⑧ 口语 &amp; 写作必备</h2>
+  <p>自我介绍 · 邀请与拒绝 · 点餐购物 · 健康症状 · 表达意见偏好 · 写作连接词 · 实用模板</p>
+</div>
+
+<div class="sec">
+  <div class="sec-title">自我介绍模板</div>
+  <div class="card">
+    <div class="tpl">
+      <div><span class="tpl-l">问候</span>Bonjour ! / Bonsoir !</div>
+      <div><span class="tpl-l">姓名</span>Je m'appelle … / Mon prénom est … et mon nom de famille est …</div>
+      <div><span class="tpl-l">国籍</span>Je suis chinois(e). / Je viens de Chine, de Shanghai.</div>
+      <div><span class="tpl-l">居住地</span>J'habite à Toronto. / Je vis au Canada depuis 2 ans.</div>
+      <div><span class="tpl-l">年龄</span>J'ai … ans.</div>
+      <div><span class="tpl-l">职业</span>Je suis étudiant(e) en informatique. / Je travaille comme ingénieur(e).</div>
+      <div><span class="tpl-l">爱好</span>J'aime beaucoup … / Dans mes loisirs, je fais du / de la …</div>
+      <div><span class="tpl-l">语言</span>Je parle français et chinois. J'apprends le français depuis … mois.</div>
+      <div><span class="tpl-l">結尾</span>Enchanté(e) de vous rencontrer ! / Ravi(e) de faire votre connaissance !</div>
+    </div>
+  </div>
+</div>
+
+<div class="sec">
+  <div class="sec-title">邀请 · 接受 · 拒绝</div>
+  <div class="g3">
+    <div class="card">
+      <div class="card-title">发出邀请</div>
+      <div class="phrase ph-blue"><div class="phr-fr">Tu veux aller au cinéma ?</div></div>
+      <div class="phrase ph-blue"><div class="phr-fr">On se retrouve samedi soir ?</div></div>
+      <div class="phrase ph-blue"><div class="phr-fr">Je t'invite à dîner chez moi.</div></div>
+      <div class="phrase ph-blue"><div class="phr-fr">Ça te dit de venir avec nous ?</div></div>
+    </div>
+    <div class="card">
+      <div class="card-title">接受</div>
+      <div class="phrase ph-teal"><div class="phr-fr">Oui, avec plaisir !</div></div>
+      <div class="phrase ph-teal"><div class="phr-fr">Bonne idée ! C'est super !</div></div>
+      <div class="phrase ph-teal"><div class="phr-fr">D'accord, je serai là !</div></div>
+      <div class="phrase ph-teal"><div class="phr-fr">Volontiers ! À quelle heure ?</div></div>
+    </div>
+    <div class="card">
+      <div class="card-title">拒绝（礼貌）</div>
+      <div class="phrase ph-amber"><div class="phr-fr">Je suis désolé(e), je ne peux pas.</div></div>
+      <div class="phrase ph-amber"><div class="phr-fr">C'est dommage, j'ai autre chose.</div></div>
+      <div class="phrase ph-amber"><div class="phr-fr">Je suis occupé(e) ce jour-là.</div></div>
+      <div class="phrase ph-amber"><div class="phr-fr">Peut-être une prochaine fois ?</div></div>
+    </div>
+  </div>
+</div>
+
+<div class="sec">
+  <div class="sec-title">点餐 · 购物 · 健康</div>
+  <div class="g3">
+    <div class="card">
+      <div class="card-title">🍽 在餐厅</div>
+      <div class="phrase ph-blue"><div class="phr-fr">Je voudrais / Je prends …</div></div>
+      <div class="phrase ph-blue"><div class="phr-fr">Qu'est-ce que vous recommandez ?</div></div>
+      <div class="phrase ph-blue"><div class="phr-fr">C'est quoi comme plat du jour ?</div></div>
+      <div class="phrase ph-blue"><div class="phr-fr">L'addition, s'il vous plaît.</div></div>
+      <div class="phrase ph-blue"><div class="phr-fr">C'est pour emporter / sur place.</div></div>
+    </div>
+    <div class="card">
+      <div class="card-title">🛍 在商店</div>
+      <div class="phrase ph-purple"><div class="phr-fr">Je cherche … / Vous avez … ?</div></div>
+      <div class="phrase ph-purple"><div class="phr-fr">Vous l'avez en taille M / en bleu ?</div></div>
+      <div class="phrase ph-purple"><div class="phr-fr">Je peux l'essayer / le voir ?</div></div>
+      <div class="phrase ph-purple"><div class="phr-fr">C'est combien ? Ça coûte combien ?</div></div>
+      <div class="phrase ph-purple"><div class="phr-fr">Je le prends. / Je vais réfléchir.</div></div>
+    </div>
+    <div class="card">
+      <div class="card-title">💊 健康症状</div>
+      <div class="phrase ph-amber"><div class="phr-fr">J'ai mal à la tête / au dos / au ventre / à la gorge.</div></div>
+      <div class="phrase ph-amber"><div class="phr-fr">J'ai de la fièvre. / Je tousse. / J'ai le nez bouché.</div></div>
+      <div class="phrase ph-amber"><div class="phr-fr">Je me suis blessé(e) à la jambe.</div></div>
+      <div class="phrase ph-amber"><div class="phr-fr">Je ne me sens pas bien du tout.</div></div>
+      <div class="phrase ph-teal"><div class="phr-fr">Prenez ce médicament 3 fois par jour.</div></div>
+    </div>
+  </div>
+
+  <div class="sec">
+  <div class="sec-title">表达意见 · 偏好 · 感受</div>
+  <div class="card">
+    <div class="g3">
+      <div>
+        <div class="card-title">表达意见</div>
+        <div class="phrase ph-blue"><div class="phr-fr">Je pense que + 陈述句</div><div class="phr-zh">我认为……<br>Je pense que c'est vrai.</div></div>
+        <div class="phrase ph-blue"><div class="phr-fr">Je trouve que + 陈述句</div><div class="phr-zh">我觉得……<br>Je trouve que c'est difficile.</div></div>
+        <div class="phrase ph-blue"><div class="phr-fr">À mon avis, …</div><div class="phr-zh">在我看来……</div></div>
+      </div>
+      <div>
+        <div class="card-title">表达偏好</div>
+        <div class="phrase ph-teal"><div class="phr-fr">Je préfère + nom / inf</div><div class="phr-zh">我更喜欢……<br>Je préfère le thé au café.</div></div>
+        <div class="phrase ph-teal"><div class="phr-fr">J'aime mieux + inf</div><div class="phr-zh">我更喜欢（口语）</div></div>
+        <div class="rule r-purple">préférer A <strong>à</strong> B = 比起B更喜欢A</div>
+      </div>
+      <div>
+        <div class="card-title">表达感受</div>
+        <div class="phrase ph-purple"><div class="phr-fr">Ça me plaît.</div><div class="phr-zh">我喜欢这个。</div></div>
+        <div class="phrase ph-purple"><div class="phr-fr">Ça m'énerve / m'ennuie.</div><div class="phr-zh">这让我烦/无聊。</div></div>
+        <div class="phrase ph-purple"><div class="phr-fr">J'ai du mal à + inf</div><div class="phr-zh">我很难……<br>J'ai du mal à prononcer.</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="sec">
+  <div class="sec-title">写作连接词</div>
+  <div class="card">
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px;">
+      <div>
+        <div style="font-size:11px;color:var(--muted);font-weight:600;margin-bottom:6px">递进顺序</div>
+        <span class="pill pi-b">D'abord 首先</span><span class="pill pi-b">Ensuite 然后</span>
+        <span class="pill pi-b">Puis 接着</span><span class="pill pi-b">Enfin 最后</span>
+        <span class="pill pi-b">De plus 而且</span><span class="pill pi-b">En outre 此外</span>
+      </div>
+      <div>
+        <div style="font-size:11px;color:var(--muted);font-weight:600;margin-bottom:6px">对比转折</div>
+        <span class="pill pi-p">Mais 但是</span><span class="pill pi-p">Par contre 相反</span>
+        <span class="pill pi-p">Cependant 然而</span><span class="pill pi-p">Pourtant 可是</span>
+      </div>
+      <div>
+        <div style="font-size:11px;color:var(--muted);font-weight:600;margin-bottom:6px">原因结果</div>
+        <span class="pill pi-t">Parce que 因为</span><span class="pill pi-t">Car 因为(书面)</span>
+        <span class="pill pi-t">Donc 所以</span><span class="pill pi-t">C'est pourquoi 这就是为什么</span>
+        <span class="pill pi-t">Alors 于是</span>
+      </div>
+      <div>
+        <div style="font-size:11px;color:var(--muted);font-weight:600;margin-bottom:6px">时间</div>
+        <span class="pill pi-a">Avant 之前</span><span class="pill pi-a">Après 之后</span>
+        <span class="pill pi-a">Quand / Lorsque 当……时</span>
+        <span class="pill pi-a">Pendant que 在……期间</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="sec">
+  <div class="sec-title">常考写作场景模板</div>
+  <div class="g2">
+    <div class="card">
+      <div class="card-title">📮 写明信片（旅行）</div>
+      <div class="tpl">
+        <div><span class="tpl-l">开头</span>Salut [名字] ! / Chère [名字],</div>
+        <div><span class="tpl-l">地点</span>Je suis en vacances à … depuis … jours.</div>
+        <div><span class="tpl-l">描述</span>Il fait beau / chaud / froid. La ville est magnifique.</div>
+        <div><span class="tpl-l">活动</span>Hier, j'ai visité … et j'ai mangé …</div>
+        <div><span class="tpl-l">展望</span>Demain, je vais aller à … / voir …</div>
+        <div><span class="tpl-l">结尾</span>À bientôt ! Bisous, [你的名字]</div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">📧 写邮件（邀请/拒绝）</div>
+      <div class="tpl">
+        <div><span class="tpl-l">称呼</span>Bonjour [名字], / Monsieur, Madame,</div>
+        <div><span class="tpl-l">目的</span>Je vous écris pour … / J'aimerais vous inviter à …</div>
+        <div><span class="tpl-l">细节</span>La fête aura lieu le … à … heures.</div>
+        <div><span class="tpl-l">行动</span>Pourriez-vous confirmer votre présence ?</div>
+        <div><span class="tpl-l">结尾</span>Merci de votre réponse. / Cordialement, [名字]</div>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+</div>
+
+
+<!-- ════ CH9: 时间·日期·天气 ════ -->
+<div class="chapter" id="ch9">
+<div class="ch-hero" style="background:linear-gradient(135deg,#1D5FAD,#3B4FD4)">
+  <h2>⑨ 时间 · 日期 · 天气</h2>
+  <p>几点钟 · 星期月份季节 · 天气表达 · 时间状语</p>
+</div>
+
+<div class="sec">
+  <div class="sec-title">几点钟 quelle heure est-il ?</div>
+  <div class="card">
+    <div class="g2">
+      <div>
+        <table class="cmp">
+          <tr><th>说法</th><th>意思</th></tr>
+          <tr><td>Il est huit heures.</td><td>八点整</td></tr>
+          <tr><td>Il est huit heures dix.</td><td>八点十分</td></tr>
+          <tr><td>Il est huit heures et quart.</td><td>八点一刻</td></tr>
+          <tr><td>Il est huit heures et demie.</td><td>八点半</td></tr>
+          <tr><td>Il est neuf heures moins le quart.</td><td>八点四十五</td></tr>
+          <tr><td>Il est neuf heures moins dix.</td><td>八点五十</td></tr>
+          <tr><td>Il est midi / minuit.</td><td>正午 / 午夜</td></tr>
+        </table>
+        <div class="rule r-blue" style="margin-top:8px">24小时制（正式）：Il est 20h30. / Le train part à 14h15.</div>
+      </div>
+      <div>
+        <div class="card-title">时间段表达</div>
+        <div class="phrase ph-blue"><div class="phr-fr">le matin / l'après-midi / le soir / la nuit</div><div class="phr-zh">早上 / 下午 / 晚上 / 夜间</div></div>
+        <div class="phrase ph-blue"><div class="phr-fr">à quelle heure… ? / vers quelle heure… ?</div><div class="phr-zh">几点……？ / 大约几点……？</div></div>
+        <div class="phrase ph-blue"><div class="phr-fr">C'est à quelle heure, le cours ?</div><div class="phr-zh">课几点开始？</div></div>
+        <div class="rule r-amber">问时间：<strong>Quelle heure est-il ?</strong><br>问某事几点：<strong>À quelle heure + 动词 ?</strong><br>À quelle heure part le train ?</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="sec">
+  <div class="sec-title">星期 · 月份 · 季节</div>
+  <div class="card">
+    <div class="g3">
+      <div>
+        <div class="card-title">星期 (les jours)</div>
+        <table class="vt">
+          <tr><th>法语</th><th>中文</th></tr>
+          <tr><td>lundi</td><td>周一</td></tr>
+          <tr><td>mardi</td><td>周二</td></tr>
+          <tr><td>mercredi</td><td>周三</td></tr>
+          <tr><td>jeudi</td><td>周四</td></tr>
+          <tr><td>vendredi</td><td>周五</td></tr>
+          <tr><td>samedi</td><td>周六</td></tr>
+          <tr><td>dimanche</td><td>周日</td></tr>
+        </table>
+        <div class="rule r-purple" style="margin-top:6px">le lundi = 每周一<br>lundi = 这个周一<br>星期<strong>不大写</strong></div>
+      </div>
+      <div>
+        <div class="card-title">月份 (les mois)</div>
+        <table class="vt">
+          <tr><th>法语</th><th>中文</th></tr>
+          <tr><td>janvier</td><td>一月</td></tr>
+          <tr><td>février</td><td>二月</td></tr>
+          <tr><td>mars</td><td>三月</td></tr>
+          <tr><td>avril</td><td>四月</td></tr>
+          <tr><td>mai</td><td>五月</td></tr>
+          <tr><td>juin</td><td>六月</td></tr>
+          <tr><td>juillet</td><td>七月</td></tr>
+          <tr><td>août</td><td>八月</td></tr>
+          <tr><td>septembre</td><td>九月</td></tr>
+          <tr><td>octobre</td><td>十月</td></tr>
+          <tr><td>novembre</td><td>十一月</td></tr>
+          <tr><td>décembre</td><td>十二月</td></tr>
+        </table>
+      </div>
+      <div>
+        <div class="card-title">季节 &amp; 日期表达</div>
+        <div style="display:flex;flex-wrap:wrap;gap:5px;margin-bottom:10px">
+          <span class="pill pi-t">au printemps 春天</span>
+          <span class="pill pi-b">en été 夏天</span>
+          <span class="pill pi-a">en automne 秋天</span>
+          <span class="pill pi-p">en hiver 冬天</span>
+        </div>
+        <div class="rule r-blue" style="margin-bottom:8px">日期表达：<br><strong>le + 基数词 + 月份</strong><br>le 3 mars · le 15 juillet<br>（只有1号用 premier：le 1er janvier）</div>
+        <div class="phrase ph-purple"><div class="phr-fr">On est le combien aujourd'hui ?</div><div class="phr-zh">今天几号？</div></div>
+        <div class="phrase ph-purple"><div class="phr-fr">Nous sommes le lundi 3 mars.</div><div class="phr-zh">今天是3月3日周一。</div></div>
+        <div class="rule r-amber">en + 年份：Je suis né(e) <strong>en</strong> 2000.<br>月份：<strong>en</strong> janvier / <strong>au</strong> mois de janvier</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="sec">
+  <div class="sec-title">天气表达</div>
+  <div class="card">
+    <div class="g2">
+      <div>
+        <div class="card-title">Il fait + 形容词</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">
+          <div class="phrase ph-amber"><div class="phr-fr">Il fait beau.</div><div class="phr-zh">天气好。</div></div>
+          <div class="phrase ph-blue"><div class="phr-fr">Il fait mauvais.</div><div class="phr-zh">天气糟。</div></div>
+          <div class="phrase ph-amber"><div class="phr-fr">Il fait chaud.</div><div class="phr-zh">天气热。</div></div>
+          <div class="phrase ph-blue"><div class="phr-fr">Il fait froid.</div><div class="phr-zh">天气冷。</div></div>
+          <div class="phrase ph-amber"><div class="phr-fr">Il fait doux.</div><div class="phr-zh">天气温和。</div></div>
+          <div class="phrase ph-blue"><div class="phr-fr">Il fait gris.</div><div class="phr-zh">天色阴。</div></div>
+        </div>
+      </div>
+      <div>
+        <div class="card-title">Il y a / Il + 动词</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">
+          <div class="phrase ph-teal"><div class="phr-fr">Il y a du soleil.</div><div class="phr-zh">有阳光。</div></div>
+          <div class="phrase ph-teal"><div class="phr-fr">Il y a du vent.</div><div class="phr-zh">有风。</div></div>
+          <div class="phrase ph-teal"><div class="phr-fr">Il y a des nuages.</div><div class="phr-zh">有云。</div></div>
+          <div class="phrase ph-blue"><div class="phr-fr">Il pleut. (pleuvoir)</div><div class="phr-zh">下雨了。</div></div>
+          <div class="phrase ph-blue"><div class="phr-fr">Il neige. (neiger)</div><div class="phr-zh">下雪了。</div></div>
+          <div class="phrase ph-blue"><div class="phr-fr">Il gèle. (geler)</div><div class="phr-zh">结冰了。</div></div>
+        </div>
+        <div class="rule r-purple" style="margin-top:8px">天气动词全部非人称：主语只用 <strong>il</strong><br>Hier, <strong>il</strong> a plu toute la journée.</div>
+      </div>
+    </div>
+    <div class="rule r-amber" style="margin-top:10px">温度表达：Il fait 30 degrés. · Il fait -5 degrés. · Quelle est la température ?</div>
+  </div>
+</div>
+
+<div class="sec">
+  <div class="sec-title">常用时间状语</div>
+  <div class="card">
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:8px">
+      <div>
+        <div style="font-size:11px;color:var(--muted);font-weight:600;margin-bottom:5px">过去</div>
+        <span class="pill pi-r">hier 昨天</span>
+        <span class="pill pi-r">avant-hier 前天</span>
+        <span class="pill pi-r">la semaine dernière 上周</span>
+        <span class="pill pi-r">le mois dernier 上个月</span>
+        <span class="pill pi-r">l'année dernière 去年</span>
+        <span class="pill pi-r">il y a + 时间 ……前</span>
+      </div>
+      <div>
+        <div style="font-size:11px;color:var(--muted);font-weight:600;margin-bottom:5px">现在</div>
+        <span class="pill pi-p">aujourd'hui 今天</span>
+        <span class="pill pi-p">maintenant 现在</span>
+        <span class="pill pi-p">en ce moment 此刻</span>
+        <span class="pill pi-p">cette semaine 本周</span>
+        <span class="pill pi-p">ce mois-ci 本月</span>
+        <span class="pill pi-p">cette année 今年</span>
+      </div>
+      <div>
+        <div style="font-size:11px;color:var(--muted);font-weight:600;margin-bottom:5px">未来</div>
+        <span class="pill pi-t">demain 明天</span>
+        <span class="pill pi-t">après-demain 后天</span>
+        <span class="pill pi-t">la semaine prochaine 下周</span>
+        <span class="pill pi-t">le mois prochain 下个月</span>
+        <span class="pill pi-t">l'année prochaine 明年</span>
+        <span class="pill pi-t">dans + 时间 ……后</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="sec">
+  <div class="sec-title">频率表达</div>
+  <div class="card">
+    <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-bottom:12px;background:#F5F4F0;border-radius:10px;padding:12px;">
+      <span class="pill pi-t">toujours<br><small>总是</small></span>
+      <span style="color:var(--muted)">→</span>
+      <span class="pill pi-b">souvent<br><small>经常</small></span>
+      <span style="color:var(--muted)">→</span>
+      <span class="pill pi-p">parfois<br><small>有时</small></span>
+      <span style="color:var(--muted)">→</span>
+      <span class="pill pi-a">rarement<br><small>很少</small></span>
+      <span style="color:var(--muted)">→</span>
+      <span class="pill pi-r">jamais<br><small>从不</small></span>
+    </div>
+    <div class="g2">
+      <div>
+        <div class="card-title">其他频率表达</div>
+        <table class="vt">
+          <tr><th>法语</th><th>中文</th></tr>
+          <tr><td>tous les jours</td><td>每天</td></tr>
+          <tr><td>toutes les semaines</td><td>每周</td></tr>
+          <tr><td>tous les mois</td><td>每月</td></tr>
+          <tr><td>une fois par semaine</td><td>每周一次</td></tr>
+          <tr><td>deux fois par jour</td><td>每天两次</td></tr>
+          <tr><td>de temps en temps</td><td>偶尔</td></tr>
+          <tr><td>en général</td><td>一般来说</td></tr>
+          <tr><td>d'habitude</td><td>通常</td></tr>
+        </table>
+      </div>
+      <div>
+        <div class="rule r-purple" style="margin-bottom:8px">频率副词位置：<br>简单时态：动词<strong>后</strong><br>Je mange <strong>souvent</strong> au restaurant.<br><br>复合时态：助动词<strong>后</strong><br>J'ai <strong>toujours</strong> aimé la musique.<br><br>jamais 在否定句中替换 pas：<br>Je ne mange <strong>jamais</strong> de viande.</div>
+        <div class="rule r-amber">⚠️ jamais 单独回答（无 ne）：<br>— Tu fumes ? — <strong>Jamais !</strong></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="sec">
+  <div class="sec-title">时间叙事 · 早晚精确 · 准点迟到</div>
+  <div class="card">
+    <div class="g3">
+      <div>
+        <div class="card-title">叙事时间轴</div>
+        <div class="phrase ph-blue"><div class="phr-fr">d'abord</div><div class="phr-zh">首先（第一步）</div></div>
+        <div class="phrase ph-blue"><div class="phr-fr">ensuite / puis</div><div class="phr-zh">然后/接着</div></div>
+        <div class="phrase ph-blue"><div class="phr-fr">après</div><div class="phr-zh">之后</div></div>
+        <div class="phrase ph-blue"><div class="phr-fr">enfin</div><div class="phr-zh">最后/终于</div></div>
+        <div class="phrase ph-blue"><div class="phr-fr">pendant ce temps</div><div class="phr-zh">在此期间</div></div>
+        <div class="phrase ph-blue"><div class="phr-fr">finalement</div><div class="phr-zh">最终</div></div>
+      </div>
+      <div>
+        <div class="card-title">早晚 · 准时</div>
+        <div class="phrase ph-teal"><div class="phr-fr">tôt / tard</div><div class="phr-zh">早 / 晚</div></div>
+        <div class="phrase ph-teal"><div class="phr-fr">à l'heure</div><div class="phr-zh">准时</div></div>
+        <div class="phrase ph-teal"><div class="phr-fr">en avance</div><div class="phr-zh">提前/早到</div></div>
+        <div class="phrase ph-teal"><div class="phr-fr">en retard</div><div class="phr-zh">迟到</div></div>
+        <div class="phrase ph-teal"><div class="phr-fr">Je suis en retard de 10 minutes.</div><div class="phr-zh">我迟到了10分钟。</div></div>
+        <div class="phrase ph-teal"><div class="phr-fr">Le train a 5 minutes de retard.</div><div class="phr-zh">火车晚点5分钟。</div></div>
+      </div>
+      <div>
+        <div class="card-title">时间段总览</div>
+        <table class="vt">
+          <tr><th>参照</th><th>过去</th><th>将来</th></tr>
+          <tr><td>天</td><td>hier</td><td>demain</td></tr>
+          <tr><td>周</td><td>la semaine dernière</td><td>la semaine prochaine</td></tr>
+          <tr><td>月</td><td>le mois dernier</td><td>le mois prochain</td></tr>
+          <tr><td>年</td><td>l'année dernière</td><td>l'année prochaine</td></tr>
+        </table>
+        <div class="rule r-blue" style="margin-top:6px">dans + durée = ……后（将来）<br>Il arrive <strong>dans</strong> 10 minutes.<br>il y a + durée = ……前（过去）<br>C'était <strong>il y a</strong> 3 jours.</div>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ════ CH10: 词汇专题 ════ -->
+<div class="chapter" id="ch10">
+<div class="ch-hero" style="background:linear-gradient(135deg,#C07020,#C0284A)">
+  <h2>⑩ 词汇专题</h2>
+  <p>国籍形容词 · 职业阴阳变化 · 指示形容词 · 身体部位 · 家庭词汇 · 动词+介词搭配</p>
+</div>
+
+<div class="sec">
+  <div class="sec-title">国籍形容词变化</div>
+  <div class="card">
+    <div class="rule r-purple" style="margin-bottom:10px">国籍形容词与名词<strong>性数配合</strong>，写国籍用小写，用作名词时（一个法国人）首字母大写</div>
+    <table class="cmp">
+      <tr><th>国家</th><th>阳性</th><th>阴性</th><th>规律</th></tr>
+      <tr><td>法国 France</td><td>français</td><td>française</td><td>+e</td></tr>
+      <tr><td>中国 Chine</td><td>chinois</td><td>chinoise</td><td>+e</td></tr>
+      <tr><td>英国 Angleterre</td><td>anglais</td><td>anglaise</td><td>+e</td></tr>
+      <tr><td>日本 Japon</td><td>japonais</td><td>japonaise</td><td>+e</td></tr>
+      <tr><td>西班牙 Espagne</td><td>espagnol</td><td>espagnole</td><td>+e</td></tr>
+      <tr><td>意大利 Italie</td><td>italien</td><td>italienne</td><td>-en → -enne</td></tr>
+      <tr><td>加拿大 Canada</td><td>canadien</td><td>canadienne</td><td>-en → -enne</td></tr>
+      <tr><td>美国 États-Unis</td><td>américain</td><td>américaine</td><td>+e</td></tr>
+      <tr><td>德国 Allemagne</td><td>allemand</td><td>allemande</td><td>+e</td></tr>
+      <tr><td>葡萄牙 Portugal</td><td>portugais</td><td>portugaise</td><td>+e</td></tr>
+      <tr><td>俄罗斯 Russie</td><td>russe</td><td>russe</td><td>同形</td></tr>
+      <tr><td>比利时 Belgique</td><td>belge</td><td>belge</td><td>同形</td></tr>
+      <tr><td>瑞士 Suisse</td><td>suisse</td><td>suisse</td><td>同形</td></tr>
+      <tr><td>越南 Vietnam</td><td>vietnamien</td><td>vietnamienne</td><td>-en → -enne</td></tr>
+      <tr><td>韩国 Corée</td><td>coréen</td><td>coréenne</td><td>-en → -enne</td></tr>
+      <tr><td>摩洛哥 Maroc</td><td>marocain</td><td>marocaine</td><td>+e</td></tr>
+    </table>
+    <div class="rule r-blue" style="margin-top:10px">使用：Je suis <strong>français</strong>. (形容词，小写) · C'est un <strong>Français</strong>. (名词，大写)<br>Il parle <strong>français</strong>. (语言=形容词，无冠词，小写)</div>
+  </div>
+</div>
+
+<div class="sec">
+  <div class="sec-title">职业名词阴阳变化</div>
+  <div class="card">
+    <table class="cmp">
+      <tr><th>规律</th><th>阳性</th><th>阴性</th></tr>
+      <tr><td>+e</td><td>un employé</td><td>une employée</td></tr>
+      <tr><td>-eur → -euse</td><td>un serveur</td><td>une serveuse</td></tr>
+      <tr><td>-eur → -eure (部分)</td><td>un professeur</td><td>une professeure*</td></tr>
+      <tr><td>-teur → -trice</td><td>un acteur</td><td>une actrice</td></tr>
+      <tr><td>-teur → -trice</td><td>un directeur</td><td>une directrice</td></tr>
+      <tr><td>-ien → -ienne</td><td>un pharmacien</td><td>une pharmacienne</td></tr>
+      <tr><td>-ien → -ienne</td><td>un informaticien</td><td>une informaticienne</td></tr>
+      <tr><td>-er → -ère</td><td>un infirmier</td><td>une infirmière</td></tr>
+      <tr><td>-er → -ère</td><td>un boucher</td><td>une bouchère</td></tr>
+      <tr><td>同形</td><td>un journaliste</td><td>une journaliste</td></tr>
+      <tr><td>同形</td><td>un architecte</td><td>une architecte</td></tr>
+      <tr><td>同形</td><td>un médecin*</td><td>une médecin*</td></tr>
+      <tr><td>特殊</td><td>un homme d'affaires</td><td>une femme d'affaires</td></tr>
+    </table>
+    <div class="rule r-amber" style="margin-top:8px">*法语职业中性化正在演变，professeure/médecin 均被接受</div>
+    <div class="rule r-blue">Je suis + 职业 <strong>不加冠词</strong>：Je suis <strong>médecin</strong>. ✓（不是 Je suis un médecin）<br>例外：C'est + 冠词 + 职业：C'est <strong>un</strong> médecin.</div>
+  </div>
+</div>
+
+<div class="sec">
+  <div class="sec-title">指示形容词 ce / cet / cette / ces</div>
+  <div class="card">
+    <div class="g2">
+      <div>
+        <table class="art">
+          <tr><th>阳性单数</th><th>阳性单数(元音前)</th><th>阴性单数</th><th>复数</th></tr>
+          <tr>
+            <td><span class="art-big">ce</span><span class="art-sm">ce livre · ce film</span></td>
+            <td><span class="art-big" style="color:#3B4FD4">cet</span><span class="art-sm">cet homme · cet arbre</span></td>
+            <td><span class="art-big">cette</span><span class="art-sm">cette femme · cette école</span></td>
+            <td><span class="art-big">ces</span><span class="art-sm">ces livres · ces femmes</span></td>
+          </tr>
+        </table>
+        <div class="rule r-amber" style="margin-top:8px">⚠️ cet 用于阳性单数名词以元音或哑h开头时<br>cet ami · cet hôtel · cet exercice</div>
+      </div>
+      <div>
+        <div class="card-title">区分远近 -ci / -là</div>
+        <div class="phrase ph-purple"><div class="phr-fr">ce livre-<strong>ci</strong></div><div class="phr-zh">这本书（近处）</div></div>
+        <div class="phrase ph-purple"><div class="phr-fr">ce livre-<strong>là</strong></div><div class="phr-zh">那本书（远处）</div></div>
+        <div class="phrase ph-purple"><div class="phr-fr">Je prends cette robe-ci.</div><div class="phr-zh">我要这件裙子。</div></div>
+        <div class="rule r-purple" style="margin-top:8px">-ci / -là 可选加，不加时默认为近处<br>ce livre = ce livre-ci</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="sec">
+  <div class="sec-title">身体部位 <span class="sec-badge">+ avoir mal à</span></div>
+  <div class="card">
+    <div class="g2">
+      <div>
+        <table class="cmp">
+          <tr><th>部位</th><th>法语</th><th>avoir mal à</th></tr>
+          <tr><td>头</td><td>la tête (f)</td><td>J'ai mal <strong>à la</strong> tête.</td></tr>
+          <tr><td>背</td><td>le dos (m)</td><td>J'ai mal <strong>au</strong> dos.</td></tr>
+          <tr><td>肚子</td><td>le ventre (m)</td><td>J'ai mal <strong>au</strong> ventre.</td></tr>
+          <tr><td>喉咙</td><td>la gorge (f)</td><td>J'ai mal <strong>à la</strong> gorge.</td></tr>
+          <tr><td>牙齿</td><td>les dents (f)</td><td>J'ai mal <strong>aux</strong> dents.</td></tr>
+          <tr><td>耳朵</td><td>l'oreille (f)</td><td>J'ai mal <strong>à l'</strong>oreille.</td></tr>
+          <tr><td>鼻子</td><td>le nez (m)</td><td>J'ai le nez bouché.</td></tr>
+          <tr><td>手臂</td><td>le bras (m)</td><td>J'ai mal <strong>au</strong> bras.</td></tr>
+          <tr><td>腿</td><td>la jambe (f)</td><td>J'ai mal <strong>à la</strong> jambe.</td></tr>
+          <tr><td>脚</td><td>le pied (m)</td><td>J'ai mal <strong>au</strong> pied.</td></tr>
+          <tr><td>膝盖</td><td>le genou (m)</td><td>J'ai mal <strong>au</strong> genou.</td></tr>
+          <tr><td>手</td><td>la main (f)</td><td>Je me suis blessé(e) <strong>à la</strong> main.</td></tr>
+        </table>
+      </div>
+      <div>
+        <div class="card-title">规则</div>
+        <div class="rule r-purple" style="margin-bottom:8px"><strong>avoir mal à + 定冠词 + 部位</strong><br>à + le → <strong>au</strong><br>à + la → <strong>à la</strong><br>à + l' → <strong>à l'</strong><br>à + les → <strong>aux</strong></div>
+        <div class="phrase ph-amber"><div class="phr-fr">J'ai mal partout !</div><div class="phr-zh">我哪里都疼！</div></div>
+        <div class="phrase ph-amber"><div class="phr-fr">Où avez-vous mal ?</div><div class="phr-zh">您哪里疼？（医生问）</div></div>
+        <div class="phrase ph-amber"><div class="phr-fr">J'ai de la fièvre (38°).</div><div class="phr-zh">我发烧（38度）。</div></div>
+        <div class="phrase ph-amber"><div class="phr-fr">Je me suis cassé(e) le bras.</div><div class="phr-zh">我摔断了手臂。</div></div>
+        <div class="rule r-blue" style="margin-top:8px">症状词汇：<br>la fièvre 发烧 · la toux 咳嗽 · le rhume 感冒<br>la grippe 流感 · une allergie 过敏 · une blessure 伤</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="sec">
+  <div class="sec-title">家庭词汇 &amp; 描述家庭</div>
+  <div class="card">
+    <div class="g2">
+      <div>
+        <table class="cmp">
+          <tr><th>成员</th><th>法语</th><th>复数</th></tr>
+          <tr><td>父亲</td><td>le père</td><td>les pères</td></tr>
+          <tr><td>母亲</td><td>la mère</td><td>les mères</td></tr>
+          <tr><td>丈夫/妻子</td><td>le mari / la femme</td><td></td></tr>
+          <tr><td>儿子/女儿</td><td>le fils / la fille</td><td>les fils / les filles</td></tr>
+          <tr><td>兄弟/姐妹</td><td>le frère / la sœur</td><td>les frères / les sœurs</td></tr>
+          <tr><td>祖父/祖母</td><td>le grand-père / la grand-mère</td><td>les grands-parents</td></tr>
+          <tr><td>叔/舅/伯</td><td>l'oncle</td><td>les oncles</td></tr>
+          <tr><td>姑/阿姨</td><td>la tante</td><td>les tantes</td></tr>
+          <tr><td>表兄弟/姐妹</td><td>le cousin / la cousine</td><td></td></tr>
+          <tr><td>孩子</td><td>l'enfant (m/f)</td><td>les enfants</td></tr>
+          <tr><td>侄/甥</td><td>le neveu / la nièce</td><td></td></tr>
+        </table>
+      </div>
+      <div>
+        <div class="card-title">描述家庭模板</div>
+        <div class="tpl">
+          <div><span class="tpl-l">人数</span>Dans ma famille, nous sommes 4 personnes.</div>
+          <div><span class="tpl-l">成员</span>J'ai un frère et une sœur.</div>
+          <div><span class="tpl-l">父母</span>Mon père s'appelle … et il est …<br>Ma mère travaille comme …</div>
+          <div><span class="tpl-l">描述</span>Mon frère est plus grand que moi.<br>Ma sœur a les yeux bleus et les cheveux longs.</div>
+          <div><span class="tpl-l">居住</span>Nous habitons à … depuis … ans.</div>
+        </div>
+        <div class="rule r-blue" style="margin-top:8px">描述外貌：<br>avoir les yeux bleus/verts/noirs/marron<br>avoir les cheveux longs/courts/bouclés/raides<br>être grand(e)/petit(e)/mince/fort(e)</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="sec">
+  <div class="sec-title">动词 + 介词搭配 <span class="sec-badge">必须记忆</span></div>
+  <div class="card">
+    <div class="g3">
+      <div>
+        <div class="card-title">动词 + <strong>à</strong></div>
+        <table class="vt">
+          <tr><th>动词</th><th>例句</th></tr>
+          <tr><td>parler à</td><td>parler à quelqu'un</td></tr>
+          <tr><td>penser à</td><td>Je pense à toi.</td></tr>
+          <tr><td>jouer à</td><td>jouer au foot / aux cartes</td></tr>
+          <tr><td>téléphoner à</td><td>téléphoner à Marie</td></tr>
+          <tr><td>répondre à</td><td>répondre à un message</td></tr>
+          <tr><td>participer à</td><td>participer à un concours</td></tr>
+          <tr><td>aller à</td><td>aller à Paris / au marché</td></tr>
+          <tr><td>commencer à</td><td>commencer à travailler</td></tr>
+          <tr><td>apprendre à</td><td>apprendre à conduire</td></tr>
+        </table>
+      </div>
+      <div>
+        <div class="card-title">动词 + <strong>de</strong></div>
+        <table class="vt">
+          <tr><th>动词</th><th>例句</th></tr>
+          <tr><td>parler de</td><td>parler de voyages</td></tr>
+          <tr><td>avoir besoin de</td><td>J'ai besoin de toi.</td></tr>
+          <tr><td>avoir envie de</td><td>J'ai envie de dormir.</td></tr>
+          <tr><td>avoir peur de</td><td>avoir peur des araignées</td></tr>
+          <tr><td>s'occuper de</td><td>s'occuper des enfants</td></tr>
+          <tr><td>venir de</td><td>Je viens de France.</td></tr>
+          <tr><td>essayer de</td><td>essayer de comprendre</td></tr>
+          <tr><td>décider de</td><td>décider de partir</td></tr>
+          <tr><td>finir de</td><td>finir de manger</td></tr>
+        </table>
+      </div>
+      <div>
+        <div class="card-title">jouer à vs jouer de</div>
+        <div class="rule r-purple" style="margin-bottom:8px"><strong>jouer à</strong> = 玩（运动/游戏）<br>jouer <strong>au</strong> foot · jouer <strong>au</strong> tennis<br>jouer <strong>aux</strong> cartes · jouer <strong>à</strong> cache-cache</div>
+        <div class="rule r-teal" style="margin-bottom:8px"><strong>jouer de</strong> = 演奏（乐器）<br>jouer <strong>du</strong> piano · jouer <strong>de la</strong> guitare<br>jouer <strong>de l'</strong>accordéon</div>
+        <div class="card-title" style="margin-top:10px">动词 + 直接宾语（无介词）</div>
+        <table class="vt">
+          <tr><th>动词</th><th>例子</th></tr>
+          <tr><td>aimer</td><td>aimer le cinéma</td></tr>
+          <tr><td>regarder</td><td>regarder la télé</td></tr>
+          <tr><td>écouter</td><td>écouter de la musique</td></tr>
+          <tr><td>chercher</td><td>chercher ses clés</td></tr>
+          <tr><td>attendre</td><td>attendre le bus</td></tr>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ════ CH11: 数量与价格 ════ -->
+<div class="chapter" id="ch11">
+<div class="ch-hero" style="background:linear-gradient(135deg,#1D9E75,#1D7FAD)">
+  <h2>⑪ 数量 · 价格 · 表达多少</h2>
+  <p>数量短语 · 价格问答 · 表达数量的代词 en · 序数词</p>
+</div>
+
+<div class="sec">
+  <div class="sec-title">数量短语 <span class="sec-badge">后面用 de，不加冠词</span></div>
+  <div class="card">
+    <div class="g2">
+      <div>
+        <table class="cmp">
+          <tr><th>短语</th><th>中文</th><th>例句</th></tr>
+          <tr><td>un kilo de</td><td>一公斤……</td><td>un kilo de pommes</td></tr>
+          <tr><td>un litre de</td><td>一升……</td><td>un litre de lait</td></tr>
+          <tr><td>une bouteille de</td><td>一瓶……</td><td>une bouteille d'eau</td></tr>
+          <tr><td>un verre de</td><td>一杯……</td><td>un verre de vin</td></tr>
+          <tr><td>une tasse de</td><td>一杯（热饮）</td><td>une tasse de café</td></tr>
+          <tr><td>une boîte de</td><td>一盒/罐……</td><td>une boîte de sardines</td></tr>
+          <tr><td>un morceau de</td><td>一块……</td><td>un morceau de fromage</td></tr>
+          <tr><td>une tranche de</td><td>一片……</td><td>une tranche de jambon</td></tr>
+          <tr><td>un paquet de</td><td>一包……</td><td>un paquet de café</td></tr>
+          <tr><td>une douzaine de</td><td>一打……</td><td>une douzaine d'œufs</td></tr>
+          <tr><td>beaucoup de</td><td>很多……</td><td>beaucoup de travail</td></tr>
+          <tr><td>peu de</td><td>很少……</td><td>peu de temps</td></tr>
+          <tr><td>assez de</td><td>足够……</td><td>assez d'argent</td></tr>
+          <tr><td>trop de</td><td>太多……</td><td>trop de bruit</td></tr>
+          <tr><td>un peu de</td><td>一点……</td><td>un peu de sel</td></tr>
+        </table>
+      </div>
+      <div>
+        <div class="card-title">价格问答</div>
+        <div class="phrase ph-blue"><div class="phr-fr">C'est combien ? / Ça coûte combien ?</div><div class="phr-zh">多少钱？</div></div>
+        <div class="phrase ph-blue"><div class="phr-fr">Ça fait combien en tout ?</div><div class="phr-zh">一共多少钱？</div></div>
+        <div class="phrase ph-teal"><div class="phr-fr">C'est 3 euros 50 (trois euros cinquante).</div><div class="phr-zh">3欧元50。</div></div>
+        <div class="phrase ph-teal"><div class="phr-fr">Ça fait 12 euros, s'il vous plaît.</div><div class="phr-zh">一共12欧元。</div></div>
+        <div class="phrase ph-purple"><div class="phr-fr">Vous payez comment ? En espèces ou par carte ?</div><div class="phr-zh">您怎么付款？现金还是刷卡？</div></div>
+        <div class="phrase ph-purple"><div class="phr-fr">Vous avez la monnaie ?</div><div class="phr-zh">您有零钱吗？</div></div>
+        <div class="rule r-amber" style="margin-top:8px">价格表达：<br>1,50€ = un euro cinquante<br>0,50€ = cinquante centimes<br>20,00€ = vingt euros</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="sec">
+  <div class="sec-title">序数词</div>
+  <div class="card">
+    <div class="g2">
+      <div>
+        <table class="cmp">
+          <tr><th>基数</th><th>序数</th><th>缩写</th></tr>
+          <tr><td>un / une</td><td>premier / première</td><td>1er / 1re</td></tr>
+          <tr><td>deux</td><td>deuxième</td><td>2e</td></tr>
+          <tr><td>trois</td><td>troisième</td><td>3e</td></tr>
+          <tr><td>quatre</td><td>quatrième</td><td>4e</td></tr>
+          <tr><td>cinq</td><td>cinquième</td><td>5e</td></tr>
+          <tr><td>six</td><td>sixième</td><td>6e</td></tr>
+          <tr><td>sept</td><td>septième</td><td>7e</td></tr>
+          <tr><td>huit</td><td>huitième</td><td>8e</td></tr>
+          <tr><td>neuf</td><td>neuvième</td><td>9e</td></tr>
+          <tr><td>dix</td><td>dixième</td><td>10e</td></tr>
+          <tr><td>vingt</td><td>vingtième</td><td>20e</td></tr>
+          <tr><td>cent</td><td>centième</td><td>100e</td></tr>
+        </table>
+      </div>
+      <div>
+        <div class="rule r-blue" style="margin-bottom:8px">构成规律：基数词 + <strong>-ième</strong><br>⚠️ 特例：<br>un → prem<strong>ier</strong>/première（不规则）<br>cinq → cinqu<strong>ième</strong>（加u）<br>neuf → neuv<strong>ième</strong>（f→v）</div>
+        <div class="card-title">实际用法</div>
+        <div class="phrase ph-purple"><div class="phr-fr">J'habite au <strong>3e</strong> étage.</div><div class="phr-zh">我住三楼。</div></div>
+        <div class="phrase ph-purple"><div class="phr-fr">C'est la <strong>première</strong> fois.</div><div class="phr-zh">这是第一次。</div></div>
+        <div class="phrase ph-purple"><div class="phr-fr">Prenez la <strong>deuxième</strong> rue à gauche.</div><div class="phr-zh">走第二条左转街。</div></div>
+        <div class="phrase ph-purple"><div class="phr-fr">Le <strong>premier</strong> janvier = le 1er janvier</div><div class="phr-zh">一月一日（月份1号用 premier）</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="sec">
+  <div class="sec-title">表达数量的 en <span class="sec-badge">复习</span></div>
+  <div class="card">
+    <div class="g2">
+      <div class="phrase ph-teal"><div class="phr-fr">Tu veux du café ? — Oui, j'<strong>en</strong> veux.</div><div class="phr-zh">要咖啡吗？— 要。</div></div>
+      <div class="phrase ph-teal"><div class="phr-fr">— Non, je n'<strong>en</strong> veux pas.</div><div class="phr-zh">— 不要。</div></div>
+      <div class="phrase ph-teal"><div class="phr-fr">Il a des frères ? — Oui, il <strong>en</strong> a <strong>deux</strong>.</div><div class="phr-zh">数量词保留！</div></div>
+      <div class="phrase ph-teal"><div class="phr-fr">Tu as beaucoup de travail ? — Oui, j'<strong>en</strong> ai <strong>beaucoup</strong>.</div><div class="phr-zh">数量词保留！</div></div>
+    </div>
+    <div class="rule r-amber" style="margin-top:8px">⚠️ 有具体数量时，数量词<strong>必须保留</strong>在 en 后面<br>Il a des enfants ? — Oui, il en a <strong>trois</strong>. ✓（不能只说 "il en a"）</div>
+  </div>
+</div>
+</div>
+
+<!-- ════ CH12: 语言学习·综合复习 ════ -->
+<div class="chapter" id="ch12">
+<div class="ch-hero" style="background:linear-gradient(135deg,#534AB7,#0F6E56)">
+  <h2>⑫ 语言学习 · 易错点 · 综合速查</h2>
+  <p>表达语言能力 · A1高频易错 · 代词位置总表 · 动词构式总表</p>
+</div>
+
+<div class="sec">
+  <div class="sec-title">表达语言能力</div>
+  <div class="card">
+    <div class="g2">
+      <div>
+        <div class="card-title">parler / comprendre / apprendre / savoir</div>
+        <table class="cmp">
+          <tr><th>动词</th><th>用法</th><th>例句</th></tr>
+          <tr><td>parler + 语言</td><td>说某语言（能开口）</td><td>Je parle français.</td></tr>
+          <tr><td>comprendre + 语言</td><td>听懂/理解</td><td>Je comprends l'anglais.</td></tr>
+          <tr><td>apprendre + 语言</td><td>正在学</td><td>J'apprends le chinois.</td></tr>
+          <tr><td>savoir + 动词原形</td><td>会做某事（技能）</td><td>Je sais nager / conduire.</td></tr>
+          <tr><td>connaître + 名词</td><td>认识（人/地方）</td><td>Je connais Marie / Paris.</td></tr>
+        </table>
+        <div class="rule r-amber" style="margin-top:8px">⚠️ savoir vs connaître<br>savoir = 知道/会（技能、信息）：Je <strong>sais</strong> qu'il est là.<br>connaître = 认识（人、地方、作品）：Je <strong>connais</strong> ce film.</div>
+      </div>
+      <div>
+        <div class="card-title">语言能力表达句</div>
+        <div class="phrase ph-blue"><div class="phr-fr">Je parle couramment le français.</div><div class="phr-zh">我法语说得很流利。</div></div>
+        <div class="phrase ph-blue"><div class="phr-fr">Mon niveau de français est débutant / intermédiaire.</div><div class="phr-zh">我的法语水平是初级/中级。</div></div>
+        <div class="phrase ph-blue"><div class="phr-fr">Je comprends mieux que je ne parle.</div><div class="phr-zh">我听得比说得好。</div></div>
+        <div class="phrase ph-blue"><div class="phr-fr">J'ai des difficultés avec la prononciation.</div><div class="phr-zh">发音对我来说有困难。</div></div>
+        <div class="phrase ph-teal"><div class="phr-fr">Pouvez-vous répéter plus lentement ?</div><div class="phr-zh">您能说慢一点吗？</div></div>
+        <div class="phrase ph-teal"><div class="phr-fr">Comment dit-on … en français ?</div><div class="phr-zh">……用法语怎么说？</div></div>
+        <div class="phrase ph-teal"><div class="phr-fr">Qu'est-ce que ça veut dire … ?</div><div class="phr-zh">……是什么意思？</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="sec">
+  <div class="sec-title">A1 高频易错点</div>
+  <div class="card">
+    <div class="g2">
+      <div>
+        <div class="card-title">❌ 常见错误</div>
+        <table class="cmp">
+          <tr><th>错误</th><th>正确</th><th>原因</th></tr>
+          <tr><td>Je suis 20 ans.</td><td>J'<strong>ai</strong> 20 ans.</td><td>年龄用 avoir</td></tr>
+          <tr><td>J'ai faim à.</td><td>J'<strong>ai</strong> faim.</td><td>avoir faim 无介词</td></tr>
+          <tr><td>Il fait chaud aujourd'hui, non ?<br>Oui, <del>il est</del> chaud.</td><td>Oui, <strong>il fait</strong> chaud.</td><td>天气用 il fait</td></tr>
+          <tr><td>Je suis un médecin.</td><td>Je suis <strong>médecin</strong>.</td><td>职业前无冠词</td></tr>
+          <tr><td>un information</td><td><strong>une</strong> information</td><td>information 是阴性</td></tr>
+          <tr><td>J'ai mangé pas.</td><td>Je n'<strong>ai pas</strong> mangé.</td><td>ne 不能省</td></tr>
+          <tr><td>Il a parti.</td><td>Il <strong>est</strong> parti.</td><td>partir 用 être</td></tr>
+          <tr><td>Elle est levée à 7h.</td><td>Elle <strong>s'est</strong> levée à 7h.</td><td>反身动词需代词</td></tr>
+        </table>
+      </div>
+      <div>
+        <div class="card-title">⚠️ 容易混淆的对</div>
+        <table class="cmp">
+          <tr><th>对比</th><th>区别</th></tr>
+          <tr><td>depuis / pendant</td><td>depuis=持续到现在+现在时<br>pendant=已结束+过去时</td></tr>
+          <tr><td>qui / que</td><td>qui=主语关系代词<br>que=宾语关系代词</td></tr>
+          <tr><td>savoir / connaître</td><td>savoir=知道/会技能<br>connaître=认识人/地</td></tr>
+          <tr><td>bon / bien</td><td>bon=形容词（好的）<br>bien=副词（好地）</td></tr>
+          <tr><td>au / en (地点)</td><td>au=阳性国家/地区<br>en=阴性国家/交通</td></tr>
+          <tr><td>du / de la / de l'</td><td>根据名词性别选择<br>否定后全变 de/d'</td></tr>
+          <tr><td>passé composé / imparfait</td><td>PC=完成动作<br>IMP=状态/习惯/背景</td></tr>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="sec">
+  <div class="sec-title">代词位置总表</div>
+  <div class="card">
+    <div class="rule r-blue" style="margin-bottom:10px">代词顺序（当多个代词同时出现）：<br><strong>me/te/nous/vous → le/la/les → lui/leur → y → en</strong> + 动词</div>
+    <table class="cmp">
+      <tr><th>情况</th><th>位置</th><th>例句</th></tr>
+      <tr><td>现在时简单时态</td><td>代词 + 动词</td><td>Je <strong>le</strong> vois.</td></tr>
+      <tr><td>复合时态</td><td>代词 + 助动词 + 过去分词</td><td>Je <strong>l'</strong>ai vu.</td></tr>
+      <tr><td>近期将来</td><td>aller + 代词 + 原形</td><td>Je vais <strong>le</strong> voir.</td></tr>
+      <tr><td>否定</td><td>ne + 代词 + 动词 + pas</td><td>Je ne <strong>le</strong> vois pas.</td></tr>
+      <tr><td>肯定命令式</td><td>动词 + 代词（连字符）</td><td>Regarde-<strong>le</strong> ! / Lève-<strong>toi</strong> !</td></tr>
+      <tr><td>否定命令式</td><td>ne + 代词 + 动词 + pas</td><td>Ne <strong>le</strong> regarde pas !</td></tr>
+    </table>
+    <div class="rule r-amber" style="margin-top:8px">⚠️ 复合时态：COD 前置时，过去分词要配合 COD 的性数<br>Les livres ? Je <strong>les</strong> ai achetés. (livres=复数阳性 → achetés)</div>
+  </div>
+</div>
+
+<div class="sec">
+  <div class="sec-title">动词构式总表</div>
+  <div class="card">
+    <table class="cmp">
+      <tr><th>构式</th><th>意思</th><th>例句</th></tr>
+      <tr><td>aller + inf.</td><td>近期将来（要做）</td><td>Je vais partir.</td></tr>
+      <tr><td>venir de + inf.</td><td>最近过去（刚做）</td><td>Je viens de partir.</td></tr>
+      <tr><td>être en train de + inf.</td><td>正在进行（现在做）</td><td>Je suis en train de manger.</td></tr>
+      <tr><td>pouvoir + inf.</td><td>能/可以</td><td>Je peux venir.</td></tr>
+      <tr><td>vouloir + inf.</td><td>想要做</td><td>Je veux partir.</td></tr>
+      <tr><td>devoir + inf.</td><td>必须/应该</td><td>Je dois travailler.</td></tr>
+      <tr><td>il faut + inf.</td><td>必须（非人称）</td><td>Il faut réserver.</td></tr>
+      <tr><td>il est interdit de + inf.</td><td>禁止（非人称）</td><td>Il est interdit de fumer.</td></tr>
+      <tr><td>savoir + inf.</td><td>会做（技能）</td><td>Je sais nager.</td></tr>
+      <tr><td>commencer à + inf.</td><td>开始做</td><td>Il commence à pleuvoir.</td></tr>
+      <tr><td>finir de + inf.</td><td>做完/停止做</td><td>J'ai fini de travailler.</td></tr>
+      <tr><td>essayer de + inf.</td><td>尝试做</td><td>J'essaie de comprendre.</td></tr>
+      <tr><td>avoir besoin de + inf.</td><td>需要做</td><td>J'ai besoin de dormir.</td></tr>
+      <tr><td>avoir envie de + inf.</td><td>想做</td><td>J'ai envie de voyager.</td></tr>
+      <tr><td>avoir peur de + inf.</td><td>害怕做</td><td>J'ai peur de parler.</td></tr>
+      <tr><td>être obligé(e) de + inf.</td><td>被迫/不得不</td><td>Je suis obligée de partir.</td></tr>
+    </table>
+  </div>
+</div>
+
+<div class="sec">
+  <div class="sec-title">A1 核心语法一页速查</div>
+  <div class="card">
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px;font-size:12px;line-height:1.8">
+      <div style="background:#F5F4F0;border-radius:8px;padding:10px">
+        <div style="font-weight:600;margin-bottom:5px;color:#3B4FD4">冠词</div>
+        un/une/des · le/la/l'/les<br>du/de la/de l'<br>否定后 → de/d'
+      </div>
+      <div style="background:#F5F4F0;border-radius:8px;padding:10px">
+        <div style="font-weight:600;margin-bottom:5px;color:#1D7FAD">动词现在时</div>
+        -er去e加词尾<br>-ir加-iss- (G2)<br>不规则须死记
+      </div>
+      <div style="background:#F5F4F0;border-radius:8px;padding:10px">
+        <div style="font-weight:600;margin-bottom:5px;color:#1D9E75">近期将来</div>
+        aller + 动词原形<br>否定：ne+aller+pas+inf
+      </div>
+      <div style="background:#F5F4F0;border-radius:8px;padding:10px">
+        <div style="font-weight:600;margin-bottom:5px;color:#C07020">复合过去时</div>
+        avoir/être + p.p.<br>être动词：配合性数<br>反身动词用être
+      </div>
+      <div style="background:#F5F4F0;border-radius:8px;padding:10px">
+        <div style="font-weight:600;margin-bottom:5px;color:#7C3DAA">主有形容词</div>
+        mon/ma/mes<br>ton/ta/tes<br>son/sa/ses…
+      </div>
+      <div style="background:#F5F4F0;border-radius:8px;padding:10px">
+        <div style="font-weight:600;margin-bottom:5px;color:#C0284A">COD代词</div>
+        me/te/le/la/nous/vous/les<br>动词前；命令式后置
+      </div>
+      <div style="background:#F5F4F0;border-radius:8px;padding:10px">
+        <div style="font-weight:600;margin-bottom:5px;color:#0F6E56">COI代词</div>
+        me/te/lui/nous/vous/leur<br>替换 à+人
+      </div>
+      <div style="background:#F5F4F0;border-radius:8px;padding:10px">
+        <div style="font-weight:600;margin-bottom:5px;color:#534AB7">en / y</div>
+        en=de+事物/数量<br>y=à/dans+地点
+      </div>
+      <div style="background:#F5F4F0;border-radius:8px;padding:10px">
+        <div style="font-weight:600;margin-bottom:5px;color:#3B4FD4">否定句</div>
+        ne…pas/jamais/plus<br>ne…rien/personne/que<br>ne…ni…ni
+      </div>
+      <div style="background:#F5F4F0;border-radius:8px;padding:10px">
+        <div style="font-weight:600;margin-bottom:5px;color:#1D7FAD">比较级</div>
+        plus/aussi/moins + adj + que<br>bon→meilleur · bien→mieux
+      </div>
+      <div style="background:#F5F4F0;border-radius:8px;padding:10px">
+        <div style="font-weight:600;margin-bottom:5px;color:#1D9E75">depuis/pendant</div>
+        depuis+现在时（持续）<br>pendant+复合过去（结束）<br>il y a（多久前）
+      </div>
+      <div style="background:#F5F4F0;border-radius:8px;padding:10px">
+        <div style="font-weight:600;margin-bottom:5px;color:#C07020">国家介词</div>
+        城市: à<br>阴性国: en<br>阳性国: au · 复数: aux
+      </div>
+    </div>
+  </div>
+</div>
+
+</div><!-- chapView -->
+<div class="search-view" id="sv">
+  <div class="sr-title" id="srtitle"></div>
+  <div id="srcont"></div>
+</div>
+</div></main>
+
+<script>
+var CHAPTERS = [
+  {id:'ch1',title:'① 冠词与名词',color:'#3B4FD4'},
+  {id:'ch2',title:'② 动词变位',color:'#1D7FAD'},
+  {id:'ch3',title:'③ 时态体系',color:'#1D9E75'},
+  {id:'ch4',title:'④ 代词系统',color:'#C07020'},
+  {id:'ch5',title:'⑤ 形容词副词',color:'#7C3DAA'},
+  {id:'ch6',title:'⑥ 核心句型',color:'#C0284A'},
+  {id:'ch7',title:'⑦ 介词地点',color:'#0F6E56'},
+  {id:'ch9',title:'⑧ 时间日期天气',color:'#1D5FAD'},
+  {id:'ch10',title:'⑨ 词汇专题',color:'#C07020'},
+  {id:'ch11',title:'⑩ 数量价格',color:'#1D9E75'},
+  {id:'ch8',title:'⑪ 口语写作',color:'#534AB7'},
+  {id:'ch12',title:'⑫ 速查总表',color:'#534AB7'},
+];
+
+var nav = document.getElementById('cnav');
+CHAPTERS.forEach(function(c,i) {
+  var btn = document.createElement('button');
+  btn.className = 'cnav-btn';
+  btn.id = 'nb' + c.id;
+  btn.textContent = c.title;
+  btn.onclick = function(){ showCh(c.id); };
+  if(i===0){ btn.classList.add('active'); btn.style.background=c.color; btn.style.borderColor=c.color; btn.style.color='#fff'; }
+  nav.appendChild(btn);
+});
+
+var cur = 'ch1', timer;
+
+function showCh(id, fromSR) {
+  document.querySelectorAll('.chapter').forEach(function(c){ c.classList.remove('active'); });
+  document.querySelectorAll('.cnav-btn').forEach(function(b){
+    b.classList.remove('active'); b.style.background=''; b.style.borderColor=''; b.style.color='';
+  });
+  document.getElementById(id).classList.add('active');
+  var btn = document.getElementById('nb'+id);
+  btn.classList.add('active');
+  var meta = CHAPTERS.find(function(c){ return c.id===id; });
+  if(meta){ btn.style.background=meta.color; btn.style.borderColor=meta.color; btn.style.color='#fff'; }
+  btn.scrollIntoView({block:'nearest',inline:'center',behavior:'smooth'});
+  cur = id;
+  if(!fromSR){
+    document.getElementById('chapView').style.display='';
+    document.getElementById('sv').classList.remove('active');
+    clearSearchUI();
+  }
+  window.scrollTo(0,0);
+}
+
+function onSearch(q) {
+  clearTimeout(timer);
+  document.getElementById('sClear').style.display = q ? 'block' : 'none';
+  if (!q.trim()) { clearSearch(); return; }
+  timer = setTimeout(function(){ doSearch(q.trim()); }, 200);
+}
+
+function doSearch(q) {
+  var escaped = q.replace(/[.+?^${}()|[\]\\]/g, '\\$&');
+  var re = new RegExp(escaped, 'gi');
+  var total = 0, html = '';
+  CHAPTERS.forEach(function(c) {
+    var sec = document.getElementById(c.id);
+    var snips = [];
+    var walk = document.createTreeWalker(sec, NodeFilter.SHOW_TEXT);
+    var node;
+    while (node = walk.nextNode()) {
+      var t = node.nodeValue;
+      if (!t.trim()) continue;
+      re.lastIndex = 0;
+      if (re.test(t)) {
+        re.lastIndex = 0;
+        var idx = t.toLowerCase().indexOf(q.toLowerCase());
+        var s = Math.max(0, idx-45), e = Math.min(t.length, idx+q.length+45);
+        var snip = (s>0?'\u2026':'') +
+          t.slice(s,e).replace(re, function(m){ return '<mark class="hl">'+m+'</mark>'; }) +
+          (e<t.length?'\u2026':'');
+        re.lastIndex = 0;
+        snips.push(snip);
+        total++;
+      }
+      re.lastIndex = 0;
+    }
+    if (snips.length) {
+      html += '<div class="sr-sec"><div class="sr-hd" onclick="showCh(\'' + c.id + '\')">'+
+        '<span class="sr-badge" style="background:'+c.color+'">'+c.title.slice(0,2)+'</span>'+
+        '<span style="font-size:13px;font-weight:600;">'+c.title+'</span>'+
+        '<span class="sr-ct">'+snips.length+' \u5904 \u2192</span></div>'+
+        '<div class="sr-hits">'+snips.slice(0,8).join('<br>')+'</div></div>';
+    }
+  });
+  if (!total) html = '<div class="no-results">\u6ca1\u6709\u627e\u5230\u300c'+q+'\u300d</div>';
+  document.getElementById('srtitle').textContent = total ?
+    ('\u641c\u7d22\u300c'+q+'\u300d\u2014 '+total+' \u5904\u5339\u914d') :
+    ('\u641c\u7d22\u300c'+q+'\u300d');
+  document.getElementById('srcont').innerHTML = html;
+  document.getElementById('sInfo').textContent = total ? (total+'\u5904') : '\u65e0\u7ed3\u679c';
+  document.getElementById('chapView').style.display = 'none';
+  document.getElementById('sv').classList.add('active');
+}
+
+function clearSearch() {
+  clearSearchUI();
+  document.getElementById('searchInput').value = '';
+  document.getElementById('chapView').style.display = '';
+  document.getElementById('sv').classList.remove('active');
+  showCh(cur, true);
+}
+function clearSearchUI() {
+  document.getElementById('sClear').style.display = 'none';
+  document.getElementById('sInfo').textContent = '';
+}
+
+document.addEventListener('keydown', function(e) {
+  if (['INPUT','TEXTAREA','SELECT'].includes(e.target.tagName)) return;
+  if (e.key === '/') { e.preventDefault(); document.getElementById('searchInput').focus(); }
+});
+
+showCh('ch1');
+</script>
+</body>
+</html>

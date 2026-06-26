@@ -1,0 +1,2994 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Édito A1 — 智能复习系统</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --bg:#F2F0EB;--surface:#FFF;--surface2:#F7F5F0;--border:#E3DDD4;
+  --text:#1C1A17;--muted:#8C8578;--accent:#4A42A8;--accent2:#1D9E75;
+  --warn:#C04A20;--gold:#B8860B;--mono:'JetBrains Mono',monospace;
+}
+body{font-family:'Inter',-apple-system,'PingFang SC','Microsoft YaHei',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;}
+
+nav{background:var(--text);padding:0 1rem;display:flex;align-items:center;position:sticky;top:0;z-index:100;overflow-x:auto;}
+.nav-logo{color:#fff;font-weight:700;font-size:14px;padding:14px 0;margin-right:16px;white-space:nowrap;flex-shrink:0;}
+.nav-logo span{color:#A89FFF;}
+.nav-tabs{display:flex;}
+.nav-tab{color:rgba(255,255,255,.5);font-size:11px;font-weight:500;padding:14px 12px;cursor:pointer;border-bottom:2px solid transparent;white-space:nowrap;transition:all .15s;user-select:none;}
+.nav-tab:hover{color:rgba(255,255,255,.85);}
+.nav-tab.active{color:#fff;border-bottom-color:#A89FFF;}
+
+.page{display:none;padding:1.2rem;max-width:900px;margin:0 auto;}
+.page.active{display:block;}
+.page-title{font-size:20px;font-weight:700;margin-bottom:4px;}
+.page-sub{font-size:12px;color:var(--muted);margin-bottom:1.2rem;}
+
+.card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:1rem 1.2rem;margin-bottom:1rem;}
+.card-title{font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px;}
+
+/* VOCAB TABLE (homepage) */
+.wrap{overflow-x:auto;}
+table.voc-tbl{width:100%;border-collapse:collapse;font-size:12.5px;}
+table.voc-tbl thead tr{background:var(--text);color:#fff;}
+table.voc-tbl thead th{padding:7px 10px;font-weight:500;font-size:11px;text-align:left;}
+table.voc-tbl tbody tr{border-bottom:1px solid var(--border);}
+table.voc-tbl tbody tr:nth-child(even){background:var(--surface2);}
+table.voc-tbl tbody tr:hover{background:#faeeda;}
+table.voc-tbl tbody td{padding:5px 10px;}
+.vfr{font-weight:500;}
+.vzh{color:var(--text);}
+.vex{color:var(--muted);font-size:11px;font-style:italic;}
+.vtag{display:inline-block;font-size:10px;font-weight:600;padding:1px 5px;border-radius:3px;}
+.tn{background:#e6f1fb;color:#0c447c;}
+.tv{background:#e1f5ee;color:#0f6e56;}
+.ta{background:#faeeda;color:#854f0b;}
+.tadv{background:#eeedfe;color:#3c3489;}
+.texp{background:#faece7;color:#993c1d;}
+.search-bar{display:flex;gap:8px;margin-bottom:8px;flex-wrap:wrap;}
+.search-bar input,.search-bar select{padding:7px 10px;border:1.5px solid var(--border);border-radius:8px;font-size:12px;font-family:inherit;background:var(--surface);outline:none;color:var(--text);}
+.search-bar input{flex:1;min-width:140px;}
+.search-bar input:focus,.search-bar select:focus{border-color:var(--accent);}
+mark{background:#fef08a;border-radius:2px;}
+
+/* DECK / CONFIG */
+.deck-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(128px,1fr));gap:6px;}
+.deck-btn{background:var(--surface2);border:1.5px solid var(--border);border-radius:8px;padding:9px 10px;cursor:pointer;text-align:left;transition:all .12s;user-select:none;}
+.deck-btn:hover,.deck-btn.sel{background:var(--accent);border-color:var(--accent);color:#fff;}
+.deck-btn .d-name{font-size:12px;font-weight:600;}
+.deck-btn .d-count{font-size:10px;opacity:.7;margin-top:2px;}
+.cfg-row{display:flex;align-items:center;justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--border);gap:10px;}
+.cfg-row:last-child{border:none;}
+.cfg-label{font-size:13px;flex:1;}
+.cfg-label small{display:block;font-size:11px;color:var(--muted);}
+.seg{display:flex;gap:4px;flex-shrink:0;}
+.seg button{padding:5px 10px;border-radius:6px;font-size:11px;font-weight:500;cursor:pointer;border:1.5px solid var(--border);background:var(--surface2);color:var(--text);transition:all .12s;}
+.seg button.active{background:var(--accent);border-color:var(--accent);color:#fff;}
+
+/* SRS */
+.srs-overview{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:1rem;}
+.srs-box{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:12px;text-align:center;}
+.srs-num{font-size:26px;font-weight:700;}
+.srs-label{font-size:11px;color:var(--muted);margin-top:2px;}
+.study-wrap{max-width:540px;margin:0 auto;}
+.prog-bar{background:var(--border);border-radius:99px;height:5px;margin-bottom:1rem;}
+.prog-fill{height:5px;border-radius:99px;background:var(--accent);transition:width .3s;}
+.study-card{background:var(--surface);border:1.5px solid var(--border);border-radius:14px;min-height:190px;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:1.8rem 1.5rem;text-align:center;cursor:pointer;transition:border-color .15s;user-select:none;position:relative;}
+.study-card:hover{border-color:var(--accent);}
+.sc-tag{font-size:10px;font-weight:700;padding:2px 8px;border-radius:99px;background:var(--surface2);color:var(--muted);text-transform:uppercase;margin-bottom:10px;}
+.sc-front{font-size:28px;font-weight:700;line-height:1.2;}
+.sc-back{font-size:18px;font-weight:500;color:var(--accent);margin-top:12px;display:none;}
+.sc-extra{font-size:11px;color:var(--muted);margin-top:5px;font-family:var(--mono);display:none;}
+.sc-hint{font-size:11px;color:#ccc;margin-top:10px;}
+.sc-interval{position:absolute;top:10px;right:12px;font-size:10px;color:var(--muted);}
+.rating-btns{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:12px;}
+.rb{padding:12px 6px;border-radius:10px;font-size:13px;font-weight:600;cursor:pointer;border:none;display:flex;flex-direction:column;align-items:center;gap:4px;transition:transform .1s,opacity .1s;}
+.rb:hover{transform:translateY(-2px);}
+.rb:active{transform:scale(.96);}
+.rb .ri{font-size:22px;}
+.rb .rl{font-size:10px;opacity:.6;}
+.rb-again{background:#FCEAE6;color:#A32D2D;}
+.rb-fuzzy{background:#FFF8E6;color:#8C6A00;border:1.5px solid #F0D080;}
+.rb-know{background:#E1F5EE;color:#0F6E56;}
+.tag-pill{display:inline-block;font-size:10px;font-weight:600;padding:2px 6px;border-radius:4px;}
+.tp-new{background:#EEF;color:var(--accent);}
+.tp-due{background:#FEE;color:var(--warn);}
+
+/* SESSION CONFIG (shared by gender & listen) */
+.session-cfg{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:1rem 1.2rem;margin-bottom:1rem;}
+.scfg-title{font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px;}
+.scfg-row{display:flex;align-items:center;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--border);gap:8px;}
+.scfg-row:last-child{border:none;}
+.scfg-label{font-size:13px;flex:1;}
+.scfg-label small{display:block;font-size:11px;color:var(--muted);}
+.scfg-theme-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(90px,1fr));gap:5px;margin-top:6px;}
+.scfg-theme-btn{padding:6px 8px;border-radius:6px;font-size:11px;font-weight:600;cursor:pointer;border:1.5px solid var(--border);background:var(--surface2);color:var(--muted);transition:all .12s;text-align:center;}
+.scfg-theme-btn.active{background:var(--accent);border-color:var(--accent);color:#fff;}
+.start-btn{background:var(--accent);color:#fff;border:none;border-radius:8px;padding:10px 24px;font-size:13px;font-weight:600;cursor:pointer;transition:all .15s;}
+.start-btn:hover{background:#3A34A0;}
+
+/* STUDY SESSION (shared) */
+.session-wrap{max-width:520px;margin:0 auto;}
+.session-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;}
+.session-info{font-size:12px;color:var(--muted);}
+.session-stats{display:flex;gap:12px;font-size:12px;}
+.end-btn{font-size:11px;color:var(--muted);background:none;border:none;cursor:pointer;}
+
+/* GENDER CARD */
+.gm-card{background:var(--surface);border:2px solid var(--border);border-radius:14px;min-height:180px;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:1.5rem;text-align:center;margin-bottom:10px;}
+.gm-feedback{font-size:16px;font-weight:600;min-height:22px;margin-bottom:4px;}
+.gm-feedback.ok{color:var(--accent2);}
+.gm-feedback.no{color:var(--warn);}
+.gm-word{font-size:36px;font-weight:700;margin-bottom:4px;}
+.gm-hint-txt{font-size:13px;color:var(--muted);margin-bottom:14px;}
+.gm-btns{display:flex;gap:10px;}
+.gm-btns button{padding:11px 28px;border-radius:10px;font-size:15px;font-weight:700;cursor:pointer;border:none;transition:transform .1s;}
+.gm-btns button:hover{transform:scale(1.04);}
+.btn-m{background:#DBE9FA;color:#0C447C;}
+.btn-f{background:#FCE8E1;color:#A32D2D;}
+
+/* VERB DRILL */
+.vd-header{display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-bottom:1rem;}
+.vd-header select,.vd-btn{padding:7px 10px;border-radius:8px;font-size:12px;font-family:inherit;border:1.5px solid var(--border);background:var(--surface2);color:var(--text);cursor:pointer;outline:none;transition:all .12s;}
+.vd-btn:hover,.vd-btn.active{background:var(--accent);border-color:var(--accent);color:#fff;}
+.vd-score{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:1rem;}
+.vs-item{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:10px;text-align:center;}
+.vs-num{font-size:20px;font-weight:700;}
+.vs-label{font-size:11px;color:var(--muted);}
+.vd-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:1.2rem;}
+.vd-verb-title{font-size:20px;font-weight:700;margin-bottom:2px;}
+.vd-tense-label{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:10px;}
+.conj-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px;}
+.conj-row{display:flex;align-items:flex-start;gap:6px;background:var(--surface2);border-radius:8px;padding:7px 10px;}
+.conj-pro{font-size:11px;color:var(--muted);min-width:65px;font-family:var(--mono);padding-top:4px;}
+.conj-box{flex:1;}
+.conj-input{width:100%;border:none;background:transparent;font-size:13px;font-family:var(--mono);font-weight:500;color:var(--text);outline:none;border-bottom:1.5px solid var(--border);padding:2px 0;transition:border-color .15s;}
+.conj-input:focus{border-bottom-color:var(--accent);}
+.conj-input.correct{border-bottom-color:var(--accent2);color:var(--accent2);}
+.conj-input.wrong{border-bottom-color:var(--warn);color:var(--warn);}
+.conj-input.revealed{border-bottom-color:var(--gold);color:var(--gold);}
+.conj-answer{font-size:11px;color:var(--muted);font-family:var(--mono);display:none;margin-top:2px;}
+.vd-btns{display:flex;gap:6px;margin-top:10px;flex-wrap:wrap;}
+.vd-btns button{padding:8px 14px;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;border:none;}
+.btn-check{background:var(--accent);color:#fff;}
+.btn-reveal{background:var(--surface2);color:var(--text);border:1.5px solid var(--border)!important;}
+.btn-next{background:var(--accent2);color:#fff;}
+.vd-result{margin-top:8px;font-size:13px;font-weight:600;min-height:18px;}
+
+/* LISTEN */
+.ls-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;min-height:240px;}
+.ls-inner{padding:1.5rem;text-align:center;}
+.spell-input{width:100%;max-width:300px;padding:10px 14px;border:2px solid var(--border);border-radius:10px;font-size:18px;font-family:var(--mono);text-align:center;outline:none;transition:border-color .15s;background:var(--surface);}
+.spell-input:focus{border-color:var(--accent);}
+.play-btn{background:var(--accent);color:#fff;border:none;border-radius:8px;padding:9px 16px;font-size:13px;font-weight:600;cursor:pointer;margin:3px;}
+.slow-btn{background:var(--surface2);color:var(--text);border:1.5px solid var(--border);border-radius:8px;padding:9px 12px;font-size:12px;font-weight:500;cursor:pointer;margin:3px;}
+.ls-btn{background:var(--surface2);color:var(--muted);border:1.5px solid var(--border);border-radius:8px;padding:9px 12px;font-size:12px;cursor:pointer;margin:3px;}
+.choice-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;max-width:360px;margin:0 auto;}
+.choice-btn{padding:12px;border-radius:10px;border:1.5px solid var(--border);background:var(--surface2);font-size:13px;cursor:pointer;transition:all .12s;font-family:inherit;}
+.choice-btn:hover:not(:disabled){background:var(--surface);border-color:var(--accent);}
+
+/* CUSTOM */
+.cw-form{display:grid;grid-template-columns:1fr 1fr 1fr 80px;gap:8px;margin-bottom:10px;}
+.cw-field label{font-size:11px;color:var(--muted);display:block;margin-bottom:4px;}
+.cw-field input,.cw-field select{width:100%;padding:8px 10px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;font-family:inherit;outline:none;background:var(--surface);}
+.cw-field input:focus,.cw-field select:focus{border-color:var(--accent);}
+.cw-item{display:flex;align-items:center;gap:8px;padding:7px 10px;background:var(--surface2);border-radius:8px;margin-bottom:5px;}
+.cw-fr{font-weight:600;font-family:var(--mono);min-width:110px;font-size:13px;}
+.cw-zh{flex:1;color:var(--muted);font-size:12px;}
+.cw-pill{font-size:10px;padding:1px 5px;border-radius:4px;background:#eeedfe;color:#534ab7;white-space:nowrap;}
+.cw-g{font-size:10px;padding:1px 5px;border-radius:4px;white-space:nowrap;}
+.ic-btn{background:none;border:none;cursor:pointer;font-size:14px;padding:2px 4px;opacity:.7;}
+.ic-btn:hover{opacity:1;}
+.empty-state{text-align:center;padding:2rem;color:var(--muted);}
+.empty-state .big{font-size:32px;margin-bottom:6px;}
+
+@media(max-width:600px){.cw-form{grid-template-columns:1fr 1fr;}.conj-grid{grid-template-columns:1fr;}}
+</style>
+</head>
+<body>
+
+<style id="global-nav-style">
+.global-nav{
+  position:fixed;top:0;left:0;right:0;height:40px;background:#111110;z-index:9999;
+  display:flex;align-items:center;padding:0 1rem;gap:8px;border-bottom:1px solid rgba(255,255,255,.08);
+}
+.global-nav a{
+  color:rgba(255,255,255,.55);font-size:12px;font-weight:500;text-decoration:none;
+  padding:5px 10px;border-radius:6px;transition:all .12s;white-space:nowrap;
+}
+.global-nav a:hover{background:rgba(255,255,255,.08);color:#fff;}
+.global-nav a.active{background:rgba(168,159,255,.15);color:#A89FFF;}
+.global-nav-logo{color:#fff;font-weight:700;font-size:13px;margin-right:4px;flex-shrink:0;}
+.global-nav-logo span{color:#A89FFF;}
+body{padding-top:40px!important;}
+</style>
+<nav class="global-nav"><div class="global-nav-logo">🇫🇷 <span>Édito A1</span></div><a href="index.html" class="active">📅 背单词</a><a href="edito_a1_full.html">📖 全册笔记</a><a href="edito_a1_grammar_ref.html">📝 语法手册</a></nav>
+
+<nav>
+  <div class="nav-logo">🇫🇷 <span>A1</span> 智能复习</div>
+  <div class="nav-tabs">
+    <div class="nav-tab active" onclick="goPage('today',this)">📅 今日学习</div>
+    <div class="nav-tab" onclick="goPage('vocab',this)">📖 词汇总表</div>
+    <div class="nav-tab" onclick="goPage('srs',this)">🧠 间隔复习</div>
+    <div class="nav-tab" onclick="goPage('gender',this)">⚥ 阴阳性</div>
+    <div class="nav-tab" onclick="goPage('spell',this)">✏️ 拼写练习</div>
+    <div class="nav-tab" onclick="goPage('listen',this)">🔊 听力拼写</div>
+    <div class="nav-tab" onclick="goPage('drill',this)">🔤 动词填写</div>
+    <div class="nav-tab" onclick="goPage('custom',this)">➕ 自定义词</div>
+  </div>
+</nav>
+
+<!-- ===== VOCAB TABLE ===== -->
+<!-- ===== TODAY PAGE ===== -->
+<div id="page-today" class="page active">
+  <div id="today-home">
+    <div class="page-title">今日学习</div>
+    <div class="page-sub">选词 → 卡片认词 → 选择练习强化</div>
+
+    <div class="srs-overview">
+      <div class="srs-box"><div class="srs-num" id="ov-new" style="color:var(--accent)">0</div><div class="srs-label">🆕 待学</div></div>
+      <div class="srs-box"><div class="srs-num" id="ov-due" style="color:var(--warn)">0</div><div class="srs-label">⏰ 需复习</div></div>
+      <div class="srs-box"><div class="srs-num" id="ov-learned" style="color:var(--accent2)">0</div><div class="srs-label">✓ 已掌握</div></div>
+    </div>
+    <div style="font-size:12px;color:var(--muted);margin-bottom:1rem;" id="ov-total-label"></div>
+
+    <div class="card">
+      <div class="card-title">今天学几个？</div>
+      <div class="cfg-row">
+        <div class="cfg-label">新词数量<small>从待学队列中取出</small></div>
+        <div class="seg" id="today-new-seg">
+          <button onclick="todayCfg.newCount=20;syncSeg('today-new-seg',0)" class="active">20</button>
+          <button onclick="todayCfg.newCount=30;syncSeg('today-new-seg',1)">30</button>
+          <button onclick="todayCfg.newCount=50;syncSeg('today-new-seg',2)">50</button>
+          <button onclick="todayCfg.newCount=9999;syncSeg('today-new-seg',3)">全部待学</button>
+        </div>
+      </div>
+      <div class="cfg-row">
+        <div class="cfg-label">包含需复习<small>把今天到期的复习词一并加入</small></div>
+        <div class="seg" id="today-due-seg">
+          <button onclick="todayCfg.includeDue=true;syncSeg('today-due-seg',0)" class="active">是</button>
+          <button onclick="todayCfg.includeDue=false;syncSeg('today-due-seg',1)">否</button>
+        </div>
+      </div>
+      <div class="cfg-row">
+        <div class="cfg-label">词汇来源<small>选择要学习的词汇范围</small></div>
+        <div class="seg" id="today-src-seg">
+          <button onclick="todayCfg.source='all';syncSeg('today-src-seg',0)" class="active">全部词汇+动词</button>
+          <button onclick="todayCfg.source='vocab';syncSeg('today-src-seg',1)">仅名词词汇</button>
+          <button onclick="todayCfg.source='verbs';syncSeg('today-src-seg',2)">仅动词</button>
+          <button onclick="todayCfg.source='custom';syncSeg('today-src-seg',3)">仅自定义词</button>
+        </div>
+      </div>
+    </div>
+
+    <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-top:1.2rem;">
+      <button class="start-btn" onclick="startTodaySession()">▶ 开始今日学习</button>
+      <button onclick="addTodayWords(this)" style="padding:10px 20px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;border:1.5px solid var(--accent);background:var(--surface);color:var(--accent);">＋ 添加新词</button>
+    </div>
+    <p id="today-no-words" style="display:none;color:var(--warn);margin-top:10px;font-size:13px;">今天没有待学或需复习的词汇！</p>
+    <p id="today-pool-info" style="font-size:12px;color:var(--muted);margin-top:8px;"></p>
+    <p style="font-size:11px;color:var(--muted);margin-top:4px;">今日词包按日期累计——同一天多次学习的词会合并</p>
+  </div>
+
+  <!-- STEP 1: Flash cards -->
+  <div id="today-cards" style="display:none;">
+    <div class="study-wrap">
+      <div class="session-header">
+        <span class="session-info">第一步：卡片认词 &nbsp;<span id="tc-progress-txt"></span></span>
+        <button class="end-btn" onclick="endTodayCards()">跳过此步 →</button>
+      </div>
+      <div class="prog-bar"><div class="prog-fill" id="tc-prog" style="width:0%"></div></div>
+      <div style="display:flex;gap:8px;margin-bottom:10px;">
+        <span class="tag-pill tp-new" id="tc-new-badge"></span>
+        <span class="tag-pill tp-due" id="tc-due-badge"></span>
+      </div>
+      <div class="study-card" id="tc-card" onclick="revealTodayCard()" style="cursor:pointer;">
+        <div class="sc-interval" id="tc-interval"></div>
+        <div class="sc-tag" id="tc-tag"></div>
+        <div class="sc-front" id="tc-front"></div>
+        <div class="sc-back" id="tc-back" style="display:none;"></div>
+        <div class="sc-extra" id="tc-extra" style="display:none;"></div>
+        <div class="sc-hint" id="tc-hint">点击显示答案</div>
+      </div>
+      <div style="text-align:center;margin-top:8px;">
+        <button onclick="if(todaySession.current)speak(todaySession.current.fr)" style="background:none;border:1.5px solid var(--border);border-radius:8px;padding:6px 14px;font-size:12px;cursor:pointer;color:var(--muted);">🔊 再听</button>
+        <button onclick="if(todaySession.current)speak(todaySession.current.fr,0.55)" style="background:none;border:1.5px solid var(--border);border-radius:8px;padding:6px 12px;font-size:12px;cursor:pointer;color:var(--muted);margin-left:6px;">🐢 慢速</button>
+      </div>
+      <div class="rating-btns" id="tc-rating" style="display:none;">
+        <button class="rb rb-again" onclick="rateTodayCard(1)"><span>❌</span><span>不认识</span></button>
+        <button class="rb rb-fuzzy" onclick="rateTodayCard(2)"><span>🤔</span><span>想起来了</span></button>
+        <button class="rb rb-know" onclick="rateTodayCard(3)"><span>✅</span><span>很熟</span></button>
+      </div>
+      <p style="text-align:center;font-size:11px;color:var(--border);margin-top:6px;">← 不认识 · ↑/Space 想起来了 · → 很熟</p>
+    </div>
+  </div>
+
+  <!-- STEP 2: Choose practice -->
+  <div id="today-choose" style="display:none;">
+    <div class="page-title" style="margin-bottom:6px;">选择练习方式</div>
+    <div style="font-size:13px;color:var(--muted);margin-bottom:1rem;" id="today-choose-sub"></div>
+    <button onclick="addTodayWords(this)" style="margin-bottom:1.2rem;padding:8px 18px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;border:1.5px solid var(--accent);background:var(--surface);color:var(--accent);">＋ 继续添加新词并认词</button>
+    <div class="g2" style="max-width:600px;">
+      <div class="card" style="cursor:pointer;transition:border-color .15s;" onclick="startTodayPractice('gender')"
+        onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--border)'">
+        <div style="font-size:28px;margin-bottom:8px;">⚥</div>
+        <div style="font-weight:600;margin-bottom:4px;">阴阳性练习</div>
+        <div style="font-size:12px;color:var(--muted);">判断今日词汇的冠词 le / la</div>
+      </div>
+      <div class="card" style="cursor:pointer;transition:border-color .15s;" onclick="startTodayPractice('spell')"
+        onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--border)'">
+        <div style="font-size:28px;margin-bottom:8px;">✏️</div>
+        <div style="font-weight:600;margin-bottom:4px;">中文→拼写</div>
+        <div style="font-size:12px;color:var(--muted);">看中文，拼写法语单词（需重音）</div>
+      </div>
+      <div class="card" style="cursor:pointer;transition:border-color .15s;" onclick="startTodayPractice('listen')"
+        onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--border)'">
+        <div style="font-size:28px;margin-bottom:8px;">🔊</div>
+        <div style="font-weight:600;margin-bottom:4px;">听力拼写</div>
+        <div style="font-size:12px;color:var(--muted);">听发音，拼写法语（需 Chrome/Edge）</div>
+      </div>
+      <div class="card" style="cursor:pointer;transition:border-color .15s;" onclick="endTodaySession()"
+        onmouseover="this.style.borderColor='var(--accent2)'" onmouseout="this.style.borderColor='var(--border)'">
+        <div style="font-size:28px;margin-bottom:8px;">✓</div>
+        <div style="font-weight:600;margin-bottom:4px;">完成今日学习</div>
+        <div style="font-size:12px;color:var(--muted);">返回首页，查看进度</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- STEP 3: Practice sessions (gender / spell / listen) -->
+  <div id="today-practice" style="display:none;">
+    <div class="session-wrap">
+      <div class="session-header">
+        <span class="session-info" id="tp-title"></span>
+        <button class="end-btn" onclick="endTodayPractice()">← 返回选择</button>
+      </div>
+      <div class="prog-bar"><div class="prog-fill" id="tp-prog" style="width:0%"></div></div>
+      <div style="display:flex;gap:12px;font-size:12px;margin-bottom:10px;">
+        <span>✓ <strong id="tp-right">0</strong></span>
+        <span>✗ <strong id="tp-wrong">0</strong></span>
+        <span style="color:var(--muted);" id="tp-stat">0/0</span>
+      </div>
+      <div id="tp-card-area"></div>
+      <div style="text-align:center;margin-top:12px;">
+        <button id="tp-next-btn" onclick="showTodayPracticeCard()" style="display:none;background:var(--accent2);color:#fff;border:none;border-radius:8px;padding:10px 28px;font-size:14px;font-weight:600;cursor:pointer;">下一个 → <span style="font-size:11px;opacity:.7;">Enter / 空格</span></button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="page-vocab" class="page">
+  <div class="page-title">词汇总表</div>
+  <div class="page-sub">270+ 词汇 · 法语/中文/主题搜索</div>
+  <div class="search-bar">
+    <input type="text" id="vsearch" placeholder="搜索法语、中文…" oninput="filterVocab()">
+    <select id="vtheme" onchange="filterVocab()">
+      <option value="">全部主题</option>
+      <option>人物与关系</option><option>职业</option><option>地点</option>
+      <option>家居</option><option>食物</option><option>衣物</option>
+      <option>交通</option><option>健康</option><option>自然</option><option>旅行</option>
+    </select>
+    <select id="vpos" onchange="filterVocab()">
+      <option value="">全部词性</option>
+      <option value="名">名词</option><option value="形">形容词</option>
+      <option value="副">副词/介</option><option value="短语">短语</option>
+    </select>
+  </div>
+  <div style="font-size:12px;color:var(--muted);margin-bottom:6px;" id="vcount"></div>
+  <div class="wrap">
+    <table class="voc-tbl">
+      <thead><tr><th>法语</th><th>词性</th><th>中文</th><th>主题</th><th>例句</th></tr></thead>
+      <tbody id="vtbody"></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ===== SRS ===== -->
+<div id="page-srs" class="page">
+  <div id="srs-home">
+    <div class="page-title">间隔复习</div>
+    <div class="page-sub">自定义记忆算法 · 按牌组学习 · ← 不认识 · ↑/Space 想起来了 · → 很熟</div>
+    <div class="card">
+      <div class="card-title">选择牌组</div>
+      <div class="deck-grid" id="deckGrid"></div>
+    </div>
+    <div class="card">
+      <div class="card-title">设置</div>
+      <div class="cfg-row"><div class="cfg-label">新词数<small>每次最多引入的新词</small></div>
+        <div class="seg">
+          <button onclick="setCfg('newPerSession',10,this)" class="active">10</button>
+          <button onclick="setCfg('newPerSession',20,this)">20</button>
+          <button onclick="setCfg('newPerSession',30,this)">30</button>
+        </div>
+      </div>
+      <div class="cfg-row"><div class="cfg-label">模式<small>法语→认 / 中文→拼写法语 / 随机切换</small></div>
+        <div class="seg">
+          <button onclick="setCfg('front','fr',this)" class="active">看法语认意思</button>
+          <button onclick="setCfg('front','zh',this)">看中文认法语</button>
+          <button onclick="setCfg('front','spell',this)">✏️ 中文→拼写</button>
+          <button onclick="setCfg('front','random',this)">随机</button>
+        </div>
+      </div>
+      <div class="cfg-row"><div class="cfg-label">顺序<small>乱一/乱二为固定随机顺序</small></div>
+        <div class="seg">
+          <button onclick="setCfg('order','seq',this)">顺序</button>
+          <button onclick="setCfg('order','s1',this)" class="active">乱一</button>
+          <button onclick="setCfg('order','s2',this)">乱二</button>
+        </div>
+      </div>
+    </div>
+    <button class="start-btn" onclick="startSRS()">开始学习</button>
+    <button onclick="resetSRS(this)" style="margin-left:8px;padding:10px 18px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;border:1.5px solid var(--warn);background:var(--surface);color:var(--warn);">🗑 清空进度</button>
+    <p style="font-size:11px;color:var(--muted);margin-top:8px;">进度保存在浏览器本地，关闭后仍然保留</p>
+  </div>
+  <div id="srs-study" style="display:none;">
+    <div class="study-wrap">
+      <div class="session-header">
+        <span class="session-info" id="srs-deck-label"></span>
+        <button class="end-btn" onclick="endSRS(false)">✕ 结束</button>
+      </div>
+      <div class="prog-bar"><div class="prog-fill" id="srs-prog" style="width:0%"></div></div>
+      <div style="display:flex;gap:8px;margin-bottom:10px;">
+        <span class="tag-pill tp-new" id="q-new">新 0</span>
+        <span class="tag-pill tp-due" id="q-due">复 0</span>
+        <span style="font-size:12px;color:var(--muted);" id="q-stat"></span>
+      </div>
+      <div class="study-card" id="studyCard" onclick="cardClick()">
+        <div class="sc-interval" id="sc-interval"></div>
+        <div class="sc-tag" id="sc-tag"></div>
+        <div class="sc-front" id="sc-front">加载中…</div>
+        <div class="sc-back" id="sc-back"></div>
+        <div class="sc-extra" id="sc-extra"></div>
+        <div class="sc-hint" id="sc-hint">点击显示答案</div>
+      </div>
+      <!-- Spell input (shown when mode=spell, outside card so clicking doesn't trigger card) -->
+      <div id="spell-zone" style="display:none;margin-top:10px;text-align:center;">
+        <input id="srs-spell-input" class="spell-input" type="text" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" placeholder="输入法语（需重音符号）…"
+          onkeydown="if(event.key==='Enter'&&!this.disabled)checkSRSSpell();else if(event.key==='Enter'&&this.disabled)spellNext();">
+        <div style="display:flex;gap:6px;justify-content:center;margin-top:8px;flex-wrap:wrap;">
+          <button id="srs-spell-confirm" onclick="checkSRSSpell()" style="background:var(--accent);color:#fff;border:none;border-radius:8px;padding:8px 20px;font-size:13px;font-weight:600;cursor:pointer;">确认</button>
+          <button id="srs-spell-hint-btn" onclick="showSRSSpellHint()" style="background:var(--surface2);color:var(--muted);border:1.5px solid var(--border);border-radius:8px;padding:8px 14px;font-size:12px;cursor:pointer;">提示</button>
+          <button id="srs-spell-skip" onclick="skipSRSSpell()" style="background:var(--surface2);color:var(--muted);border:1.5px solid var(--border);border-radius:8px;padding:8px 14px;font-size:12px;cursor:pointer;">跳过</button>
+          <button id="srs-spell-next" onclick="spellNext()" style="display:none;background:var(--accent2);color:#fff;border:none;border-radius:8px;padding:8px 20px;font-size:13px;font-weight:600;cursor:pointer;">下一个 →</button>
+        </div>
+        <div id="srs-spell-fb" style="min-height:20px;margin-top:8px;font-size:13px;font-weight:600;"></div>
+      </div>
+      <div style="text-align:center;margin-top:8px;">
+        <button onclick="event.stopPropagation();if(srsCurrentCard)speak(srsCurrentCard.fr)" style="background:none;border:1.5px solid var(--border);border-radius:8px;padding:6px 14px;font-size:12px;cursor:pointer;color:var(--muted);">🔊 再听一次</button>
+        <button onclick="event.stopPropagation();if(srsCurrentCard)speak(srsCurrentCard.fr,0.55)" style="background:none;border:1.5px solid var(--border);border-radius:8px;padding:6px 12px;font-size:12px;cursor:pointer;color:var(--muted);margin-left:6px;">🐢 慢速</button>
+      </div>
+      <div class="rating-btns" id="ratingBtns" style="display:none;">
+        <button class="rb rb-again" onclick="rateSRS(1)" title="键盘 ←">
+          <span class="ri">❌</span><span>不认识</span><span class="rl">← 重新学</span>
+        </button>
+        <button class="rb rb-fuzzy" onclick="rateSRS(2)" title="键盘 ↑ / Space">
+          <span class="ri">🤔</span><span>想起来了</span><span class="rl">↑ Space</span>
+        </button>
+        <button class="rb rb-know" onclick="rateSRS(3)" title="键盘 →">
+          <span class="ri">✅</span><span>很熟</span><span class="rl">→ 拉长间隔</span>
+        </button>
+      </div>
+      <p style="text-align:center;font-size:11px;color:var(--border);margin-top:6px;">← 不认识 · ↑/Space 想起来了 · → 很熟 &nbsp;|&nbsp; Space/↓ 翻面</p>
+    </div>
+  </div>
+</div>
+
+<!-- ===== GENDER ===== -->
+<div id="page-gender" class="page">
+  <div id="gm-cfg">
+    <div class="page-title">阴阳性判断</div>
+    <div class="page-sub">配置后点击「开始」</div>
+    <div class="session-cfg">
+      <div class="scfg-title">词汇来源</div>
+      <div class="scfg-row">
+        <div class="scfg-label">使用今日词包<small>使用「今日学习」中选定的词汇（仅含名词）</small></div>
+        <div class="seg" id="gm-src-seg">
+          <button onclick="gmCfg.useToday=true;syncSeg('gm-src-seg',0)">今日词包</button>
+          <button onclick="gmCfg.useToday=false;syncSeg('gm-src-seg',1)" class="active">选主题</button>
+        </div>
+      </div>
+      <div class="scfg-title" style="margin-top:10px;">选择主题（选主题时有效）</div>
+      <div class="scfg-theme-grid" id="gm-theme-grid"></div>
+      <div class="scfg-row" style="margin-top:10px;">
+        <div class="scfg-label">顺序<small>乱一/乱二为固定随机顺序，与间隔复习相同</small></div>
+        <div class="seg" id="gm-order-seg">
+          <button onclick="gmCfg.order='seq';syncSeg('gm-order-seg',0)" >顺序</button>
+          <button onclick="gmCfg.order='s1';syncSeg('gm-order-seg',1)" class="active">乱一</button>
+          <button onclick="gmCfg.order='s2';syncSeg('gm-order-seg',2)">乱二</button>
+          <button onclick="gmCfg.order='wrongs';syncSeg('gm-order-seg',3)">❌ 错误重练</button>
+        </div>
+      </div>
+      <div class="scfg-row">
+        <div class="scfg-label">每次题数<small>从该主题中抽取的题目数量</small></div>
+        <div class="seg" id="gm-count-seg">
+          <button onclick="gmCfg.count=20;syncSeg('gm-count-seg',0)" class="active">20</button>
+          <button onclick="gmCfg.count=40;syncSeg('gm-count-seg',1)">40</button>
+          <button onclick="gmCfg.count=999;syncSeg('gm-count-seg',2)">全部</button>
+        </div>
+      </div>
+    </div>
+    <button class="start-btn" onclick="startGM()">开始练习</button>
+  </div>
+  <div id="gm-session" style="display:none;">
+    <div class="session-wrap">
+      <div class="session-header">
+        <div class="session-stats">
+          <span>✓ <strong id="gm-right">0</strong></span>
+          <span>✗ <strong id="gm-wrong">0</strong></span>
+          <span style="color:var(--muted);" id="gm-stat">0/0</span>
+        </div>
+        <button class="end-btn" onclick="endGM()">✕ 结束</button>
+      </div>
+      <div class="prog-bar"><div class="prog-fill" id="gm-prog" style="width:0%"></div></div>
+      <div class="gm-card">
+        <div class="gm-feedback" id="gm-fb"></div>
+        <div class="gm-word" id="gm-word"></div>
+        <div class="gm-hint-txt" id="gm-hint">le 还是 la？</div>
+        <div style="margin-bottom:12px;display:flex;gap:6px;justify-content:center;">
+          <button onclick="if(gmDeck[gmIdx])speak(gmDeck[gmIdx].fr)" style="background:none;border:1.5px solid var(--border);border-radius:8px;padding:5px 12px;font-size:12px;cursor:pointer;color:var(--muted);">🔊 再听</button>
+          <button onclick="if(gmDeck[gmIdx])speak(gmDeck[gmIdx].fr,0.55)" style="background:none;border:1.5px solid var(--border);border-radius:8px;padding:5px 12px;font-size:12px;cursor:pointer;color:var(--muted);">🐢 慢速</button>
+        </div>
+        <div class="gm-btns">
+          <button class="btn-m" onclick="guessGM('m')">🔵 阳性<br><small style="font-weight:400">le / un</small></button>
+          <button class="btn-f" onclick="guessGM('f')">🔴 阴性<br><small style="font-weight:400">la / une</small></button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== DRILL ===== -->
+<div id="page-drill" class="page">
+  <div class="page-title">动词变位练习</div>
+  <div class="page-sub">填写空格 → 检查 → 错误重练</div>
+  <div class="vd-header">
+    <select id="vd-verb-sel"></select>
+    <select id="vd-tense-sel">
+      <option value="present">现在时</option>
+      <option value="imperatif">命令式</option>
+      <option value="passe">复合过去时</option>
+      <option value="futur">近期将来时</option>
+      <option value="random">随机时态</option>
+    </select>
+    <select id="vd-order-sel">
+      <option value="seq">顺序</option>
+      <option value="s1">乱一</option>
+      <option value="s2">乱二</option>
+    </select>
+    <button class="vd-btn active" onclick="vdNew()">新题</button>
+    <button class="vd-btn" onclick="vdSRSMode()">❌ 错误重练</button>
+  </div>
+  <div class="vd-score">
+    <div class="vs-item"><div class="vs-num" id="vd-total" style="color:var(--accent)">0</div><div class="vs-label">已练</div></div>
+    <div class="vs-item"><div class="vs-num" id="vd-ok" style="color:var(--accent2)">0</div><div class="vs-label">全对</div></div>
+    <div class="vs-item"><div class="vs-num" id="vd-streak" style="color:var(--gold)">0</div><div class="vs-label">连对</div></div>
+  </div>
+  <div class="vd-card" id="vdCard">
+    <div class="empty-state"><div class="big">✏️</div><p>点击「新题」开始</p></div>
+  </div>
+</div>
+
+<!-- ===== SPELL PAGE ===== -->
+<div id="page-spell" class="page">
+  <div id="sp-cfg">
+    <div class="page-title">拼写练习</div>
+    <div class="page-sub">看中文 → 拼写法语（需重音符号）</div>
+    <div class="session-cfg">
+      <div class="scfg-title">词汇来源</div>
+      <div class="scfg-row">
+        <div class="scfg-label">使用今日词包<small>使用「今日学习」中选定的词汇</small></div>
+        <div class="seg" id="sp-src-seg">
+          <button onclick="spCfg.useToday=true;syncSeg('sp-src-seg',0)">今日词包</button>
+          <button onclick="spCfg.useToday=false;syncSeg('sp-src-seg',1)" class="active">选主题</button>
+        </div>
+      </div>
+      <div class="scfg-title" style="margin-top:10px;">选择主题（选主题时有效）</div>
+      <div class="scfg-theme-grid" id="sp-theme-grid"></div>
+      <div class="scfg-row" style="margin-top:10px;">
+        <div class="scfg-label">顺序</div>
+        <div class="seg" id="sp-order-seg">
+          <button onclick="spCfg.order='seq';syncSeg('sp-order-seg',0)">顺序</button>
+          <button onclick="spCfg.order='s1';syncSeg('sp-order-seg',1)" class="active">乱一</button>
+          <button onclick="spCfg.order='s2';syncSeg('sp-order-seg',2)">乱二</button>
+          <button onclick="spCfg.order='wrongs';syncSeg('sp-order-seg',3)">❌ 错误重练</button>
+        </div>
+      </div>
+      <div class="scfg-row">
+        <div class="scfg-label">每次题数</div>
+        <div class="seg" id="sp-count-seg">
+          <button onclick="spCfg.count=20;syncSeg('sp-count-seg',0)" class="active">20</button>
+          <button onclick="spCfg.count=40;syncSeg('sp-count-seg',1)">40</button>
+          <button onclick="spCfg.count=999;syncSeg('sp-count-seg',2)">全部</button>
+        </div>
+      </div>
+    </div>
+    <button class="start-btn" onclick="startSpell()">开始练习</button>
+  </div>
+  <div id="sp-session" style="display:none;">
+    <div class="session-wrap">
+      <div class="session-header">
+        <div class="session-stats">
+          <span>✓ <strong id="sp-right">0</strong></span>
+          <span>✗ <strong id="sp-wrong">0</strong></span>
+          <span style="color:var(--muted);" id="sp-stat">0/0</span>
+        </div>
+        <button class="end-btn" onclick="endSpell()">✕ 结束</button>
+      </div>
+      <div class="prog-bar"><div class="prog-fill" id="sp-prog" style="width:0%"></div></div>
+      <div id="sp-card" class="ls-card">
+        <div class="empty-state"><div class="big">✏️</div><p>加载中…</p></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== LISTEN ===== -->
+<div id="page-listen" class="page">
+  <div id="ls-cfg">
+    <div class="page-title">听力拼写</div>
+    <div class="page-sub">听发音 → 拼写法语 → 选中文意思（需 Chrome/Edge）</div>
+    <div class="session-cfg">
+      <div class="scfg-title">词汇来源</div>
+      <div class="scfg-row">
+        <div class="scfg-label">使用今日词包<small>使用「今日学习」中选定的词汇</small></div>
+        <div class="seg" id="ls-src-seg">
+          <button onclick="lsCfg.useToday=true;syncSeg('ls-src-seg',0)">今日词包</button>
+          <button onclick="lsCfg.useToday=false;syncSeg('ls-src-seg',1)" class="active">选主题</button>
+        </div>
+      </div>
+      <div class="scfg-title" style="margin-top:10px;">选择主题（选主题时有效）</div>
+      <div class="scfg-theme-grid" id="ls-theme-grid"></div>
+      <div class="scfg-row" style="margin-top:10px;">
+        <div class="scfg-label">顺序<small>与阴阳性和间隔复习使用相同随机算法</small></div>
+        <div class="seg" id="ls-order-seg">
+          <button onclick="lsCfg.order='seq';syncSeg('ls-order-seg',0)">顺序</button>
+          <button onclick="lsCfg.order='s1';syncSeg('ls-order-seg',1)" class="active">乱一</button>
+          <button onclick="lsCfg.order='s2';syncSeg('ls-order-seg',2)">乱二</button>
+          <button onclick="lsCfg.order='wrongs';syncSeg('ls-order-seg',3)">❌ 错误重练</button>
+        </div>
+      </div>
+      <div class="scfg-row">
+        <div class="scfg-label">每次题数</div>
+        <div class="seg" id="ls-count-seg">
+          <button onclick="lsCfg.count=15;syncSeg('ls-count-seg',0)" class="active">15</button>
+          <button onclick="lsCfg.count=30;syncSeg('ls-count-seg',1)">30</button>
+          <button onclick="lsCfg.count=999;syncSeg('ls-count-seg',2)">全部</button>
+        </div>
+      </div>
+    </div>
+    <button class="start-btn" onclick="startListen()">开始听力</button>
+    <p style="font-size:11px;color:var(--muted);margin-top:8px;">拼写时忽略重音符号（chateau = château）也算正确</p>
+  </div>
+  <div id="ls-session" style="display:none;">
+    <div class="session-wrap">
+      <div class="session-header">
+        <div class="session-stats">
+          <span>✓ <strong id="ls-right">0</strong></span>
+          <span>✗ <strong id="ls-wrong">0</strong></span>
+          <span style="color:var(--muted);" id="ls-stat">0/0</span>
+        </div>
+        <button class="end-btn" onclick="endListen()">✕ 结束</button>
+      </div>
+      <div class="prog-bar"><div class="prog-fill" id="ls-prog" style="width:0%"></div></div>
+      <div class="ls-card" id="ls-card">
+        <div class="empty-state"><div class="big">🔊</div><p>加载中…</p></div>
+      </div>
+      <div style="text-align:center;margin-top:12px;">
+        <button id="ls-next-btn" onclick="advanceLs()" style="display:none;background:var(--accent2);color:#fff;border:none;border-radius:8px;padding:10px 28px;font-size:14px;font-weight:600;cursor:pointer;">下一个 → <span style="font-size:11px;opacity:.7;">Enter / 空格</span></button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== CUSTOM ===== -->
+<div id="page-custom" class="page">
+  <div class="page-title">自定义单词</div>
+  <div class="page-sub">添加词汇，参与所有模块复习 · 数据保存在浏览器本地</div>
+  <div class="card">
+    <div class="card-title">添加单词</div>
+    <div class="cw-form">
+      <div class="cw-field">
+        <label>法语 *</label>
+        <input id="cw-fr" placeholder="le château" autocomplete="off" spellcheck="false"
+          oninput="checkCWDupe(this.value)"
+          onkeydown="if(event.key==='Enter')document.getElementById('cw-zh').focus()">
+        <div id="cw-dupe-hint" style="font-size:11px;margin-top:3px;min-height:16px;"></div>
+      </div>
+      <div class="cw-field">
+        <label>中文 *</label>
+        <input id="cw-zh" placeholder="城堡"
+          onkeydown="if(event.key==='Enter')document.getElementById('cw-tag').focus()">
+      </div>
+      <div class="cw-field">
+        <label>分类（可选已有或新建）</label>
+        <input id="cw-tag" list="cw-tag-list" placeholder="自定义" value="自定义"
+          onkeydown="if(event.key==='Enter')addCustomWord()">
+        <datalist id="cw-tag-list"></datalist>
+      </div>
+      <div class="cw-field">
+        <label>性</label>
+        <select id="cw-gender">
+          <option value="">—</option>
+          <option value="m">阳 m</option>
+          <option value="f">阴 f</option>
+        </select>
+      </div>
+    </div>
+    <button class="start-btn" onclick="addCustomWord()">＋ 添加</button>
+  </div>
+  <div class="card">
+    <div class="card-title">批量导入（每行：法语, 中文, 分类, 性别）</div>
+    <textarea id="cw-import" rows="4" placeholder="le château, 城堡, 建筑, m&#10;magnifique, 壮观的, 形容词"
+      style="width:100%;padding:9px;border:1.5px solid var(--border);border-radius:8px;font-size:12px;font-family:var(--mono);resize:vertical;outline:none;background:var(--surface);margin-bottom:8px;"></textarea>
+    <div style="display:flex;gap:6px;flex-wrap:wrap;">
+      <button class="start-btn" onclick="importCustomWords()">批量导入</button>
+      <button onclick="exportCustomWords()" style="padding:9px 14px;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;border:1.5px solid var(--border);background:var(--surface2);color:var(--text);">导出备份</button>
+      <button onclick="clearAllCustom(this)" style="padding:9px 14px;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;border:1.5px solid var(--warn);background:var(--surface);color:var(--warn);">清空全部</button>
+    </div>
+  </div>
+  <div class="card" style="margin-top:1rem;">
+    <div class="card-title">我的单词库 (<span id="cw-count">0</span>)</div>
+    <div id="custom-list"></div>
+  </div>
+
+  <!-- Custom Verbs -->
+  <div class="card" style="margin-top:1rem;">
+    <div class="card-title">自定义动词 (<span id="cv-count">0</span>)
+      <small style="font-size:11px;font-weight:400;color:var(--muted);margin-left:6px;">会出现在动词填写、间隔复习、今日学习</small>
+    </div>
+    <div class="g2" style="gap:8px;margin-bottom:12px;">
+      <div class="cw-field"><label>动词原形 *</label>
+        <input id="cv-v" placeholder="se promener" autocomplete="off" spellcheck="false" oninput="checkCVDupe(this.value)">
+        <div id="cv-dupe-hint" style="font-size:11px;margin-top:3px;min-height:16px;"></div>
+      </div>
+      <div class="cw-field"><label>中文意思 *</label>
+        <input id="cv-zh" placeholder="散步" autocomplete="off"></div>
+      <div class="cw-field"><label>过去分词</label>
+        <input id="cv-pp" placeholder="promené(e)" autocomplete="off" spellcheck="false"></div>
+      <div class="cw-field"><label>助动词</label>
+        <div class="seg" id="cv-aux-seg" style="margin-top:4px;">
+          <button onclick="cvAux='avoir';syncSeg('cv-aux-seg',0)" class="active">avoir</button>
+          <button onclick="cvAux='être';syncSeg('cv-aux-seg',1)">être</button>
+        </div>
+      </div>
+      <div class="cw-field"><label>分组</label>
+        <div class="seg" id="cv-g-seg" style="margin-top:4px;">
+          <button onclick="cvG='G1';syncSeg('cv-g-seg',0)" class="active">G1 (-er)</button>
+          <button onclick="cvG='G2';syncSeg('cv-g-seg',1)">G2 (-ir)</button>
+          <button onclick="cvG='G3';syncSeg('cv-g-seg',2)">G3 (不规则)</button>
+        </div>
+      </div>
+    </div>
+    <div style="font-size:12px;font-weight:600;color:var(--muted);margin-bottom:6px;">现在时变位（可选，用于动词填写练习）</div>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:12px;" id="cv-pres-grid">
+      <div class="cw-field"><label>je</label><input id="cv-p0" autocomplete="off" spellcheck="false" placeholder="..."></div>
+      <div class="cw-field"><label>tu</label><input id="cv-p1" autocomplete="off" spellcheck="false" placeholder="..."></div>
+      <div class="cw-field"><label>il/elle</label><input id="cv-p2" autocomplete="off" spellcheck="false" placeholder="..."></div>
+      <div class="cw-field"><label>nous</label><input id="cv-p3" autocomplete="off" spellcheck="false" placeholder="..."></div>
+      <div class="cw-field"><label>vous</label><input id="cv-p4" autocomplete="off" spellcheck="false" placeholder="..."></div>
+      <div class="cw-field"><label>ils/elles</label><input id="cv-p5" autocomplete="off" spellcheck="false" placeholder="..."></div>
+    </div>
+    <div style="font-size:12px;font-weight:600;color:var(--muted);margin-bottom:6px;">命令式（可选）</div>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:14px;">
+      <div class="cw-field"><label>tu</label><input id="cv-i0" autocomplete="off" spellcheck="false" placeholder="..."></div>
+      <div class="cw-field"><label>nous</label><input id="cv-i1" autocomplete="off" spellcheck="false" placeholder="..."></div>
+      <div class="cw-field"><label>vous</label><input id="cv-i2" autocomplete="off" spellcheck="false" placeholder="..."></div>
+    </div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;">
+      <button class="start-btn" onclick="addCustomVerb()">＋ 添加动词</button>
+    </div>
+    <div style="margin-top:1.2rem;border-top:1px solid var(--border);padding-top:1rem;">
+      <div style="font-size:12px;font-weight:600;color:var(--muted);margin-bottom:6px;">批量导入动词</div>
+      <div style="font-size:11px;color:var(--muted);margin-bottom:6px;">
+        每行格式：<code style="background:#F0EDE8;padding:1px 5px;border-radius:3px;">原形, 中文, 过去分词, 助动词, 分组, je, tu, il, nous, vous, ils</code><br>
+        变位可省略（用 — 占位或直接留空），最少只需：<code style="background:#F0EDE8;padding:1px 5px;border-radius:3px;">原形, 中文</code>
+      </div>
+      <textarea id="cv-bulk-input" style="width:100%;height:120px;font-size:12px;font-family:var(--mono);border:1px solid var(--border);border-radius:8px;padding:8px;resize:vertical;" placeholder="vivre, 生活/居住, vécu, avoir, G3, vis, vis, vit, vivons, vivez, vivent&#10;se blesser, 受伤, blessé(e), être, 反身&#10;dormir, 睡觉, dormi, avoir, G3"></textarea>
+      <div style="display:flex;gap:8px;margin-top:8px;align-items:center;">
+        <button class="start-btn" onclick="importCustomVerbs()">批量导入</button>
+        <span id="cv-import-info" style="font-size:12px;color:var(--muted);"></span>
+      </div>
+    </div>
+    <div id="cv-list" style="margin-top:12px;"></div>
+  </div>
+</div>
+
+<script>
+// ============================================================
+// CORE DATA
+// ============================================================
+const VERBS=[
+  {v:'être',zh:'是',g:'G3',pp:'été',aux:'avoir',pres:['suis','es','est','sommes','êtes','sont'],imp:['Sois !','Soyons !','Soyez !']},
+  {v:'avoir',zh:'有',g:'G3',pp:'eu',aux:'avoir',pres:['ai','as','a','avons','avez','ont'],imp:['Aie !','Ayons !','Ayez !']},
+  {v:'aller',zh:'去',g:'G3',pp:'allé(e)',aux:'être',pres:['vais','vas','va','allons','allez','vont'],imp:['Va !','Allons !','Allez !']},
+  {v:'venir',zh:'来',g:'G3',pp:'venu(e)',aux:'être',pres:['viens','viens','vient','venons','venez','viennent'],imp:['Viens !','Venons !','Venez !']},
+  {v:'faire',zh:'做',g:'G3',pp:'fait',aux:'avoir',pres:['fais','fais','fait','faisons','faites','font'],imp:['Fais !','Faisons !','Faites !']},
+  {v:'pouvoir',zh:'能够',g:'G3',pp:'pu',aux:'avoir',pres:['peux','peux','peut','pouvons','pouvez','peuvent'],imp:['—','—','—']},
+  {v:'vouloir',zh:'想要',g:'G3',pp:'voulu',aux:'avoir',pres:['veux','veux','veut','voulons','voulez','veulent'],imp:['—','—','—']},
+  {v:'devoir',zh:'必须',g:'G3',pp:'dû',aux:'avoir',pres:['dois','dois','doit','devons','devez','doivent'],imp:['—','—','—']},
+  {v:'savoir',zh:'知道/会',g:'G3',pp:'su',aux:'avoir',pres:['sais','sais','sait','savons','savez','savent'],imp:['Sache !','Sachons !','Sachez !']},
+  {v:'prendre',zh:'拿/坐/吃',g:'G3',pp:'pris',aux:'avoir',pres:['prends','prends','prend','prenons','prenez','prennent'],imp:['Prends !','Prenons !','Prenez !']},
+  {v:'mettre',zh:'放/穿上',g:'G3',pp:'mis',aux:'avoir',pres:['mets','mets','met','mettons','mettez','mettent'],imp:['Mets !','Mettons !','Mettez !']},
+  {v:'voir',zh:'看见',g:'G3',pp:'vu',aux:'avoir',pres:['vois','vois','voit','voyons','voyez','voient'],imp:['Vois !','Voyons !','Voyez !']},
+  {v:'lire',zh:'阅读',g:'G3',pp:'lu',aux:'avoir',pres:['lis','lis','lit','lisons','lisez','lisent'],imp:['Lis !','Lisons !','Lisez !']},
+  {v:'écrire',zh:'写',g:'G3',pp:'écrit',aux:'avoir',pres:['écris','écris','écrit','écrivons','écrivez','écrivent'],imp:['Écris !','Écrivons !','Écrivez !']},
+  {v:'sortir',zh:'出去',g:'G3',pp:'sorti(e)',aux:'être',pres:['sors','sors','sort','sortons','sortez','sortent'],imp:['Sors !','Sortons !','Sortez !']},
+  {v:'partir',zh:'出发',g:'G3',pp:'parti(e)',aux:'être',pres:['pars','pars','part','partons','partez','partent'],imp:['Pars !','Partons !','Partez !']},
+  {v:'perdre',zh:'丢失',g:'G3',pp:'perdu',aux:'avoir',pres:['perds','perds','perd','perdons','perdez','perdent'],imp:['Perds !','Perdons !','Perdez !']},
+  {v:'apprendre',zh:'学习',g:'G3',pp:'appris',aux:'avoir',pres:['apprends','apprends','apprend','apprenons','apprenez','apprennent'],imp:['Apprends !','Apprenons !','Apprenez !']},
+  {v:'comprendre',zh:'理解',g:'G3',pp:'compris',aux:'avoir',pres:['comprends','comprends','comprend','comprenons','comprenez','comprennent'],imp:['Comprends !','Comprenons !','Comprenez !']},
+  {v:'connaître',zh:'认识',g:'G3',pp:'connu',aux:'avoir',pres:['connais','connais','connaît','connaissons','connaissez','connaissent'],imp:['Connais !','Connaissons !','Connaissez !']},
+  {v:'recevoir',zh:'收到',g:'G3',pp:'reçu',aux:'avoir',pres:['reçois','reçois','reçoit','recevons','recevez','reçoivent'],imp:['Reçois !','Recevons !','Recevez !']},
+  {v:'choisir',zh:'选择',g:'G2',pp:'choisi',aux:'avoir',pres:['choisis','choisis','choisit','choisissons','choisissez','choisissent'],imp:['Choisis !','Choisissons !','Choisissez !']},
+  {v:'finir',zh:'完成',g:'G2',pp:'fini',aux:'avoir',pres:['finis','finis','finit','finissons','finissez','finissent'],imp:['Finis !','Finissons !','Finissez !']},
+  {v:'réussir',zh:'成功',g:'G2',pp:'réussi',aux:'avoir',pres:['réussis','réussis','réussit','réussissons','réussissez','réussissent'],imp:['Réussis !','Réussissons !','Réussissez !']},
+  {v:'parler',zh:'说话',g:'G1',pp:'parlé',aux:'avoir',pres:['parle','parles','parle','parlons','parlez','parlent'],imp:['Parle !','Parlons !','Parlez !']},
+  {v:'habiter',zh:'居住',g:'G1',pp:'habité',aux:'avoir',pres:['habite','habites','habite','habitons','habitez','habitent'],imp:['Habite !','Habitons !','Habitez !']},
+  {v:'aimer',zh:'喜欢',g:'G1',pp:'aimé',aux:'avoir',pres:['aime','aimes','aime','aimons','aimez','aiment'],imp:['Aime !','Aimons !','Aimez !']},
+  {v:'travailler',zh:'工作',g:'G1',pp:'travaillé',aux:'avoir',pres:['travaille','travailles','travaille','travaillons','travaillez','travaillent'],imp:['Travaille !','Travaillons !','Travaillez !']},
+  {v:'manger',zh:'吃',g:'G1',pp:'mangé',aux:'avoir',pres:['mange','manges','mange','mangeons','mangez','mangent'],imp:['Mange !','Mangeons !','Mangez !']},
+  {v:'acheter',zh:'买',g:'G1',pp:'acheté',aux:'avoir',pres:['achète','achètes','achète','achetons','achetez','achètent'],imp:['Achète !','Achetons !','Achetez !']},
+  {v:'préférer',zh:'更喜欢',g:'G1',pp:'préféré',aux:'avoir',pres:['préfère','préfères','préfère','préférons','préférez','préfèrent'],imp:['Préfère !','Préférons !','Préférez !']},
+  {v:'chercher',zh:'寻找',g:'G1',pp:'cherché',aux:'avoir',pres:['cherche','cherches','cherche','cherchons','cherchez','cherchent'],imp:['Cherche !','Cherchons !','Cherchez !']},
+  {v:'arriver',zh:'到达',g:'G1',pp:'arrivé(e)',aux:'être',pres:['arrive','arrives','arrive','arrivons','arrivez','arrivent'],imp:['Arrive !','Arrivons !','Arrivez !']},
+  {v:'rester',zh:'停留',g:'G1',pp:'resté(e)',aux:'être',pres:['reste','restes','reste','restons','restez','restent'],imp:['Reste !','Restons !','Restez !']},
+  {v:'tomber',zh:'摔倒',g:'G1',pp:'tombé(e)',aux:'être',pres:['tombe','tombes','tombe','tombons','tombez','tombent'],imp:['Tombe !','Tombons !','Tombez !']},
+  {v:'porter',zh:'穿戴',g:'G1',pp:'porté',aux:'avoir',pres:['porte','portes','porte','portons','portez','portent'],imp:['Porte !','Portons !','Portez !']},
+  {v:'visiter',zh:'参观',g:'G1',pp:'visité',aux:'avoir',pres:['visite','visites','visite','visitons','visitez','visitent'],imp:['Visite !','Visitons !','Visitez !']},
+  {v:'réserver',zh:'预订',g:'G1',pp:'réservé',aux:'avoir',pres:['réserve','réserves','réserve','réservons','réservez','réservent'],imp:['Réserve !','Réservons !','Réservez !']},
+  {v:'oublier',zh:'忘记',g:'G1',pp:'oublié',aux:'avoir',pres:['oublie','oublies','oublie','oublions','oubliez','oublient'],imp:['Oublie !','Oublions !','Oubliez !']},
+  {v:'rater',zh:'错过',g:'G1',pp:'raté',aux:'avoir',pres:['rate','rates','rate','ratons','ratez','ratent'],imp:['Rate !','Ratons !','Ratez !']},
+  {v:'se lever',zh:'起床',g:'反身',pp:'levé(e)',aux:'être',pres:["me lève","te lèves","se lève","nous levons","vous levez","se lèvent"],imp:['Lève-toi !','Levons-nous !','Levez-vous !']},
+  {v:'se coucher',zh:'睡觉',g:'反身',pp:'couché(e)',aux:'être',pres:["me couche","te couches","se couche","nous couchons","vous couchez","se couchent"],imp:['Couche-toi !','Couchons-nous !','Couchez-vous !']},
+  {v:'se réveiller',zh:'醒来',g:'反身',pp:'réveillé(e)',aux:'être',pres:["me réveille","te réveilles","se réveille","nous réveillons","vous réveillez","se réveillent"],imp:['Réveille-toi !','Réveillons-nous !','Réveillez-vous !']},
+  {v:"s'appeler",zh:'叫做',g:'反身',pp:'appelé(e)',aux:'être',pres:["m'appelle","t'appelles","s'appelle","nous appelons","vous appelez","s'appellent"],imp:["Appelle-toi !",'Appelons-nous !','Appelez-vous !']},
+  // ── 补充 A1 动词 ──
+  // 核心不规则
+  {v:'rentrer',zh:'回家/回去',g:'G1',pp:'rentré(e)',aux:'être',pres:['rentre','rentres','rentre','rentrons','rentrez','rentrent'],imp:['Rentre !','Rentrons !','Rentrez !']},
+  {v:'naître',zh:'出生',g:'G3',pp:'né(e)',aux:'être',pres:['nais','nais','naît','naissons','naissez','naissent'],imp:['—','—','—']},
+  {v:'mourir',zh:'死亡',g:'G3',pp:'mort(e)',aux:'être',pres:['meurs','meurs','meurt','mourons','mourez','meurent'],imp:['—','—','—']},
+  {v:'ouvrir',zh:'打开',g:'G3',pp:'ouvert',aux:'avoir',pres:['ouvre','ouvres','ouvre','ouvrons','ouvrez','ouvrent'],imp:['Ouvre !','Ouvrons !','Ouvrez !']},
+  // 高频 -ER
+  {v:'payer',zh:'付款',g:'G1',pp:'payé',aux:'avoir',pres:['paie','paies','paie','payons','payez','paient'],imp:['Paie !','Payons !','Payez !']},
+  {v:'commencer',zh:'开始',g:'G1',pp:'commencé',aux:'avoir',pres:['commence','commences','commence','commençons','commencez','commencent'],imp:['Commence !','Commençons !','Commencez !']},
+  {v:'voyager',zh:'旅行',g:'G1',pp:'voyagé',aux:'avoir',pres:['voyage','voyages','voyage','voyageons','voyagez','voyagent'],imp:['Voyage !','Voyageons !','Voyagez !']},
+  {v:'regarder',zh:'看/观看',g:'G1',pp:'regardé',aux:'avoir',pres:['regarde','regardes','regarde','regardons','regardez','regardent'],imp:['Regarde !','Regardons !','Regardez !']},
+  {v:'écouter',zh:'听/收听',g:'G1',pp:'écouté',aux:'avoir',pres:['écoute','écoutes','écoute','écoutons','écoutez','écoutent'],imp:['Écoute !','Écoutons !','Écoutez !']},
+  {v:'étudier',zh:'学习/研究',g:'G1',pp:'étudié',aux:'avoir',pres:['étudie','études','étudie','étudions','étudiez','étudient'],imp:['Étudie !','Étudions !','Étudiez !']},
+  {v:'jouer',zh:'玩/演奏',g:'G1',pp:'joué',aux:'avoir',pres:['joue','joues','joue','jouons','jouez','jouent'],imp:['Joue !','Jouons !','Jouez !']},
+  {v:'danser',zh:'跳舞',g:'G1',pp:'dansé',aux:'avoir',pres:['danse','danses','danse','dansons','dansez','dansent'],imp:['Danse !','Dansons !','Dansez !']},
+  {v:'chanter',zh:'唱歌',g:'G1',pp:'chanté',aux:'avoir',pres:['chante','chantes','chante','chantons','chantez','chantent'],imp:['Chante !','Chantons !','Chantez !']},
+  {v:'nager',zh:'游泳',g:'G1',pp:'nagé',aux:'avoir',pres:['nage','nages','nage','nageons','nagez','nagent'],imp:['Nage !','Nageons !','Nagez !']},
+  {v:'marcher',zh:'步行/走路',g:'G1',pp:'marché',aux:'avoir',pres:['marche','marches','marche','marchons','marchez','marchent'],imp:['Marche !','Marchons !','Marchez !']},
+  {v:'entrer',zh:'进入',g:'G1',pp:'entré(e)',aux:'être',pres:['entre','entres','entre','entrons','entrez','entrent'],imp:['Entre !','Entrons !','Entrez !']},
+  {v:'passer',zh:'经过/度过',g:'G1',pp:'passé(e)',aux:'avoir/être',pres:['passe','passes','passe','passons','passez','passent'],imp:['Passe !','Passons !','Passez !']},
+  {v:'retourner',zh:'返回',g:'G1',pp:'retourné(e)',aux:'être',pres:['retourne','retournes','retourne','retournons','retournez','retournent'],imp:['Retourne !','Retournons !','Retournez !']},
+  {v:'téléphoner',zh:'打电话',g:'G1',pp:'téléphoné',aux:'avoir',pres:['téléphone','téléphones','téléphone','téléphonons','téléphonez','téléphonent'],imp:['Téléphone !','Téléphonons !','Téléphonez !']},
+  {v:'inviter',zh:'邀请',g:'G1',pp:'invité',aux:'avoir',pres:['invite','invites','invite','invitons','invitez','invitent'],imp:['Invite !','Invitons !','Invitez !']},
+  {v:'préparer',zh:'准备',g:'G1',pp:'préparé',aux:'avoir',pres:['prépare','prépares','prépare','préparons','préparez','préparent'],imp:['Prépare !','Préparons !','Préparez !']},
+  {v:'détester',zh:'厌恶/讨厌',g:'G1',pp:'détesté',aux:'avoir',pres:['déteste','détestes','déteste','détestons','détestez','détestent'],imp:['Déteste !','Détestons !','Détestez !']},
+  {v:'adorer',zh:'喜爱/崇拜',g:'G1',pp:'adoré',aux:'avoir',pres:['adore','adores','adore','adorons','adorez','adorent'],imp:['Adore !','Adorons !','Adorez !']},
+  {v:'utiliser',zh:'使用',g:'G1',pp:'utilisé',aux:'avoir',pres:['utilise','utilises','utilise','utilisons','utilisez','utilisent'],imp:['Utilise !','Utilisons !','Utilisez !']},
+  {v:'coûter',zh:'花费/值……钱',g:'G1',pp:'coûté',aux:'avoir',pres:['coûte','coûtes','coûte','coûtons','coûtez','coûtent'],imp:['—','—','—']},
+  {v:'fermer',zh:'关闭',g:'G1',pp:'fermé',aux:'avoir',pres:['ferme','fermes','ferme','fermons','fermez','ferment'],imp:['Ferme !','Fermons !','Fermez !']},
+  {v:'continuer',zh:'继续',g:'G1',pp:'continué',aux:'avoir',pres:['continue','continues','continue','continuons','continuez','continuent'],imp:['Continue !','Continuons !','Continuez !']},
+  {v:'décider',zh:'决定',g:'G1',pp:'décidé',aux:'avoir',pres:['décide','décides','décide','décidons','décidez','décident'],imp:['Décide !','Décidons !','Décidez !']},
+  // -IR/-RE
+  {v:'répondre',zh:'回答/回复',g:'G3',pp:'répondu',aux:'avoir',pres:['réponds','réponds','répond','répondons','répondez','répondent'],imp:['Réponds !','Répondons !','Répondez !']},
+  {v:'attendre',zh:'等待',g:'G3',pp:'attendu',aux:'avoir',pres:['attends','attends','attend','attendons','attendez','attendent'],imp:['Attends !','Attendons !','Attendez !']},
+  {v:'vendre',zh:'卖/出售',g:'G3',pp:'vendu',aux:'avoir',pres:['vends','vends','vend','vendons','vendez','vendent'],imp:['Vends !','Vendons !','Vendez !']},
+  {v:'descendre',zh:'下去/下车',g:'G3',pp:'descendu(e)',aux:'être',pres:['descends','descends','descend','descendons','descendez','descendent'],imp:['Descends !','Descendons !','Descendez !']},
+  {v:'entendre',zh:'听见',g:'G3',pp:'entendu',aux:'avoir',pres:['entends','entends','entend','entendons','entendez','entendent'],imp:['Entends !','Entendons !','Entendez !']},
+  // 反身动词
+  {v:"s'habiller",zh:'穿衣',g:'反身',pp:'habillé(e)',aux:'être',pres:["m'habille","t'habilles","s'habille","nous habillons","vous habillez","s'habillent"],imp:["Habille-toi !",'Habillons-nous !','Habillez-vous !']},
+  {v:'se laver',zh:'洗漱',g:'反身',pp:'lavé(e)',aux:'être',pres:['me lave','te laves','se lave','nous lavons','vous lavez','se lavent'],imp:['Lave-toi !','Lavons-nous !','Lavez-vous !']},
+  {v:'se promener',zh:'散步',g:'反身',pp:'promené(e)',aux:'être',pres:['me promène','te promènes','se promène','nous promenons','vous promenez','se promènent'],imp:['Promène-toi !','Promenons-nous !','Promenez-vous !']},
+  {v:'se dépêcher',zh:'赶快',g:'反身',pp:'dépêché(e)',aux:'être',pres:['me dépêche','te dépêches','se dépêche','nous dépêchons','vous dépêchez','se dépêchent'],imp:['Dépêche-toi !','Dépêchons-nous !','Dépêchez-vous !']},
+  {v:"s'amuser",zh:'玩得开心',g:'反身',pp:'amusé(e)',aux:'être',pres:["m'amuse","t'amuses","s'amuse","nous amusons","vous amusez","s'amusent"],imp:["Amuse-toi !",'Amusons-nous !','Amusez-vous !']},
+  {v:'se perdre',zh:'迷路',g:'反身',pp:'perdu(e)',aux:'être',pres:['me perds','te perds','se perd','nous perdons','vous perdez','se perdent'],imp:['Perds-toi !','Perdons-nous !','Perdez-vous !']},
+  {v:'se sentir',zh:'感觉/感受',g:'反身',pp:'senti(e)',aux:'être',pres:['me sens','te sens','se sent','nous sentons','vous sentez','se sentent'],imp:['Sens-toi !','Sentons-nous !','Sentez-vous !']},
+  {v:'se relaxer',zh:'放松',g:'反身',pp:'relaxé(e)',aux:'être',pres:['me relaxe','te relaxes','se relaxe','nous relaxons','vous relaxez','se relaxent'],imp:['Relaxe-toi !','Relaxons-nous !','Relaxez-vous !']},
+  {v:'se détendre',zh:'放松/舒展',g:'反身',pp:'détendu(e)',aux:'être',pres:['me détends','te détends','se détend','nous détendons','vous détendez','se détendent'],imp:['Détends-toi !','Détendons-nous !','Détendez-vous !']},
+  // ── 补充2 ──
+  {v:'vivre',zh:'生活/居住',g:'G3',pp:'vécu',aux:'avoir',pres:['vis','vis','vit','vivons','vivez','vivent'],imp:['Vis !','Vivons !','Vivez !']},
+  {v:'dormir',zh:'睡觉',g:'G3',pp:'dormi',aux:'avoir',pres:['dors','dors','dort','dormons','dormez','dorment'],imp:['Dors !','Dormons !','Dormez !']},
+  {v:'dire',zh:'说/告诉',g:'G3',pp:'dit',aux:'avoir',pres:['dis','dis','dit','disons','dites','disent'],imp:['Dis !','Disons !','Dites !']},
+  {v:'sentir',zh:'闻/感觉',g:'G3',pp:'senti',aux:'avoir',pres:['sens','sens','sent','sentons','sentez','sentent'],imp:['Sens !','Sentons !','Sentez !']},
+  {v:'conduire',zh:'驾驶',g:'G3',pp:'conduit',aux:'avoir',pres:['conduis','conduis','conduit','conduisons','conduisez','conduisent'],imp:['Conduis !','Conduisons !','Conduisez !']},
+  {v:'suivre',zh:'跟随/学（课程）',g:'G3',pp:'suivi',aux:'avoir',pres:['suis','suis','suit','suivons','suivez','suivent'],imp:['Suis !','Suivons !','Suivez !']},
+  {v:'tenir',zh:'拿着/保持',g:'G3',pp:'tenu',aux:'avoir',pres:['tiens','tiens','tient','tenons','tenez','tiennent'],imp:['Tiens !','Tenons !','Tenez !']},
+  {v:'donner',zh:'给/给予',g:'G1',pp:'donné',aux:'avoir',pres:['donne','donnes','donne','donnons','donnez','donnent'],imp:['Donne !','Donnons !','Donnez !']},
+  {v:'demander',zh:'请求/询问',g:'G1',pp:'demandé',aux:'avoir',pres:['demande','demandes','demande','demandons','demandez','demandent'],imp:['Demande !','Demandons !','Demandez !']},
+  {v:'trouver',zh:'找到/认为',g:'G1',pp:'trouvé',aux:'avoir',pres:['trouve','trouves','trouve','trouvons','trouvez','trouvent'],imp:['Trouve !','Trouvons !','Trouvez !']},
+  {v:'montrer',zh:'展示/指出',g:'G1',pp:'montré',aux:'avoir',pres:['montre','montres','montre','montrons','montrez','montrent'],imp:['Montre !','Montrons !','Montrez !']},
+  {v:'se blesser',zh:'受伤',g:'反身',pp:'blessé(e)',aux:'être',pres:['me blesse','te blesses','se blesse','nous blessons','vous blessez','se blessent'],imp:['Blesse-toi !','Blessons-nous !','Blessez-vous !']},
+  {v:'se reposer',zh:'休息',g:'反身',pp:'reposé(e)',aux:'être',pres:['me repose','te reposes','se repose','nous reposons','vous reposez','se reposent'],imp:['Repose-toi !','Reposons-nous !','Reposez-vous !']},
+  {v:'se souvenir',zh:'记得/回忆',g:'反身',pp:'souvenu(e)',aux:'être',pres:["me souviens","te souviens","se souvient","nous souvenons","vous souvenez","se souviennent"],imp:['Souviens-toi !','Souvenons-nous !','Souvenez-vous !']},
+  // 非人称
+  {v:'falloir',zh:'必须（il faut）',g:'G3',pp:'fallu',aux:'avoir',pres:['—','—','faut','—','—','—'],imp:['—','—','—']},
+  {v:'pleuvoir',zh:'下雨（il pleut）',g:'G3',pp:'plu',aux:'avoir',pres:['—','—','pleut','—','—','—'],imp:['—','—','—']},
+  {v:'neiger',zh:'下雪（il neige）',g:'G1',pp:'neigé',aux:'avoir',pres:['—','—','neige','—','—','—'],imp:['—','—','—']},
+];
+
+// [fr, pos, zh, theme, example]
+const VOCAB_TABLE=[
+  ["l'homme",'名','男人','人物与关系',"C'est un homme généreux."],
+  ['la femme','名','女人/妻子','人物与关系',"C'est une femme intelligente."],
+  ['le garçon','名','男孩','人物与关系','Ce garçon est étudiant.'],
+  ['la fille','名','女孩/女儿','人物与关系',"J'ai une fille de 5 ans."],
+  ['le père','名','父亲','人物与关系','Mon père travaille à Toronto.'],
+  ['la mère','名','母亲','人物与关系','Ma mère est professeure.'],
+  ['le mari','名','丈夫','人物与关系','Son mari est médecin.'],
+  ['le frère','名','兄弟','人物与关系',"J'ai un grand frère."],
+  ['la sœur','名','姐妹','人物与关系',"J'ai deux sœurs."],
+  ['le fils','名','儿子','人物与关系','Leur fils est étudiant.'],
+  ['la fille','名','女儿','人物与关系','Leur fille est médecin.'],
+  ['le grand-père','名','祖父','人物与关系','Mon grand-père a 80 ans.'],
+  ['la grand-mère','名','祖母','人物与关系','Ma grand-mère est gentille.'],
+  ["l'oncle",'名','叔/舅/伯','人物与关系','Mon oncle est architecte.'],
+  ['la tante','名','姑/阿姨','人物与关系','Ma tante habite au Canada.'],
+  ['le cousin','名','表兄弟','人物与关系','Mon cousin est très drôle.'],
+  ['la cousine','名','表姐妹','人物与关系',"J'ai vu ma cousine hier."],
+  ["l'ami(e)",'名','朋友','人物与关系',"Je vais au cinéma avec mon amie."],
+  ['le voisin / la voisine','名','邻居','人物与关系','Ma voisine est très sympa.'],
+  ['le collègue','名','同事','人物与关系','Mes collègues sont sympas.'],
+  ["l'étudiant(e)",'名','学生','职业','Je suis étudiante en informatique.'],
+  ['le médecin','名','医生','职业','Le médecin me donne une ordonnance.'],
+  ["l'avocat(e)",'名','律师','职业','Elle est avocate à Paris.'],
+  ["l'architecte",'名','建筑师','职业','Il est architecte depuis 10 ans.'],
+  ['le/la pilote','名','飞行员','职业','Il est pilote chez Air France.'],
+  ['le professeur','名','老师','职业','Ma professeure de français est sympa.'],
+  ["l'ingénieur(e)",'名','工程师','职业','Je voudrais devenir ingénieure.'],
+  ["l'infirmier / l'infirmière",'名','护士','职业','Elle est infirmière à l\'hôpital.'],
+  ['le pharmacien / la pharmacienne','名','药剂师','职业','La pharmacienne m\'a conseillé.'],
+  ['le journaliste','名','记者','职业','Il est journaliste au Monde.'],
+  ['le jardinier / la jardinière','名','园丁','职业','Le jardinier arrose les fleurs.'],
+  ['le serveur / la serveuse','名','服务员','职业','Le serveur apporte l\'addition.'],
+  ["l'électricien(ne)",'名','电工','职业',"J'ai appelé un électricien."],
+  ['le plombier','名','水管工','职业','Le plombier répare la fuite d\'eau.'],
+  ['le serrurier','名','锁匠','职业','Le serrurier a ouvert la porte.'],
+  ["l'agriculteur / l'agricultrice",'名','农民','职业',"L'agriculteur cultive du blé."],
+  ['la ville','名','城市','地点',"J'habite dans une grande ville."],
+  ['la campagne','名','乡村','地点','La campagne est calme et belle.'],
+  ['le village','名','村庄','地点','Ce village est pittoresque.'],
+  ['la rue','名','街道','地点','Traversez la rue.'],
+  ["l'avenue (f)",'名','林荫大道','地点','Il habite avenue Victor Hugo.'],
+  ['le boulevard','名','大街','地点','Le boulevard est très animé.'],
+  ['le carrefour','名','十字路口','地点','Tournez au carrefour.'],
+  ['la place','名','广场','地点','La place est au centre.'],
+  ['le pont','名','桥','地点','Le pont traverse la rivière.'],
+  ['la banque','名','银行','地点','La banque est fermée le dimanche.'],
+  ['la mairie','名','市政厅','地点','La mairie est sur la place.'],
+  ['le musée','名','博物馆','地点',"Le musée est ouvert jusqu'à 18h."],
+  ['la poste','名','邮局','地点',"Je cherche la poste, s'il vous plaît."],
+  ['la gare','名','火车站','地点','La gare est loin d\'ici.'],
+  ["l'hôtel (m)",'名','酒店','地点',"Je voudrais réserver une chambre à l'hôtel."],
+  ["l'université (f)",'名','大学','地点',"Je suis inscrite à l'université."],
+  ["l'école (f)",'名','学校','地点',"Les enfants vont à l'école."],
+  ['le parc','名','公园','地点','Je me promène dans le parc.'],
+  ['la cathédrale','名','大教堂','地点','La cathédrale est magnifique.'],
+  ['le cinéma','名','电影院','地点','On va au cinéma samedi ?'],
+  ['la bibliothèque','名','图书馆','地点',"J'étudie à la bibliothèque."],
+  ['le restaurant','名','餐厅','地点','Ce restaurant est excellent.'],
+  ['le supermarché','名','超市','地点','Je vais au supermarché tous les vendredis.'],
+  ['la pharmacie','名','药店','地点','La pharmacie est ouverte.'],
+  ['la boulangerie','名','面包店','地点','Il y a une boulangerie au coin.'],
+  ["l'appartement (m)",'名','公寓','家居',"J'habite dans un appartement."],
+  ['la maison','名','房子','家居','Nous avons une grande maison.'],
+  ["l'immeuble (m)",'名','楼房','家居',"L'immeuble a 10 étages."],
+  ['le loyer','名','房租','家居','Le loyer est de 800 euros.'],
+  ['le salon','名','客厅','家居','Il y a un canapé dans le salon.'],
+  ['la chambre','名','卧室','家居','Ma chambre est grande.'],
+  ['la cuisine','名','厨房','家居','La cuisine est équipée.'],
+  ['la salle de bains','名','浴室','家居','Il y a une douche dans la salle de bains.'],
+  ['le balcon','名','阳台','家居',"J'ai un balcon avec vue sur le parc."],
+  ['le jardin','名','花园','家居','Nous avons un grand jardin.'],
+  ["l'ascenseur (m)",'名','电梯','家居',"L'ascenseur ne marche pas."],
+  ["l'escalier (m)",'名','楼梯','家居',"Je prends l'escalier."],
+  ["l'étage (m)",'名','楼层','家居',"J'habite au 3e étage."],
+  ['le lit','名','床','家居','Le lit est à côté de la fenêtre.'],
+  ['le canapé','名','沙发','家居','Je regarde la télé sur le canapé.'],
+  ['le fauteuil','名','扶手椅','家居','Le fauteuil est confortable.'],
+  ['la table','名','桌子','家居','La table est devant le canapé.'],
+  ['la chaise','名','椅子','家居','La chaise est sous la table.'],
+  ["l'armoire (f)",'名','衣柜','家居',"L'armoire est en face du lit."],
+  ['le bureau','名','书桌','家居','Mon bureau est à côté de la fenêtre.'],
+  ['la lampe','名','灯','家居','La lampe est sur le bureau.'],
+  ['le tapis','名','地毯','家居','Le tapis est sous la table.'],
+  ['le réfrigérateur','名','冰箱','家居','Le réfrigérateur est dans la cuisine.'],
+  ['le four à micro-ondes','名','微波炉','家居','Je réchauffe mon repas au micro-ondes.'],
+  ["l'ampoule (f)",'名','灯泡','家居',"L'ampoule est grillée."],
+  ['la serrure','名','锁','家居','La serrure est cassée.'],
+  ['la fenêtre','名','窗户','家居','Il y a une belle vue depuis la fenêtre.'],
+  ['la porte','名','门','家居','Il faut fermer la porte.'],
+  ['la baguette','名','法棍','食物',"Je voudrais une baguette, s'il vous plaît."],
+  ['le croissant','名','牛角包','食物','Je mange un croissant le matin.'],
+  ['le pain','名','面包','食物','Je mange du pain au petit déjeuner.'],
+  ['le fromage','名','奶酪','食物',"J'aime beaucoup le fromage français."],
+  ['le beurre','名','黄油','食物','Je mets du beurre sur mon pain.'],
+  ['le lait','名','牛奶','食物','Un litre de lait, s\'il vous plaît.'],
+  ['le yaourt','名','酸奶','食物','Je mange un yaourt le matin.'],
+  ['la crème','名','奶油','食物','Je veux de la crème dans mon café.'],
+  ["l'œuf (m)",'名','鸡蛋','食物','Je fais des œufs brouillés.'],
+  ['la viande','名','肉','食物','Je mange peu de viande.'],
+  ['le poulet','名','鸡肉','食物','Comme plat, je prends du poulet.'],
+  ['le jambon','名','火腿','食物','Je voudrais un sandwich au jambon.'],
+  ['le poisson','名','鱼','食物','Je n\'aime pas le poisson.'],
+  ['la salade','名','沙拉/生菜','食物','Comme entrée, je prends une salade.'],
+  ['la soupe','名','汤','食物','Il fait froid, je fais de la soupe.'],
+  ['les pâtes (f)','名','意面','食物',"J'adore les pâtes."],
+  ['le riz','名','大米','食物','Je mange du riz avec des légumes.'],
+  ['la pomme','名','苹果','食物','Un kilo de pommes, s\'il vous plaît.'],
+  ['la poire','名','梨','食物','La poire est sucrée.'],
+  ['la fraise','名','草莓','食物',"J'adore les fraises."],
+  ['le raisin','名','葡萄','食物','Ce raisin est très sucré.'],
+  ["l'orange (f)",'名','橙子','食物',"Je bois un jus d'orange."],
+  ['le citron','名','柠檬','食物','Je mets du citron dans mon thé.'],
+  ['la banane','名','香蕉','食物','Je mange une banane après le sport.'],
+  ['la tomate','名','番茄','食物','Je cultive des tomates dans mon jardin.'],
+  ['la carotte','名','胡萝卜','食物',"J'ajoute des carottes dans la soupe."],
+  ['la tarte','名','馅饼','食物','Comme dessert, je prends une tarte.'],
+  ['le gâteau','名','蛋糕','食物','Ce gâteau est délicieux !'],
+  ['le chocolat','名','巧克力','食物',"J'adore le chocolat."],
+  ["l'eau (f)",'名','水','食物','Il faut boire beaucoup d\'eau.'],
+  ['le café','名','咖啡','食物','Je bois du café le matin.'],
+  ['le thé','名','茶','食物','Je préfère le thé au café.'],
+  ['le jus de fruits','名','果汁','食物',"Je voudrais un jus d'orange."],
+  ['le vin','名','葡萄酒','食物','Ce vin est excellent.'],
+  ['la bière','名','啤酒','食物',"Je voudrais une bière, s'il vous plaît."],
+  ['le dessert','名','甜点','食物','Je ne prends pas de dessert.'],
+  ["l'addition (f)",'名','账单','食物',"L'addition, s'il vous plaît."],
+  ['la robe','名','连衣裙','衣物','Je voudrais essayer cette robe.'],
+  ['la jupe','名','半身裙','衣物','Elle porte une jupe rouge.'],
+  ['le pantalon','名','裤子','衣物','Il porte un pantalon noir.'],
+  ['le jean','名','牛仔裤','衣物',"Aujourd'hui, je porte un jean bleu."],
+  ['le pull','名','毛衣','衣物','Ce pull est en laine.'],
+  ['le manteau','名','大衣','衣物','Il fait froid, je mets mon manteau.'],
+  ['la veste','名','外套','衣物','Elle porte une jolie veste verte.'],
+  ['le tee-shirt','名','T恤','衣物','Il porte un tee-shirt blanc.'],
+  ['la chemise','名','衬衫','衣物','Il met une chemise bleue.'],
+  ['le sac','名','包','衣物','Ce sac est joli et pratique.'],
+  ['la montre','名','手表','衣物','Ma montre est en or.'],
+  ['le chapeau','名','帽子','衣物','Il fait chaud, je mets un chapeau.'],
+  ['les chaussures (f)','名','鞋子','衣物','Ces chaussures sont belles.'],
+  ['les bottes (f)','名','靴子','衣物','Je porte des bottes en hiver.'],
+  ['le porte-monnaie','名','钱包','衣物',"J'ai oublié mon porte-monnaie."],
+  ['le sac à dos','名','双肩包','衣物','Je mets mes livres dans mon sac à dos.'],
+  ['le métro','名','地铁','交通','Je prends le métro chaque jour.'],
+  ['le bus','名','公交车','交通','Le bus arrive dans 5 minutes.'],
+  ['le tramway','名','有轨电车','交通','Je prends le tramway pour aller au centre.'],
+  ['le train','名','火车','交通',"J'ai raté le train de 9h."],
+  ['le taxi','名','出租车','交通',"Je prends un taxi pour aller à l'aéroport."],
+  ['le vélo','名','自行车','交通','Je fais du vélo le week-end.'],
+  ['la voiture','名','汽车','交通','Je sais conduire une voiture.'],
+  ["l'avion (m)",'名','飞机','交通','Je pars en avion demain matin.'],
+  ['le bateau','名','船','交通','Nous allons en bateau.'],
+  ['le billet','名','票','交通','Je voudrais deux billets aller-retour.'],
+  ["l'aéroport (m)",'名','机场','交通',"On arrive à l'aéroport à 7h."],
+  ['la tête','名','头','健康',"J'ai mal à la tête."],
+  ['le dos','名','背','健康',"J'ai mal au dos."],
+  ['le ventre','名','肚子','健康',"J'ai mal au ventre."],
+  ['la gorge','名','喉咙','健康',"J'ai mal à la gorge."],
+  ['les dents (f)','名','牙齿','健康',"J'ai mal aux dents."],
+  ['le nez','名','鼻子','健康',"J'ai le nez bouché."],
+  ["l'oreille (f)",'名','耳朵','健康',"J'ai mal aux oreilles."],
+  ['la bouche','名','嘴','健康','Ouvrez la bouche.'],
+  ['la main','名','手','健康','Je me suis blessé la main.'],
+  ['le doigt','名','手指','健康','Je me suis coupé le doigt.'],
+  ['le bras','名','手臂','健康',"J'ai mal au bras."],
+  ['la jambe','名','腿','健康','Je me suis fait mal à la jambe.'],
+  ['le pied','名','脚','健康',"J'ai mal au pied."],
+  ['la fièvre','名','发烧','健康',"J'ai de la fièvre depuis deux jours."],
+  ['la toux','名','咳嗽','健康','Je voudrais quelque chose pour la toux.'],
+  ['le rhume','名','感冒','健康',"J'ai un rhume depuis lundi."],
+  ['la grippe','名','流感','健康',"Je suis malade, c'est la grippe."],
+  ['le médicament','名','药','健康','Je prends un médicament matin et soir.'],
+  ['le comprimé','名','药片','健康','Prenez deux comprimés par jour.'],
+  ['le sirop','名','糖浆','健康','Vous pouvez prendre ce sirop.'],
+  ["l'ordonnance (f)",'名','处方','健康','Le médecin m\'a donné une ordonnance.'],
+  ['le rendez-vous','名','预约','健康',"J'ai pris rendez-vous chez le médecin."],
+  ["l'embouteillage (m)",'名','堵车','健康',"Je suis en retard à cause d'un embouteillage."],
+  ['la grève','名','罢工','健康','Il y a une grève dans le métro.'],
+  ['la panne','名','故障','健康','Ma voiture est en panne.'],
+  ['la mer','名','海','自然','La mer est magnifique.'],
+  ['la montagne','名','山','自然',"J'aime faire de la randonnée en montagne."],
+  ['la forêt','名','森林','自然','On se promène dans la forêt.'],
+  ['la rivière','名','河流','自然','La rivière coule près du village.'],
+  ['le lac','名','湖','自然','Ce lac est aussi grand que la mer.'],
+  ['le champ','名','田地','自然','Les champs sont verts en été.'],
+  ['la plage','名','海滩','自然','Je me bronze sur la plage.'],
+  ["l'arbre (m)",'名','树','自然',"Il y a plus d'arbres à la campagne."],
+  ['la fleur','名','花','自然','Je plante des fleurs dans mon jardin.'],
+  ['le soleil','名','太阳','自然',"Il y a du soleil aujourd'hui."],
+  ['la pluie','名','雨','自然',"J'ai oublié mon parapluie sous la pluie."],
+  ['la neige','名','雪','自然','Il y a de la neige en hiver.'],
+  ['le vent','名','风','自然',"Il y a beaucoup de vent aujourd'hui."],
+  ['la pollution','名','污染','自然','Il y a trop de pollution en ville.'],
+  ['le bruit','名','噪音','自然','Il y a trop de bruit ici.'],
+  ['le chat','名','猫','自然','Mon chat s\'appelle Minou.'],
+  ['le chien','名','狗','自然','Il promène son chien chaque matin.'],
+  ['la vache','名','奶牛','自然','Les vaches paissent dans le champ.'],
+  ['la poule','名','母鸡','自然','La fermière a des poules.'],
+  ['le lapin','名','兔子','自然','Nous avons un lapin comme animal de compagnie.'],
+  ["l'oiseau (m)",'名','鸟','自然','Les oiseaux chantent le matin.'],
+  ["l'auberge de jeunesse (f)",'名','青年旅社','旅行','Nous dormons dans une auberge de jeunesse.'],
+  ['le camping','名','露营地','旅行','Nous faisons du camping en été.'],
+  ['le passeport','名','护照','旅行',"N'oublie pas ton passeport !"],
+  ['la valise','名','行李箱','旅行','Je fais ma valise pour les vacances.'],
+  ['la crème solaire','名','防晒霜','旅行','Tu as pensé à la crème solaire ?'],
+  ['le parapluie','名','雨伞','旅行','Prends un parapluie, il va pleuvoir.'],
+  ["l'embarquement (m)",'名','登机','旅行',"L'embarquement commence dans 30 minutes."],
+  ['le décollage','名','起飞','旅行','Le décollage est à 10h.'],
+  ["l'atterrissage (m)",'名','降落','旅行',"L'atterrissage s'est bien passé."],
+  ['le terminal','名','航站楼','旅行','Nous sommes au terminal 2.'],
+  ['malade','形','生病的','健康',"Je suis malade depuis lundi."],
+  ['content(e)','形','开心的','情感',"Je suis contente de te voir."],
+  ['triste','形','悲伤的','情感',"Je suis triste aujourd'hui."],
+  ['stressé(e)','形','压力大的','情感',"Je suis stressée avant l'examen."],
+  ['fatigué(e)','形','疲惫的','情感','Je suis fatiguée, je vais dormir.'],
+  ['déçu(e)','形','失望的','情感','Je suis déçue par le film.'],
+  ['inquiet/inquiète','形','担心的','情感','Je suis inquiète pour toi.'],
+  ['énervé(e)','形','生气的','情感',"Je suis énervée, j'en ai marre !"],
+  ['gentil/gentille','形','友善的','情感','Il est très gentil avec tout le monde.'],
+  ['sympa(thique)','形','讨人喜欢','情感','Ma voisine est très sympathique.'],
+  ['drôle','形','有趣的','情感','Il est très drôle, il me fait rire.'],
+  ['sérieux/sérieuse','形','认真的','情感','Elle est sérieuse dans son travail.'],
+  ['timide','形','害羞的','情感','Il est timide, il ne parle pas beaucoup.'],
+  ['généreux/généreuse','形','大方的','情感','Elle est très généreuse.'],
+  ['intelligent(e)','形','聪明的','情感','Elle est très intelligente.'],
+  ['calme','形','冷静的','情感','Il est toujours calme.'],
+  ['hier','副','昨天','时间',"Hier, j'ai étudié le français."],
+  ["aujourd'hui",'副','今天',"时间","Aujourd'hui, il fait beau."],
+  ['demain','副','明天','时间','Demain, je vais partir.'],
+  ['maintenant','副','现在','时间','Je suis occupée maintenant.'],
+  ['bientôt','副','很快','时间','À bientôt !'],
+  ['toujours','副','总是/仍然','时间','Je prends toujours le métro.'],
+  ['souvent','副','经常','时间','Je vais souvent au cinéma.'],
+  ['parfois','副','有时候','时间','Je regarde parfois la télévision.'],
+  ['jamais (ne…)','副','从不','时间','Je ne fume jamais.'],
+  ['depuis','副/介','从……以来','时间',"J'étudie le français depuis 2024."],
+  ['pendant','副/介','持续……（已结束）','时间',"J'ai habité à Paris pendant deux ans."],
+  ['un kilo de','短语','一公斤……','数量','Un kilo de pommes, s\'il vous plaît.'],
+  ['une bouteille de','短语','一瓶……','数量',"Une bouteille d'eau, s'il vous plaît."],
+  ['une tranche de','短语','一片……','数量',"Une tranche de pain, s'il vous plaît."],
+  ['un morceau de','短语','一块……','数量','Un morceau de fromage, merci.'],
+  ["c'est combien",'短语','多少钱？','数量',"C'est combien, la baguette ?"],
+  ['ça coûte combien','短语','这多少钱？','数量','Ça coûte combien, cette robe ?'],
+  ['cher / chère','形','贵的','数量','Ce restaurant est trop cher.'],
+  ['bon marché','形','便宜的','数量','Ce marché est bon marché.'],
+];
+
+// [fr, zh, theme, gender]
+const VOCAB_RAW=[
+  ["l'homme",'男人','人物与关系','m'],["la femme",'女人','人物与关系','f'],
+  ['le garçon','男孩','人物与关系','m'],['la fille','女孩/女儿','人物与关系','f'],
+  ['le père','父亲','人物与关系','m'],['la mère','母亲','人物与关系','f'],
+  ['le mari','丈夫','人物与关系','m'],['le frère','兄弟','人物与关系','m'],
+  ['la sœur','姐妹','人物与关系','f'],['le fils','儿子','人物与关系','m'],
+  ['le grand-père','祖父','人物与关系','m'],['la grand-mère','祖母','人物与关系','f'],
+  ["l'oncle",'叔/舅/伯','人物与关系','m'],['la tante','姑/阿姨','人物与关系','f'],
+  ['le cousin','表兄弟','人物与关系','m'],['la cousine','表姐妹','人物与关系','f'],
+  ["l'ami",'朋友(男)','人物与关系','m'],["l'amie",'朋友(女)','人物与关系','f'],
+  ['le voisin','邻居(男)','人物与关系','m'],['la voisine','邻居(女)','人物与关系','f'],
+  ['le collègue','同事','人物与关系','m'],
+  ["l'étudiant",'男学生','职业','m'],["l'étudiante",'女学生','职业','f'],
+  ['le médecin','医生','职业','m'],["l'avocat",'律师(男)','职业','m'],
+  ["l'avocate",'律师(女)','职业','f'],["l'architecte",'建筑师','职业','m'],
+  ['le professeur','老师','职业','m'],["l'ingénieur",'工程师','职业','m'],
+  ["l'infirmier",'护士(男)','职业','m'],["l'infirmière",'护士(女)','职业','f'],
+  ['le pharmacien','药剂师(男)','职业','m'],['la pharmacienne','药剂师(女)','职业','f'],
+  ['le journaliste','记者','职业','m'],['le serveur','服务员(男)','职业','m'],
+  ['la serveuse','服务员(女)','职业','f'],["l'électricien",'电工','职业','m'],
+  ['le plombier','水管工','职业','m'],["l'agriculteur",'农民(男)','职业','m'],
+  ['la ville','城市','地点','f'],['la campagne','乡村','地点','f'],
+  ['le village','村庄','地点','m'],['la rue','街道','地点','f'],
+  ["l'avenue",'林荫大道','地点','f'],['le boulevard','大街','地点','m'],
+  ['le carrefour','十字路口','地点','m'],['la place','广场','地点','f'],
+  ['le pont','桥','地点','m'],['la banque','银行','地点','f'],
+  ['la mairie','市政厅','地点','f'],['le musée','博物馆','地点','m'],
+  ['la poste','邮局','地点','f'],['la gare','火车站','地点','f'],
+  ["l'hôtel",'酒店','地点','m'],["l'université",'大学','地点','f'],
+  ["l'école",'学校','地点','f'],['le parc','公园','地点','m'],
+  ['la cathédrale','大教堂','地点','f'],['le cinéma','电影院','地点','m'],
+  ['la bibliothèque','图书馆','地点','f'],['le restaurant','餐厅','地点','m'],
+  ['le supermarché','超市','地点','m'],['la pharmacie','药店','地点','f'],
+  ['la boulangerie','面包店','地点','f'],['la boucherie','肉店','地点','f'],
+  ["l'appartement",'公寓','家居','m'],['la maison','房子','家居','f'],
+  ["l'immeuble",'楼房','家居','m'],['le loyer','房租','家居','m'],
+  ['le salon','客厅','家居','m'],['la chambre','卧室','家居','f'],
+  ['la cuisine','厨房','家居','f'],['la salle de bains','浴室','家居','f'],
+  ["l'entrée",'玄关','家居','f'],['le balcon','阳台','家居','m'],
+  ['le jardin','花园','家居','m'],["l'ascenseur",'电梯','家居','m'],
+  ["l'escalier",'楼梯','家居','m'],["l'étage",'楼层','家居','m'],
+  ['le lit','床','家居','m'],['le canapé','沙发','家居','m'],
+  ['le fauteuil','扶手椅','家居','m'],['la table','桌子','家居','f'],
+  ['la chaise','椅子','家居','f'],["l'armoire",'衣柜','家居','f'],
+  ['le bureau','书桌','家居','m'],['la lampe','灯','家居','f'],
+  ['le tapis','地毯','家居','m'],['le réfrigérateur','冰箱','家居','m'],
+  ['le four à micro-ondes','微波炉','家居','m'],["l'ampoule",'灯泡','家居','f'],
+  ['la serrure','锁','家居','f'],['la fenêtre','窗户','家居','f'],['la porte','门','家居','f'],
+  ['la baguette','法棍','食物','f'],['le croissant','牛角包','食物','m'],
+  ['le pain','面包','食物','m'],['le fromage','奶酪','食物','m'],
+  ['le beurre','黄油','食物','m'],['le lait','牛奶','食物','m'],
+  ['le yaourt','酸奶','食物','m'],['la crème','奶油','食物','f'],
+  ["l'œuf",'鸡蛋','食物','m'],['la viande','肉','食物','f'],
+  ['le poulet','鸡肉','食物','m'],['le jambon','火腿','食物','m'],
+  ['le poisson','鱼','食物','m'],['la salade','沙拉','食物','f'],
+  ['la soupe','汤','食物','f'],['le riz','大米','食物','m'],
+  ['la pomme','苹果','食物','f'],['la poire','梨','食物','f'],
+  ['la fraise','草莓','食物','f'],['le raisin','葡萄','食物','m'],
+  ["l'orange",'橙子','食物','f'],['le citron','柠檬','食物','m'],
+  ['la banane','香蕉','食物','f'],['la tomate','番茄','食物','f'],
+  ['la carotte','胡萝卜','食物','f'],['le concombre','黄瓜','食物','m'],
+  ['la tarte','馅饼','食物','f'],['le gâteau','蛋糕','食物','m'],
+  ['le chocolat','巧克力','食物','m'],["l'eau",'水','食物','f'],
+  ['le café','咖啡','食物','m'],['le thé','茶','食物','m'],
+  ['le vin','葡萄酒','食物','m'],['la bière','啤酒','食物','f'],
+  ['le dessert','甜点','食物','m'],["l'addition",'账单','食物','f'],
+  ['la robe','连衣裙','衣物','f'],['la jupe','半身裙','衣物','f'],
+  ['le pantalon','裤子','衣物','m'],['le jean','牛仔裤','衣物','m'],
+  ['le pull','毛衣','衣物','m'],['le manteau','大衣','衣物','m'],
+  ['la veste','外套','衣物','f'],['le tee-shirt','T恤','衣物','m'],
+  ['la chemise','衬衫','衣物','f'],['le sac','包','衣物','m'],
+  ['la montre','手表','衣物','f'],['le chapeau','帽子','衣物','m'],
+  ['le porte-monnaie','钱包','衣物','m'],
+  ['le métro','地铁','交通','m'],['le bus','公交车','交通','m'],
+  ['le train','火车','交通','m'],['le taxi','出租车','交通','m'],
+  ['le vélo','自行车','交通','m'],['la voiture','汽车','交通','f'],
+  ["l'avion",'飞机','交通','m'],['le bateau','船','交通','m'],
+  ['le billet','票','交通','m'],["l'aéroport",'机场','交通','m'],
+  ['la tête','头','健康','f'],['le dos','背','健康','m'],
+  ['le ventre','肚子','健康','m'],['la gorge','喉咙','健康','f'],
+  ['le nez','鼻子','健康','m'],["l'oreille",'耳朵','健康','f'],
+  ['la bouche','嘴','健康','f'],['la main','手','健康','f'],
+  ['le doigt','手指','健康','m'],['le bras','手臂','健康','m'],
+  ['la jambe','腿','健康','f'],['le pied','脚','健康','m'],
+  ['la fièvre','发烧','健康','f'],['la toux','咳嗽','健康','f'],
+  ['le rhume','感冒','健康','m'],['le médicament','药','健康','m'],
+  ['le comprimé','药片','健康','m'],['le sirop','糖浆','健康','m'],
+  ["l'ordonnance",'处方','健康','f'],['le rendez-vous','预约','健康','m'],
+  ["l'embouteillage",'堵车','健康','m'],['la grève','罢工','健康','f'],
+  ['la panne','故障','健康','f'],
+  ['la mer','海','自然','f'],['la montagne','山','自然','f'],
+  ['la forêt','森林','自然','f'],['la rivière','河流','自然','f'],
+  ['le lac','湖','自然','m'],['le champ','田地','自然','m'],
+  ['la plage','海滩','自然','f'],["l'arbre",'树','自然','m'],
+  ['la fleur','花','自然','f'],['le soleil','太阳','自然','m'],
+  ['la pluie','雨','自然','f'],['la neige','雪','自然','f'],
+  ['le vent','风','自然','m'],['la pollution','污染','自然','f'],
+  ['le bruit','噪音','自然','m'],['le chat','猫','自然','m'],
+  ['le chien','狗','自然','m'],['la vache','奶牛','自然','f'],
+  ['la poule','母鸡','自然','f'],['le lapin','兔子','自然','m'],
+  ["l'oiseau",'鸟','自然','m'],
+  ["l'auberge de jeunesse",'青年旅社','旅行','f'],
+  ['le camping','露营地','旅行','m'],['le passeport','护照','旅行','m'],
+  ['la valise','行李箱','旅行','f'],['la crème solaire','防晒霜','旅行','f'],
+  ['le parapluie','雨伞','旅行','m'],["l'embarquement",'登机','旅行','m'],
+  ['le décollage','起飞','旅行','m'],["l'atterrissage",'降落','旅行','m'],
+];
+
+const BUILT_IN_THEMES=[...new Set(VOCAB_RAW.map(v=>v[2]))];
+const DECKS=[
+  {id:'all_fr',name:'全部词汇',icon:'📚',filter:null},
+  {id:'人物与关系',name:'人物关系',icon:'👥'},
+  {id:'职业',name:'职业',icon:'💼'},
+  {id:'地点',name:'地点',icon:'📍'},
+  {id:'家居',name:'家居',icon:'🏠'},
+  {id:'食物',name:'食物',icon:'🍎'},
+  {id:'衣物',name:'衣物',icon:'👗'},
+  {id:'交通',name:'交通',icon:'🚌'},
+  {id:'健康',name:'健康',icon:'💊'},
+  {id:'自然',name:'自然',icon:'🌿'},
+  {id:'旅行',name:'旅行',icon:'✈️'},
+  {id:'verbs',name:'动词',icon:'🔠'},
+  {id:'custom',name:'自定义',icon:'⭐'},
+];
+
+// ============================================================
+// SHUFFLE — UNIFIED ALGORITHM (same key → same result everywhere)
+// ============================================================
+function hashStr(s){let h=0;for(let i=0;i<s.length;i++){h=(h<<5)-h+s.charCodeAt(i);h|=0;}return Math.abs(h);}
+function seededRand(seed){return()=>{seed=(seed*1664525+1013904223)&0xFFFFFFFF;return(seed>>>0)/0xFFFFFFFF;};}
+// The key is built from sorted IDs so it's stable regardless of current order
+function applyOrder(arr,order){
+  if(order==='seq') return [...arr];
+  if(order==='s1'||order==='s2'){
+    const salt=order==='s1'?'SEED_A_2024':'SEED_B_2024';
+    const key=arr.map(a=>a.id||a.fr||a.v||JSON.stringify(a)).sort().join('|')+salt;
+    const rand=seededRand(hashStr(key));
+    const r=[...arr];
+    for(let i=r.length-1;i>0;i--){const j=Math.floor(rand()*(i+1));[r[i],r[j]]=[r[j],r[i]];}
+    return r;
+  }
+  // 'wrongs' handled by caller
+  return [...arr];
+}
+function trueShuf(a){const r=[...a];for(let i=r.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[r[i],r[j]]=[r[j],r[i]];}return r;}
+
+// ============================================================
+// CUSTOM WORDS
+// ============================================================
+const CW_KEY='edito_a1_cw_v2';
+function getCW(){try{return JSON.parse(localStorage.getItem(CW_KEY)||'[]');}catch(e){return[];}}
+function saveCW(a){try{localStorage.setItem(CW_KEY,JSON.stringify(a));}catch(e){}}
+
+// ── CUSTOM VERBS ──
+const CV_KEY='edito_a1_cv_v1';
+let cvAux='avoir', cvG='G1';
+function getCV(){try{return JSON.parse(localStorage.getItem(CV_KEY)||'[]');}catch(e){return[];}}
+function saveCV(a){try{localStorage.setItem(CV_KEY,JSON.stringify(a));}catch(e){}}
+
+// Merge custom verbs into VERBS array at runtime
+function getAllVerbs(){
+  return [...VERBS, ...getCV()];
+}
+
+function checkCVDupe(val){
+  const hint=document.getElementById('cv-dupe-hint');
+  if(!hint) return;
+  const v=val.trim().toLowerCase();
+  if(!v){hint.textContent='';return;}
+  const inBuiltin=VERBS.some(verb=>verb.v.toLowerCase()===v);
+  const inCustom=getCV().find(verb=>verb.v.toLowerCase()===v);
+  if(inCustom){
+    hint.textContent=`⚠️ 自定义动词库中已有「${inCustom.v}」`;
+    hint.style.color='var(--warn)';
+  } else if(inBuiltin){
+    hint.textContent=`ℹ️ 内置动词库已有「${val.trim()}」，仍可添加`;
+    hint.style.color='var(--muted)';
+  } else {
+    hint.textContent='';
+  }
+}
+
+function addCustomVerb(){
+  const v=document.getElementById('cv-v').value.trim();
+  const zh=document.getElementById('cv-zh').value.trim();
+  if(!v||!zh){alert('请至少填写动词原形和中文意思！');return;}
+  const pp=document.getElementById('cv-pp').value.trim()||'—';
+  const pres=[0,1,2,3,4,5].map(i=>document.getElementById('cv-p'+i).value.trim()||'—');
+  const imp=[0,1,2].map(i=>document.getElementById('cv-i'+i).value.trim()||'—');
+
+  const obj={v,zh,g:cvG,pp,aux:cvAux,pres,imp};
+  const verbs=getCV();
+  const idx=verbs.findIndex(vb=>vb.v.toLowerCase()===v.toLowerCase());
+  if(idx>=0) verbs[idx]=obj; else verbs.push(obj);
+  saveCV(verbs);
+
+  // Clear inputs
+  ['cv-v','cv-zh','cv-pp','cv-p0','cv-p1','cv-p2','cv-p3','cv-p4','cv-p5','cv-i0','cv-i1','cv-i2']
+    .forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  document.getElementById('cv-dupe-hint').textContent='';
+
+  renderCustomVerbList();
+  renderDecks(); buildGMThemeGrid(); buildLsThemeGrid(); buildSpThemeGrid();
+}
+
+function importCustomVerbs(){
+  const raw=document.getElementById('cv-bulk-input').value.trim();
+  const info=document.getElementById('cv-import-info');
+  if(!raw){info.textContent='请先输入内容';return;}
+  const verbs=getCV();
+  const existing=new Set([...VERBS.map(v=>v.v.toLowerCase()),...verbs.map(v=>v.v.toLowerCase())]);
+  let added=0,skipped=0;
+  for(const line of raw.split('\n')){
+    const parts=line.split(',').map(s=>s.trim());
+    if(parts.length<2||!parts[0]||!parts[1]) continue;
+    const [v,zh,pp='—',aux='avoir',g='G3',p0='—',p1='—',p2='—',p3='—',p4='—',p5='—']=parts;
+    if(existing.has(v.toLowerCase())){skipped++;continue;}
+    const pres=[p0,p1,p2,p3,p4,p5].map(x=>x||'—');
+    verbs.push({v,zh,g,pp,aux,pres,imp:['—','—','—']});
+    existing.add(v.toLowerCase());
+    added++;
+  }
+  saveCV(verbs);
+  document.getElementById('cv-bulk-input').value='';
+  info.textContent=`已导入 ${added} 个，跳过重复 ${skipped} 个`;
+  renderCustomVerbList();
+  renderDecks();buildGMThemeGrid();buildLsThemeGrid();buildSpThemeGrid();
+}
+
+function deleteCustomVerb(idx){
+  const verbs=getCV();
+  if(idx<0||idx>=verbs.length) return;
+  verbs.splice(idx,1);
+  saveCV(verbs);
+  renderCustomVerbList();
+  renderDecks();
+}
+
+function renderCustomVerbList(){
+  const verbs=getCV();
+  const el=document.getElementById('cv-list');
+  const countEl=document.getElementById('cv-count');
+  if(countEl) countEl.textContent=verbs.length;
+  if(!el) return;
+  if(!verbs.length){
+    el.innerHTML='<div style="color:var(--muted);font-size:13px;padding:8px 0;">还没有自定义动词</div>';
+    return;
+  }
+  el.innerHTML=verbs.map((vb,i)=>`
+    <div class="cw-item" style="flex-direction:column;align-items:flex-start;gap:6px;">
+      <div style="display:flex;align-items:center;gap:8px;width:100%;">
+        <span class="cw-fr">${vb.v}</span>
+        <span class="cw-zh">${vb.zh}</span>
+        <span class="cw-pill">${vb.g}</span>
+        <span class="cw-pill" style="background:#E6F1FB;color:#0C447C;">p.p. ${vb.pp}</span>
+        <span class="cw-pill" style="background:#F0EDE8;color:#5A5550;">aux: ${vb.aux}</span>
+        <button class="ic-btn" onclick="speakCW_verb(${i})">🔊</button>
+        <button class="ic-btn" onclick="deleteCustomVerb(${i})" style="color:var(--warn);margin-left:auto;">✕</button>
+      </div>
+      ${vb.pres&&vb.pres.some(p=>p!=='—')?`<div style="font-size:11px;color:var(--muted);font-family:var(--mono);">
+        je ${vb.pres[0]} · tu ${vb.pres[1]} · il ${vb.pres[2]} · nous ${vb.pres[3]} · vous ${vb.pres[4]} · ils ${vb.pres[5]}
+      </div>`:''}
+    </div>`).join('');
+}
+function speakCW_verb(idx){
+  const verbs=getCV();
+  if(idx>=0&&idx<verbs.length) speak(verbs[idx].v);
+}
+
+function getAllThemes(){return[...new Set([...BUILT_IN_THEMES,...getCW().map(w=>w.tag||'自定义')])].sort();}
+
+function refreshCWTaglist(){
+  const dl=document.getElementById('cw-tag-list');
+  if(dl) dl.innerHTML=getAllThemes().map(t=>`<option value="${t}">`).join('');
+}
+function checkCWDupe(val){
+  const hint = document.getElementById('cw-dupe-hint');
+  if(!hint) return;
+  const fr = val.trim();
+  if(!fr){ hint.textContent=''; return; }
+  // Check against built-in VOCAB_RAW
+  const inBuiltin = VOCAB_RAW.some(v => v[0].toLowerCase()===fr.toLowerCase());
+  // Check against custom words
+  const inCustom = getCW().find(w => w.fr.toLowerCase()===fr.toLowerCase());
+  if(inCustom){
+    hint.textContent = `⚠️ 自定义词库中已有「${inCustom.fr}」(${inCustom.zh})`;
+    hint.style.color = 'var(--warn)';
+  } else if(inBuiltin){
+    const found = VOCAB_RAW.find(v => v[0].toLowerCase()===fr.toLowerCase());
+    hint.textContent = `ℹ️ 内置词库已有「${found[0]}」(${found[1]})，仍可添加到自定义`;
+    hint.style.color = 'var(--muted)';
+  } else {
+    hint.textContent = '';
+  }
+}
+
+function addCustomWord(){
+  const fr=document.getElementById('cw-fr').value.trim();
+  const zh=document.getElementById('cw-zh').value.trim();
+  const tag=document.getElementById('cw-tag').value.trim()||'自定义';
+  const g=document.getElementById('cw-gender').value;
+  if(!fr||!zh){alert('请填写法语和中文！');return;}
+  const words=getCW();
+  const idx=words.findIndex(w=>w.fr.toLowerCase()===fr.toLowerCase());
+  const obj={fr,zh,tag,g:g||null};
+  if(idx>=0){
+    words[idx]=obj; // silently overwrite
+  } else {
+    words.push(obj);
+  }
+  saveCW(words);
+  document.getElementById('cw-fr').value='';
+  document.getElementById('cw-zh').value='';
+  document.getElementById('cw-dupe-hint').textContent='';
+  speak(fr);
+  renderCustomList();refreshCWTaglist();
+  renderVocabTable();renderDecks();buildGMThemeGrid();buildLsThemeGrid();buildSpThemeGrid();
+}
+function deleteCustomWord(idx){
+  const words=getCW();
+  if(idx<0||idx>=words.length) return;
+  words.splice(idx,1);
+  saveCW(words);
+  renderCustomList();refreshCWTaglist();
+  renderVocabTable();renderDecks();buildGMThemeGrid();buildLsThemeGrid();buildSpThemeGrid();
+}
+function speakCW(idx){
+  const words=getCW();
+  if(idx>=0&&idx<words.length) speak(words[idx].fr);
+}
+function renderCustomList(){
+  const words=getCW();
+  document.getElementById('cw-count').textContent=words.length;
+  const el=document.getElementById('custom-list');
+  if(!words.length){el.innerHTML='<div style="color:var(--muted);font-size:13px;padding:8px 0;">还没有自定义单词</div>';return;}
+  el.innerHTML=words.map((w,i)=>`<div class="cw-item">
+    <span class="cw-fr">${w.fr}</span>
+    <span class="cw-zh">${w.zh}</span>
+    <span class="cw-pill">${w.tag||'自定义'}</span>
+    ${w.g?`<span class="cw-g" style="background:${w.g==='m'?'#DBE9FA':'#FCE8E1'};color:${w.g==='m'?'#0C447C':'#A32D2D'}">${w.g==='m'?'阳':'阴'}</span>`:''}
+    <button class="ic-btn" onclick="speakCW(${i})">🔊</button>
+    <button class="ic-btn" onclick="deleteCustomWord(${i})" style="color:var(--warn)">✕</button>
+  </div>`).join('');
+}
+function importCustomWords(){
+  const txt=document.getElementById('cw-import').value.trim();if(!txt)return;
+  const words=getCW();let count=0;
+  txt.split('\n').forEach(line=>{
+    const p=line.trim().split(/[,，\t]+/);if(p.length<2)return;
+    const fr=p[0].trim(),zh=p[1].trim(),tag=p[2]?.trim()||'自定义',g=p[3]?.trim()||null;
+    if(!words.find(w=>w.fr.toLowerCase()===fr.toLowerCase())){words.push({fr,zh,tag,g});count++;}
+  });
+  saveCW(words);document.getElementById('cw-import').value='';
+  renderCustomList();refreshCWTaglist();
+  renderVocabTable();renderDecks();buildGMThemeGrid();buildLsThemeGrid();buildSpThemeGrid();
+  alert(`成功导入 ${count} 个单词！`);
+}
+function exportCustomWords(){
+  const txt=getCW().map(w=>[w.fr,w.zh,w.tag||'自定义',w.g||''].join(',')).join('\n');
+  const a=document.createElement('a');
+  a.href='data:text/plain;charset=utf-8,'+encodeURIComponent(txt);
+  a.download='custom_words.txt';a.click();
+}
+function clearAllCustom(btn){
+  if(!btn.dataset.armed){
+    btn.dataset.armed='1';
+    btn.textContent='再点一次确认清空';
+    btn.style.background='var(--warn)';
+    btn.style.color='#fff';
+    setTimeout(()=>{
+      if(btn.dataset.armed){ btn.dataset.armed=''; btn.textContent='清空全部'; btn.style.background='var(--surface)'; btn.style.color='var(--warn)'; }
+    }, 3000);
+    return;
+  }
+  btn.dataset.armed='';
+  btn.textContent='清空全部';
+  btn.style.background='var(--surface)';
+  btn.style.color='var(--warn)';
+  saveCW([]);
+  renderCustomList();refreshCWTaglist();
+  renderVocabTable();renderDecks();buildGMThemeGrid();buildLsThemeGrid();buildSpThemeGrid();
+}
+
+// ============================================================
+// SRS ENGINE (SM-2)
+// ============================================================
+const SRS_KEY='edito_a1_srs_v4';
+let srsDb={};
+function loadSRS(){try{srsDb=JSON.parse(localStorage.getItem(SRS_KEY)||'{}')}catch(e){srsDb={}}}
+function saveSRS(){try{localStorage.setItem(SRS_KEY,JSON.stringify(srsDb))}catch(e){}}
+loadSRS();
+// Card structure: { stability, difficulty, interval, due, state }
+// state: 'new' | 'learning' | 'review'
+// stability: how many days memory lasts at ~90% retention
+// difficulty: 1(easy)–10(hard), starts at 5
+const DAY = 86400000;
+const MIN = 60000;
+
+function getCard(id){
+  if(!srsDb[id]){
+    srsDb[id]={stability:0,difficulty:5,interval:0,due:Date.now(),state:'new',step:0,reps:0,lapses:0};
+    return srsDb[id];
+  }
+  const c=srsDb[id];
+  // Migrate legacy SM-2 data (had 'ef' and 'reps' but no 'state')
+  if(c.state===undefined){
+    if(c.reps===0 && c.lapses===0){
+      // truly new, never seen
+      c.state='new'; c.step=0; c.stability=0; c.difficulty=5; c.interval=0;
+    } else {
+      // was in review — keep existing interval/due but mark as review
+      c.state='review';
+      c.stability=c.interval||1;
+      c.difficulty=5;
+      c.step=0;
+    }
+    delete c.ef; // clean up old field
+  }
+  return c;
+}
+
+// New card learning steps (in minutes): 5 → 30 → graduate to 1 day
+const LEARN_STEPS = [5, 30];
+
+function updateCard(id, rating){
+  // rating: 1=不认识, 2=想起来了, 3=很熟
+  const c = getCard(id);
+  const now = Date.now();
+
+  if(c.state === 'new' || c.state === 'learning'){
+    if(rating === 1){
+      // Failed: restart learning from step 0
+      c.step = 0;
+      c.lapses++;
+      c.difficulty = Math.min(10, c.difficulty + 1);
+      c.due = now + LEARN_STEPS[0] * MIN;
+      c.state = 'learning';
+    } else if(rating === 2){
+      // Fuzzy: advance one step
+      c.step = Math.min(c.step + 1, LEARN_STEPS.length);
+      if(c.step >= LEARN_STEPS.length){
+        // Graduate to review with 1 day
+        c.state = 'review';
+        c.interval = 1;
+        c.stability = 1;
+        c.reps++;
+        c.due = now + 1 * DAY;
+      } else {
+        c.due = now + LEARN_STEPS[c.step] * MIN;
+        c.state = 'learning';
+      }
+    } else {
+      // Know: skip steps, graduate immediately with bonus
+      c.state = 'review';
+      c.interval = 1;
+      c.stability = 2;
+      c.difficulty = Math.max(1, c.difficulty - 0.5);
+      c.reps++;
+      c.due = now + 1 * DAY;
+    }
+  } else {
+    // review state
+    if(rating === 1){
+      // Lapse: back to learning
+      c.lapses++;
+      c.difficulty = Math.min(10, c.difficulty + 1);
+      c.stability = Math.max(1, c.stability * 0.3);
+      c.step = 0;
+      c.state = 'learning';
+      c.interval = 1;
+      c.due = now + LEARN_STEPS[0] * MIN;
+    } else if(rating === 2){
+      // Fuzzy: moderate growth
+      c.difficulty = Math.min(10, c.difficulty + 0.2);
+      c.stability = c.stability * 1.8;
+      c.interval = Math.max(c.interval + 1, Math.round(c.interval * 1.6));
+      c.reps++;
+      c.due = now + c.interval * DAY;
+    } else {
+      // Know: strong growth
+      c.difficulty = Math.max(1, c.difficulty - 0.2);
+      c.stability = c.stability * 2.8;
+      c.interval = Math.max(c.interval + 1, Math.round(c.interval * 2.8));
+      c.reps++;
+      c.due = now + c.interval * DAY;
+    }
+  }
+  saveSRS();
+}
+
+function resetSRS(btn){
+  if(!btn.dataset.armed){
+    btn.dataset.armed='1';
+    const orig=btn.textContent;
+    btn.textContent='再点一次确认清空';
+    btn.style.background='var(--warn)';btn.style.color='#fff';btn.style.borderColor='var(--warn)';
+    setTimeout(()=>{
+      if(btn.dataset.armed){
+        btn.dataset.armed='';btn.textContent=orig;
+        btn.style.background='var(--surface)';btn.style.color='var(--warn)';btn.style.borderColor='var(--warn)';
+      }
+    },3000);
+    return;
+  }
+  btn.dataset.armed='';
+  btn.textContent='🗑 清空进度';
+  btn.style.background='var(--surface)';btn.style.color='var(--warn)';btn.style.borderColor='var(--warn)';
+  srsDb={};saveSRS();renderDecks();
+}
+
+function isDue(id){return getCard(id).due<=Date.now();}
+function isNew(id){return getCard(id).state==='new';}
+
+function fmtInterval(c){
+  if(c.state==='new') return '🆕 新词';
+  if(c.state==='learning'){
+    const mins=Math.round((c.due-Date.now())/MIN);
+    if(mins<=1) return '⏱ 即将再来';
+    if(mins<60) return `⏱ ${mins}分钟后`;
+    return `⏱ ${Math.round(mins/60)}小时后`;
+  }
+  if(c.interval<1) return `📅 ${Math.round(c.interval*1440)}分钟后`;
+  if(c.interval===1) return '📅 明天';
+  return `📅 ${c.interval}天后`;
+}
+
+function getCardsByDeck(deckId){
+  if(deckId==='verbs') return getAllVerbs().map(v=>({id:'vb_'+v.v,fr:v.v,zh:v.zh,tag:'动词',extra:`p.p. ${v.pp} (${v.aux})`}));
+  if(deckId==='custom') return getCW().map(w=>({id:'cw_'+w.fr,fr:w.fr,zh:w.zh,tag:w.tag||'自定义'}));
+  const base=VOCAB_RAW.map(v=>({id:'v_'+v[0],fr:v[0],zh:v[1],tag:v[2]}));
+  const customCards=getCW().map(w=>({id:'cw_'+w.fr,fr:w.fr,zh:w.zh,tag:w.tag||'自定义'}));
+  // all_fr includes custom words
+  if(deckId==='all_fr') return [...base,...customCards];
+  // check if it's a custom theme
+  const builtIn=DECKS.find(d=>d.id===deckId);
+  if(!builtIn) return [...base,...customCards].filter(c=>c.tag===deckId);
+  return base.filter(c=>c.tag===deckId);
+}
+
+function getSRSOverview(){
+  // Build unique IDs from all decks (avoid duplicates from VOCAB_RAW)
+  const seen = new Set();
+  const all = [];
+  VOCAB_RAW.forEach(v=>{ const id='v_'+v[0]; if(!seen.has(id)){seen.add(id);all.push(id);} });
+  getAllVerbs().forEach(v=>{ const id='vb_'+v.v; if(!seen.has(id)){seen.add(id);all.push(id);} });
+  getCW().forEach(w=>{ const id='cw_'+w.fr; if(!seen.has(id)){seen.add(id);all.push(id);} });
+  let nw=0,du=0,lm=0;
+  all.forEach(id=>{
+    const c=srsDb[id]; // peek only, don't create
+    if(!c||c.state==='new') nw++;
+    else if(c.due<=Date.now()) du++;
+    else lm++;
+  });
+  return{new:nw,due:du,learned:lm,total:all.length};
+}
+
+let cfg={newPerSession:10,front:'fr',order:'s1'};
+let selDeck='all_fr';
+let srsQueue=[],srsDone=0,srsNewShown=0,srsCurrentCard=null,srsRevealed=false;
+function setCfg(k,v,el){cfg[k]=v;el.closest('.seg').querySelectorAll('button').forEach(b=>b.classList.remove('active'));el.classList.add('active');}
+
+function renderDecks(){
+  // dynamic decks: built-in + any custom theme not already listed
+  const cwThemes=[...new Set(getCW().map(w=>w.tag||'自定义'))];
+  const builtInIds=new Set(DECKS.map(d=>d.id));
+  const extraDecks=cwThemes.filter(t=>!builtInIds.has(t)).map(t=>({id:t,name:t,icon:'⭐'}));
+  const allDecks=[...DECKS,...extraDecks];
+  document.getElementById('deckGrid').innerHTML=allDecks.map(d=>{
+    const cards=getCardsByDeck(d.id);
+    const due=cards.filter(c=>{ const s=srsDb[c.id]; return s&&s.state!=='new'&&s.due<=Date.now(); }).length;
+    const nw=cards.filter(c=>{ const s=srsDb[c.id]; return !s||s.state==='new'; }).length;
+    return`<div class="deck-btn${selDeck===d.id?' sel':''}" onclick="selDeck='${d.id}';renderDecks()">
+      <div class="d-name">${d.icon||'📁'} ${d.name}</div>
+      <div class="d-count">${cards.length}词 · <span style="color:#C04A20">${due}复</span> · <span style="color:#4A42A8">${nw}新</span></div>
+    </div>`;
+  }).join('');
+  const ov=getSRSOverview();
+  document.getElementById('ov-new').textContent=ov.new;
+  document.getElementById('ov-due').textContent=ov.due;
+  document.getElementById('ov-learned').textContent=ov.learned;
+  const totalEl=document.getElementById('ov-total-label');
+  if(totalEl) totalEl.textContent=`共 ${ov.total} 词`;
+  // Show today's pool info
+  const poolInfo=document.getElementById('today-pool-info');
+  if(poolInfo){
+    const saved=loadTodayPool();
+    if(saved.date===getTodayDateStr()&&saved.ids.length){
+      poolInfo.textContent=`今日词包：已累计 ${saved.ids.length} 个词`;
+    } else {
+      poolInfo.textContent='今日词包：尚未开始';
+    }
+  }
+}
+
+function startSRS(){
+  const cards=applyOrder(getCardsByDeck(selDeck),cfg.order);
+  const due=cards.filter(c=>{ const s=srsDb[c.id]; return s&&s.state!=='new'&&s.due<=Date.now(); });
+  const nwCards=cards.filter(c=>{ const s=srsDb[c.id]; return !s||s.state==='new'; }).slice(0,cfg.newPerSession);
+  srsQueue=[...due,...nwCards];
+  if(!srsQueue.length){alert('今天没有需要复习的内容！🎉');return;}
+  srsDone=0;srsNewShown=0;srsRevealed=false;
+  document.getElementById('srs-home').style.display='none';
+  document.getElementById('srs-study').style.display='block';
+  document.getElementById('srs-deck-label').textContent=DECKS.find(d=>d.id===selDeck)?.name||selDeck;
+  showSRSCard();
+}
+function isSpellMode(){
+  // spell mode: front=spell, or front=random and this card was assigned spell
+  return srsCurrentCard && srsCurrentCard._spellMode;
+}
+
+function showSRSCard(){
+  if(!srsQueue.length){endSRS(true);return;}
+  srsCurrentCard=srsQueue[0];srsRevealed=false;
+  const c=srsCurrentCard,card=getCard(c.id),iN=isNew(c.id);
+
+  // Decide mode for this card
+  const mode = cfg.front;
+  let showFR, spellMode;
+  if(mode==='fr')         { showFR=true;  spellMode=false; }
+  else if(mode==='zh')    { showFR=false; spellMode=false; }
+  else if(mode==='spell') { showFR=false; spellMode=true;  }
+  else { // random
+    const r = Math.random();
+    if(r < 0.34)       { showFR=true;  spellMode=false; }
+    else if(r < 0.67)  { showFR=false; spellMode=false; }
+    else               { showFR=false; spellMode=true;  }
+  }
+  srsCurrentCard._showFR = showFR;
+  srsCurrentCard._spellMode = spellMode;
+
+  document.getElementById('sc-tag').textContent=c.tag;
+  document.getElementById('sc-front').textContent = spellMode ? c.zh : (showFR ? c.fr : c.zh);
+  document.getElementById('sc-back').style.display='none';
+  document.getElementById('sc-back').textContent='';
+  document.getElementById('sc-extra').style.display='none';
+  document.getElementById('sc-extra').textContent='';
+  document.getElementById('ratingBtns').style.display='none';
+  document.getElementById('sc-interval').textContent=fmtInterval(card);
+
+  // Spell zone
+  const spellZone = document.getElementById('spell-zone');
+  const spellInput = document.getElementById('srs-spell-input');
+  const spellFb = document.getElementById('srs-spell-fb');
+  if(spellMode){
+    document.getElementById('sc-hint').textContent='输入法语拼写，Enter 确认';
+    document.getElementById('studyCard').style.cursor='default';
+    spellZone.style.display='block';
+    spellInput.value='';
+    spellInput.style.borderColor='';
+    spellInput.disabled=false;
+    spellFb.textContent='';
+    document.getElementById('srs-spell-next').style.display='none';
+    document.getElementById('srs-spell-confirm').style.display='inline-block';
+    document.getElementById('srs-spell-hint-btn').style.display='inline-block';
+    document.getElementById('srs-spell-skip').style.display='inline-block';
+    setTimeout(()=>spellInput.focus(),60);
+  } else {
+    document.getElementById('sc-hint').textContent='点击显示答案';
+    document.getElementById('studyCard').style.cursor='pointer';
+    spellZone.style.display='none';
+  }
+
+  const total=srsQueue.length+srsDone;
+  document.getElementById('srs-prog').style.width=(srsDone/total*100)+'%';
+  document.getElementById('q-stat').textContent=`${srsDone}/${total}`;
+  document.getElementById('q-new').textContent=`🆕 ${srsNewShown}新`;
+  document.getElementById('q-due').textContent=`⏰ ${srsQueue.filter(c=>{ const s=srsDb[c.id]; return s&&s.state!=='new'; }).length}复`;
+  // auto-speak French (not in spell mode)
+  if(!spellMode) setTimeout(()=>speak(c.fr), 200);
+}
+function cardClick(){
+  // In spell mode, clicking card does nothing (input handles it)
+  if(isSpellMode()) return;
+  revealSRS();
+}
+
+function revealSRS(){
+  if(srsRevealed)return;srsRevealed=true;
+  const c=srsCurrentCard;
+  const showFR=c._showFR;
+  document.getElementById('sc-back').textContent=showFR?c.zh:c.fr;
+  document.getElementById('sc-back').style.display='block';
+  if(c.extra){document.getElementById('sc-extra').textContent=c.extra;document.getElementById('sc-extra').style.display='block';}
+  document.getElementById('sc-hint').textContent='';
+  document.getElementById('ratingBtns').style.display='grid';
+}
+
+// ── SPELL CHECK in SRS mode ──
+function normSpellSRS(s){
+  return s.trim().toLowerCase()
+    .replace(/[àâ]/g,'a').replace(/[éèêë]/g,'e').replace(/[îï]/g,'i')
+    .replace(/[ôö]/g,'o').replace(/[ùûü]/g,'u').replace(/ç/g,'c')
+    .replace(/œ/g,'oe').replace(/['\-\s]/g,'');
+}
+
+function checkSRSSpell(){
+  const c = srsCurrentCard;
+  const input = document.getElementById('srs-spell-input');
+  const fb = document.getElementById('srs-spell-fb');
+  const val = input.value.trim();
+  if(!val) return;
+
+  const frCore = c.fr.replace(/^(le |la |les |l'|un |une |des )/i,'').trim();
+  const ok = val === frCore || val === c.fr;
+
+  input.style.borderColor = ok ? '#1D9E75' : '#C04A20';
+  input.disabled = true;
+
+  // Show result and correct form
+  document.getElementById('sc-back').textContent = c.fr;
+  document.getElementById('sc-back').style.display = 'block';
+  if(c.extra){ document.getElementById('sc-extra').textContent=c.extra; document.getElementById('sc-extra').style.display='block'; }
+
+  if(ok){
+    fb.textContent = '✓ 正确！';
+    fb.style.color = 'var(--accent2)';
+  } else {
+    fb.innerHTML = `✗ 正确拼写：<strong>${c.fr}</strong>`;
+    fb.style.color = 'var(--warn)';
+  }
+
+  // Show Next button (rating buttons hidden — spell mode doesn't rate)
+  document.getElementById('srs-spell-next').style.display = 'inline-block';
+  srsRevealed = true;
+  // record result for SRS: ok→3(很熟 vibes), wrong→1(不认识)
+  srsCurrentCard._spellResult = ok ? 3 : 1;
+}
+
+function showSRSSpellHint(){
+  const c = srsCurrentCard;
+  const frCore = c.fr.replace(/^(le |la |les |l'|un |une |des )/i,'').trim();
+  const input = document.getElementById('srs-spell-input');
+  const fb = document.getElementById('srs-spell-fb');
+  if(!input.value) input.value = frCore[0];
+  fb.textContent = `提示：首字母 "${frCore[0].toUpperCase()}"，共 ${frCore.length} 个字母`;
+  fb.style.color = 'var(--gold)';
+}
+
+function spellNext(){
+  if(!srsCurrentCard || !srsCurrentCard._spellMode) return;
+  rateSRS(srsCurrentCard._spellResult || 1);
+}
+
+function skipSRSSpell(){
+  const c = srsCurrentCard;
+  const fb = document.getElementById('srs-spell-fb');
+  const input = document.getElementById('srs-spell-input');
+  input.style.borderColor = '#C04A20';
+  input.disabled = true;
+  fb.innerHTML = `跳过 → <strong>${c.fr}</strong> (${c.zh})`;
+  fb.style.color = 'var(--muted)';
+  document.getElementById('sc-back').textContent = c.fr;
+  document.getElementById('sc-back').style.display = 'block';
+  if(c.extra){ document.getElementById('sc-extra').textContent=c.extra; document.getElementById('sc-extra').style.display='block'; }
+  document.getElementById('srs-spell-next').style.display = 'inline-block';
+  srsRevealed = true;
+  srsCurrentCard._spellResult = 1;
+}
+function rateSRS(rating){
+  if(!srsCurrentCard)return;
+  const c=srsCurrentCard;
+  if(isNew(c.id)) srsNewShown++;
+  updateCard(c.id, rating);
+  srsQueue.shift();
+  srsDone++;
+  // If card went back to learning (failed), re-insert near front
+  const card=getCard(c.id);
+  if(card.state==='learning'){
+    // Re-insert after current reviews in queue (put it ~4 spots ahead)
+    const insertAt=Math.min(4, srsQueue.length);
+    srsQueue.splice(insertAt, 0, c);
+  }
+  showSRSCard();
+}
+function endSRS(finished){
+  document.getElementById('srs-home').style.display='block';
+  document.getElementById('srs-study').style.display='none';
+  renderDecks();
+  if(finished)alert(`完成！新词${srsNewShown}，复习${srsDone-srsNewShown}。`);
+}
+
+// ============================================================
+// GENDER MODULE
+// ============================================================
+let gmCfg={theme:'全部',order:'s1',count:20,useToday:false};
+let gmDeck=[],gmIdx=0,gmRight=0,gmWrong=0,gmWrongList=[];
+const NOUNS_GM=VOCAB_RAW.filter(v=>v[3]);
+
+function syncSeg(id,activeIdx){
+  document.getElementById(id).querySelectorAll('button').forEach((b,i)=>b.classList.toggle('active',i===activeIdx));
+}
+
+function buildGMThemeGrid(){
+  // include custom noun themes that have gender
+  const cwNounThemes=[...new Set(getCW().filter(w=>w.g).map(w=>w.tag||'自定义'))];
+  const builtInThemes=[...new Set(NOUNS_GM.map(v=>v[2]))];
+  const allThemes=['全部',...new Set([...builtInThemes,...cwNounThemes])];
+  document.getElementById('gm-theme-grid').innerHTML=allThemes.map(t=>
+    `<div class="scfg-theme-btn${gmCfg.theme===t?' active':''}" onclick="gmCfg.theme='${t}';document.querySelectorAll('#gm-theme-grid .scfg-theme-btn').forEach(b=>b.classList.remove('active'));this.classList.add('active')">${t}</div>`
+  ).join('');
+}
+
+function startGM(){
+  const NOUNS_GM_FULL=[...NOUNS_GM,...getCW().filter(w=>w.g).map(w=>([w.fr,w.zh,w.tag,w.g]))];
+  let pool;
+  if(gmCfg.useToday){
+    // use today's session pool, filter to nouns with gender
+    pool=todaySession.pool.filter(c=>c.g).map(c=>({fr:c.fr,zh:c.zh,g:c.g}));
+    if(!pool.length){ alert('今日词包中没有名词，请先完成「今日学习」配置'); return; }
+  } else {
+    pool=gmCfg.order==='wrongs'?gmWrongList.length?[...gmWrongList]:NOUNS_GM_FULL.map(v=>Array.isArray(v)?{fr:v[0],zh:v[1],g:v[3]}:v)
+      :gmCfg.theme==='全部'?NOUNS_GM_FULL:NOUNS_GM_FULL.filter(v=>(Array.isArray(v)?v[2]:v.tag)===gmCfg.theme);
+    pool=pool.map(v=>Array.isArray(v)?{fr:v[0],zh:v[1],g:v[3]}:{fr:v.fr,zh:v.zh,g:v.g});
+  }
+  pool=applyOrder(pool,gmCfg.order==='wrongs'?'s1':gmCfg.order);
+  gmDeck=pool.slice(0,gmCfg.useToday?9999:gmCfg.count);
+  gmIdx=0;gmRight=0;gmWrong=0;
+  document.getElementById('gm-cfg').style.display='none';
+  document.getElementById('gm-session').style.display='block';
+  updateGMStats();showGMCard();
+}
+function endGM(){
+  document.getElementById('gm-cfg').style.display='block';
+  document.getElementById('gm-session').style.display='none';
+  buildGMThemeGrid();
+}
+function showGMCard(){
+  document.getElementById('gm-fb').textContent='';document.getElementById('gm-fb').className='gm-feedback';
+  if(gmIdx>=gmDeck.length){
+    document.getElementById('gm-word').textContent='🎉';
+    document.getElementById('gm-hint').textContent=`完成！正确率 ${Math.round(gmRight/gmDeck.length*100)}%  · 错误池 ${gmWrongList.length} 词`;
+    return;
+  }
+  const n=gmDeck[gmIdx];
+  const bare=n.fr.replace(/^(le |la |l'|un |une )/i,'').split(' ')[0];
+  document.getElementById('gm-word').textContent=bare;
+  document.getElementById('gm-hint').textContent=n.zh+'  —  le 还是 la？';
+  document.getElementById('gm-prog').style.width=(gmIdx/gmDeck.length*100)+'%';
+  // auto-speak the French word
+  setTimeout(()=>speak(n.fr),200);
+}
+function guessGM(guess){
+  if(gmIdx>=gmDeck.length)return;
+  const n=gmDeck[gmIdx];const fb=document.getElementById('gm-fb');
+  const art=n.g==='m'?'🔵 le / un':'🔴 la / une';
+  if(guess===n.g){gmRight++;fb.textContent=`✓ ${art}`;fb.className='gm-feedback ok';gmWrongList=gmWrongList.filter(w=>w.fr!==n.fr);}
+  else{gmWrong++;fb.textContent=`✗ 应是 ${art} — ${n.fr}`;fb.className='gm-feedback no';if(!gmWrongList.find(w=>w.fr===n.fr))gmWrongList.push(n);}
+  gmIdx++;updateGMStats();setTimeout(showGMCard,1000);
+}
+function updateGMStats(){
+  document.getElementById('gm-right').textContent=gmRight;
+  document.getElementById('gm-wrong').textContent=gmWrong;
+  const t=gmRight+gmWrong;
+  document.getElementById('gm-stat').textContent=`${Math.min(gmIdx+1,gmDeck.length)}/${gmDeck.length}`;
+}
+
+// ============================================================
+// VERB DRILL
+// ============================================================
+const PROS=['je/j\'','tu','il/elle','nous','vous','ils/elles'];
+const IMP_PROS=['tu','nous','vous'];
+const TLBLS={present:'现在时',imperatif:'命令式',passe:'复合过去时',futur:'近期将来时'};
+let vdTotal=0,vdOk=0,vdStreak=0,vdWrong=[],vdCurV=null,vdCurT=null,vdChecked=false;
+
+function initVerbSel(){
+  document.getElementById('vd-verb-sel').innerHTML='<option value="random">随机动词</option>'
+    +getAllVerbs().map(v=>`<option value="${v.v}">${v.v} (${v.zh})</option>`).join('');
+}
+function vdGetRows(vb,t){
+  if(t==='present')return PROS.map((p,i)=>({pro:p,answer:vb.pres[i]}));
+  if(t==='imperatif')return IMP_PROS.map((p,i)=>({pro:p,answer:vb.imp[i]}));
+  if(t==='passe'){
+    const af=['ai','as','a','avons','avez','ont'],ef=['suis','es','est','sommes','êtes','sont'];
+    return PROS.map((p,i)=>({pro:p,answer:`${vb.aux==='être'?ef[i]:af[i]} ${vb.pp}`}));
+  }
+  return PROS.map((p,i)=>({pro:p,answer:`${['vais','vas','va','allons','allez','vont'][i]} ${vb.v}`}));
+}
+function vdNew(){
+  const vs=document.getElementById('vd-verb-sel').value;
+  const ts=document.getElementById('vd-tense-sel').value;
+  const ord=document.getElementById('vd-order-sel').value;
+  let pool=vs==='random'?[...getAllVerbs()]:getAllVerbs().filter(v=>v.v===vs);
+  pool=applyOrder(pool,ord);
+  vdCurV=pool[Math.floor(Math.random()*pool.length)];
+  vdCurT=ts==='random'?['present','imperatif','passe','futur'][Math.floor(Math.random()*4)]:ts;
+  vdChecked=false;renderVDCard();
+}
+function vdSRSMode(){
+  if(!vdWrong.length){alert('还没有错误的动词！');return;}
+  vdCurV=vdWrong[Math.floor(Math.random()*vdWrong.length)];
+  vdCurT=['present','imperatif','passe','futur'][Math.floor(Math.random()*4)];
+  vdChecked=false;renderVDCard();
+}
+function renderVDCard(){
+  const vb=vdCurV;if(!vb)return;
+  const rows=vdGetRows(vb,vdCurT);
+  document.getElementById('vdCard').innerHTML=`
+    <div class="vd-verb-title">${vb.v} <span style="font-size:13px;font-weight:400;color:var(--muted)">${vb.zh}</span>
+      <span style="font-size:10px;padding:2px 6px;border-radius:4px;background:var(--surface2);color:var(--muted);margin-left:6px;">${vb.g}</span>
+    </div>
+    <div class="vd-tense-label">${TLBLS[vdCurT]}${vdCurT==='passe'?` — p.p.: <strong>${vb.pp}</strong> · 助: <strong>${vb.aux}</strong>`:''}</div>
+    <div class="conj-grid">${rows.map((r,i)=>`<div class="conj-row">
+      <span class="conj-pro">${r.pro}</span>
+      <div class="conj-box">
+        <input class="conj-input" id="ci${i}" placeholder="…" autocomplete="off" autocorrect="off" spellcheck="false"
+          onkeydown="if(event.key==='Enter'){const nx=document.getElementById('ci${i+1}');if(nx)nx.focus();else vdCheck();}">
+        <div class="conj-answer" id="ca${i}">${r.answer}</div>
+      </div>
+    </div>`).join('')}</div>
+    <div class="vd-btns">
+      <button class="vd-btns btn-check" onclick="vdCheck()">✓ 检查</button>
+      <button class="btn-reveal" onclick="vdReveal()">显示答案</button>
+      <button class="btn-next" onclick="vdNew()">下一题 →</button>
+    </div>
+    <div class="vd-result" id="vdResult"></div>`;
+  setTimeout(()=>document.getElementById('ci0')?.focus(),50);
+}
+function normV(s){return s.trim().toLowerCase().replace(/[!]/g,'').replace(/'/g,"'");}
+function vdCheck(){
+  if(vdChecked)return;
+  const rows=vdGetRows(vdCurV,vdCurT);let correct=0;
+  rows.forEach((r,i)=>{
+    const inp=document.getElementById('ci'+i);const ans=document.getElementById('ca'+i);
+    if(!inp)return;ans.style.display='block';
+    if(normV(inp.value)===normV(r.answer)){inp.classList.add('correct');correct++;}
+    else{inp.classList.add('wrong');if(!inp.value)inp.value='—';}
+  });
+  vdChecked=true;vdTotal++;document.getElementById('vd-total').textContent=vdTotal;
+  if(correct===rows.length){
+    vdOk++;vdStreak++;document.getElementById('vdResult').textContent='🎉 全部正确！';document.getElementById('vdResult').style.color='var(--accent2)';
+    vdWrong=vdWrong.filter(v=>v.v!==vdCurV.v);
+  } else {
+    vdStreak=0;document.getElementById('vdResult').textContent=`${correct}/${rows.length} 正确`;document.getElementById('vdResult').style.color='var(--warn)';
+    if(!vdWrong.find(v=>v.v===vdCurV.v))vdWrong.push(vdCurV);
+  }
+  document.getElementById('vd-ok').textContent=vdOk;document.getElementById('vd-streak').textContent=vdStreak;
+}
+function vdReveal(){
+  const rows=vdGetRows(vdCurV,vdCurT);
+  rows.forEach((r,i)=>{
+    const inp=document.getElementById('ci'+i);const ans=document.getElementById('ca'+i);
+    if(!inp)return;ans.style.display='block';
+    if(!inp.classList.contains('correct')){inp.classList.add('revealed');inp.value=r.answer;}
+  });
+  vdChecked=true;vdStreak=0;document.getElementById('vd-streak').textContent=0;
+  document.getElementById('vdResult').textContent='答案已显示';document.getElementById('vdResult').style.color='var(--gold)';
+  if(!vdWrong.find(v=>v.v===vdCurV.v))vdWrong.push(vdCurV);
+}
+
+// ============================================================
+// SPEECH
+// ============================================================
+const synth=window.speechSynthesis;
+let frVoice=null;
+function getFrVoice(){if(frVoice)return frVoice;const vs=synth.getVoices();frVoice=vs.find(v=>v.lang.startsWith('fr-'))||vs.find(v=>v.lang.startsWith('fr'))||vs[0];return frVoice;}
+synth.onvoiceschanged=()=>{frVoice=null;getFrVoice();};
+function speak(text,rate=0.85){synth.cancel();const u=new SpeechSynthesisUtterance(text);u.voice=getFrVoice();u.lang='fr-FR';u.rate=rate;synth.speak(u);}
+
+// ============================================================
+// LISTEN MODULE
+// ============================================================
+let lsCfg={theme:'全部',order:'s1',count:15,useToday:false};
+let lsDeck=[],lsIdx=0,lsRight=0,lsWrong=0,lsCurrent=null,lsWrongList=[];
+
+const LS_BASE_THEMES=['全部',...new Set(VOCAB_RAW.map(v=>v[2])),'动词','自定义'];
+
+function buildLsThemeGrid(){
+  const cwThemes=[...new Set(getCW().map(w=>w.tag||'自定义'))];
+  const builtInThemes=[...new Set(VOCAB_RAW.map(v=>v[2]))];
+  const allThemes=['全部',...new Set([...builtInThemes,...cwThemes]),'动词','错误重练'];
+  document.getElementById('ls-theme-grid').innerHTML=allThemes.map(t=>
+    `<div class="scfg-theme-btn${lsCfg.theme===t?' active':''}" onclick="lsCfg.theme='${t}';document.querySelectorAll('#ls-theme-grid .scfg-theme-btn').forEach(b=>b.classList.remove('active'));this.classList.add('active')">${t}</div>`
+  ).join('');
+}
+
+function buildLsDeck(){
+  if(lsCfg.useToday){
+    const pool=todaySession.pool.length?[...todaySession.pool]:[];
+    return applyOrder(pool,'s1').slice(0,lsCfg.count);
+  }
+  let pool;
+  const cwAll=getCW().map(w=>({fr:w.fr,zh:w.zh,tag:w.tag||'自定义'}));
+  if(lsCfg.theme==='动词') pool=getAllVerbs().map(v=>({fr:v.v,zh:v.zh,tag:'动词'}));
+  else if(lsCfg.theme==='错误重练') pool=lsWrongList.length?[...lsWrongList]:VOCAB_RAW.map(v=>({fr:v[0],zh:v[1],tag:v[2]}));
+  else if(lsCfg.theme==='全部'){
+    pool=VOCAB_RAW.map(v=>({fr:v[0],zh:v[1],tag:v[2]}))
+      .concat(getAllVerbs().map(v=>({fr:v.v,zh:v.zh,tag:'动词'})))
+      .concat(cwAll);
+  } else {
+    // built-in theme + any custom words with same theme
+    const builtIn=VOCAB_RAW.filter(v=>v[2]===lsCfg.theme).map(v=>({fr:v[0],zh:v[1],tag:v[2]}));
+    const custom=cwAll.filter(w=>w.tag===lsCfg.theme);
+    pool=[...builtIn,...custom];
+  }
+  const ordered=applyOrder(pool,lsCfg.order==='wrongs'?'s1':lsCfg.order);
+  return ordered.slice(0,lsCfg.count);
+}
+
+function startListen(){
+  lsDeck=buildLsDeck();lsIdx=0;lsRight=0;lsWrong=0;lsCurrent=null;
+  document.getElementById('ls-cfg').style.display='none';
+  document.getElementById('ls-session').style.display='block';
+  updateLsStats();nextListenCard();
+}
+function endListen(){
+  document.getElementById('ls-cfg').style.display='block';
+  document.getElementById('ls-session').style.display='none';
+  buildLsThemeGrid();
+}
+function updateLsStats(){
+  document.getElementById('ls-right').textContent=lsRight;
+  document.getElementById('ls-wrong').textContent=lsWrong;
+  document.getElementById('ls-stat').textContent=`${Math.min(lsIdx+1,lsDeck.length)}/${lsDeck.length}`;
+  document.getElementById('ls-prog').style.width=(lsIdx/lsDeck.length*100)+'%';
+}
+function nextListenCard(){
+  const nb=document.getElementById('ls-next-btn');
+  if(nb) nb.style.display='none';
+  if(lsIdx>=lsDeck.length){
+    document.getElementById('ls-card').innerHTML=`<div class="ls-inner">
+      <div style="font-size:40px;margin-bottom:8px;">🎉</div>
+      <div style="font-size:18px;font-weight:700;margin-bottom:5px;">本轮完成！</div>
+      <div style="font-size:13px;color:var(--muted)">正确 ${lsRight}/${lsDeck.length} · ${lsDeck.length?Math.round(lsRight/lsDeck.length*100):0}%</div>
+      <button class="start-btn" style="margin-top:14px;" onclick="endListen()">返回配置</button>
+    </div>`;return;
+  }
+  lsCurrent=lsDeck[lsIdx];renderSpellCard();
+  setTimeout(()=>speak(lsCurrent.fr),300);
+}
+function renderSpellCard(){
+  const c=lsCurrent;const f=c.fr.replace(/\\/g,'\\\\').replace(/'/g,"\\'");
+  document.getElementById('ls-card').innerHTML=`<div class="ls-inner">
+    <div class="sc-tag" style="margin:0 auto 10px;">${c.tag}</div>
+    <div style="font-size:13px;color:var(--muted);margin-bottom:12px;">听发音，拼写法语单词</div>
+    <div style="margin-bottom:14px;">
+      <button class="play-btn" onclick="speak('${f}',0.85)">🔊 播放</button>
+      <button class="slow-btn" onclick="speak('${f}',0.55)">🐢 慢速</button>
+    </div>
+    <input class="spell-input" id="spell-in" type="text" autocomplete="off" autocorrect="off" spellcheck="false" placeholder="输入法语单词…"
+      onkeydown="if(event.key==='Enter')checkSpell()">
+    <div style="margin-top:10px;">
+      <button class="play-btn" onclick="checkSpell()">确认</button>
+      <button class="ls-btn" onclick="showSpellHint()">提示首字母</button>
+      <button class="ls-btn" onclick="skipListen()">跳过</button>
+    </div>
+    <div id="spell-fb" style="min-height:20px;margin-top:10px;font-size:13px;font-weight:600;"></div>
+  </div>`;
+  setTimeout(()=>document.getElementById('spell-in')?.focus(),80);
+}
+function normSpell(s){return s.trim().toLowerCase().replace(/[àâ]/g,'a').replace(/[éèêë]/g,'e').replace(/[îï]/g,'i').replace(/[ôö]/g,'o').replace(/[ùûü]/g,'u').replace(/ç/g,'c').replace(/œ/g,'oe').replace(/['\-\s]/g,'');}
+function checkSpell(){
+  const inp=document.getElementById('spell-in');if(!inp)return;
+  const val=inp.value.trim();if(!val)return;
+  const c=lsCurrent;
+  const core=c.fr.replace(/^(le |la |les |l'|un |une |des )/i,'').trim();
+  const ok=normSpell(val)===normSpell(core)||normSpell(val)===normSpell(c.fr);
+  inp.disabled=true;inp.style.borderColor=ok?'#1D9E75':'#C04A20';
+  const fb=document.getElementById('spell-fb');
+  if(ok){
+    lsRight++;fb.textContent='✓ 拼写正确！选择中文意思：';fb.style.color='var(--accent2)';
+    updateLsStats();
+    setTimeout(()=>renderMeaningCard(c),400);
+  } else {
+    lsWrong++;fb.innerHTML=`✗ 正确拼写：<strong>${c.fr}</strong>`;fb.style.color='var(--warn)';
+    if(!lsWrongList.find(w=>w.fr===c.fr))lsWrongList.push(c);
+    updateLsStats();
+    showLsNext();
+  }
+}
+function renderMeaningCard(c){
+  const allZh=[...VOCAB_RAW.map(v=>v[1]),...getAllVerbs().map(v=>v.zh)];
+  const distr=trueShuf(allZh.filter(z=>z!==c.zh)).slice(0,3);
+  const opts=trueShuf([c.zh,...distr]);
+  document.getElementById('ls-card').innerHTML=`<div class="ls-inner">
+    <div style="font-size:13px;color:var(--muted);margin-bottom:6px;">✓ 拼写正确！选中文意思：</div>
+    <div style="font-size:26px;font-weight:700;margin-bottom:14px;">${c.fr}</div>
+    <div class="choice-grid">${opts.map(o=>`<button class="choice-btn"
+      onclick="checkMeaning('${o.replace(/'/g,"\\'")}','${c.zh.replace(/'/g,"\\'")}','${c.fr.replace(/'/g,"\\'")}')">
+      ${o}</button>`).join('')}
+    </div>
+    <div id="mean-fb" style="min-height:20px;margin-top:10px;font-size:13px;font-weight:600;"></div>
+  </div>`;
+}
+function checkMeaning(chosen,correct,fr){
+  document.querySelectorAll('.choice-btn').forEach(b=>{
+    b.disabled=true;
+    if(b.textContent.trim()===correct)b.style.background='#E1F5EE';
+    if(b.textContent.trim()===chosen&&chosen!==correct)b.style.background='#FCEAE6';
+  });
+  const fb=document.getElementById('mean-fb');
+  if(chosen===correct){fb.textContent='🎉 正确！';fb.style.color='var(--accent2)';}
+  else{
+    fb.textContent=`✗ 应选「${correct}」`;fb.style.color='var(--warn)';
+    if(!lsWrongList.find(w=>w.fr===fr))lsWrongList.push({fr,zh:correct,tag:'复习'});
+  }
+  showLsNext();
+}
+function showLsNext(){
+  const nb=document.getElementById('ls-next-btn');
+  if(nb){nb.style.display='inline-block';nb.focus();}
+}
+function advanceLs(){
+  const nb=document.getElementById('ls-next-btn');
+  if(nb) nb.style.display='none';
+  lsIdx++;nextListenCard();
+}
+function showSpellHint(){
+  const c=lsCurrent;const core=c.fr.replace(/^(le |la |les |l'|un |une |des )/i,'').trim();
+  const inp=document.getElementById('spell-in');if(inp&&!inp.value)inp.value=core[0];
+  const fb=document.getElementById('spell-fb');
+  if(fb){fb.textContent=`提示：首字母 "${core[0].toUpperCase()}"，共 ${core.length} 字母`;fb.style.color='var(--gold)';}
+}
+function skipListen(){
+  const c=lsCurrent;lsWrong++;
+  const fb=document.getElementById('spell-fb');
+  if(fb){fb.innerHTML=`跳过 → <strong>${c.fr}</strong> (${c.zh})`;fb.style.color='var(--muted)';}
+  if(!lsWrongList.find(w=>w.fr===c.fr))lsWrongList.push(c);
+  updateLsStats();showLsNext();
+}
+
+// ============================================================
+// VOCAB TABLE
+// ============================================================
+const POS_MAP={'名':'<span class="vtag tn">名</span>','形':'<span class="vtag ta">形</span>','副':'<span class="vtag tadv">副</span>','副/介':'<span class="vtag tadv">副/介</span>','短语':'<span class="vtag texp">短语</span>'};
+function renderVocabTable(){
+  const q=document.getElementById('vsearch').value.toLowerCase();
+  const th=document.getElementById('vtheme').value;
+  const ps=document.getElementById('vpos').value;
+  // merge custom words into table rows dynamically
+  const customRows=getCW().map(w=>[w.fr,'名',w.zh,w.tag||'自定义','（自定义单词）']);
+  const allRows=[...VOCAB_TABLE,...customRows];
+  let rows=allRows;
+  if(th)rows=rows.filter(r=>r[3]===th);
+  if(ps)rows=rows.filter(r=>r[1]===ps);
+  if(q)rows=rows.filter(r=>r[0].toLowerCase().includes(q)||r[2].includes(q)||r[4].toLowerCase().includes(q));
+  const total=allRows.length;
+  document.getElementById('vcount').textContent=`显示 ${rows.length} / ${total} 条`;
+  document.getElementById('vtbody').innerHTML=rows.map(r=>`<tr>
+    <td class="vfr">${q?r[0].replace(new RegExp(q.replace(/[.*+?^${}()|[\]\\]/g,'\\$&'),'gi'),m=>`<mark>${m}</mark>`):r[0]}</td>
+    <td>${POS_MAP[r[1]]||r[1]}</td>
+    <td class="vzh">${r[2]}</td>
+    <td style="color:var(--muted);font-size:11px;">${r[3]}</td>
+    <td class="vex">${r[4]}</td>
+  </tr>`).join('');
+  // also refresh theme dropdown to include custom themes
+  const sel=document.getElementById('vtheme');
+  const curVal=sel.value;
+  const allThemes=[...new Set(allRows.map(r=>r[3]))].sort();
+  sel.innerHTML='<option value="">全部主题</option>'+allThemes.map(t=>`<option${t===curVal?' selected':''}>${t}</option>`).join('');
+}
+function filterVocab(){renderVocabTable();}
+
+// ============================================================
+// PAGE NAV
+// ============================================================
+// ============================================================
+// TODAY SESSION
+// ============================================================
+let todayCfg = {newCount:20, includeDue:true, source:'all'};
+let todaySession = {
+  pool:[],queue:[],done:[],current:null,
+  revealed:false,newShown:0,dueShown:0,
+  practiceMode:null,practiceQueue:[],practiceIdx:0,
+  practiceRight:0,practiceWrong:0,
+};
+
+// ── Persist today's pool by calendar date ──
+const TODAY_KEY = 'edito_today_pool_v1';
+function getTodayDateStr(){
+  const d=new Date();
+  return `${d.getFullYear()}-${d.getMonth()+1}-${d.getDate()}`;
+}
+function loadTodayPool(){
+  try{
+    const raw=localStorage.getItem(TODAY_KEY);
+    if(!raw) return {date:'',ids:[],doneIds:[]};
+    const p=JSON.parse(raw);if(!p.doneIds)p.doneIds=[];return p;
+  }catch(e){return {date:'',ids:[],doneIds:[]};} 
+}
+function saveTodayPool(ids, doneIds){
+  try{
+    const cur=loadTodayPool();
+    localStorage.setItem(TODAY_KEY,JSON.stringify({
+      date:getTodayDateStr(), ids,
+      doneIds: doneIds!==undefined ? doneIds : cur.doneIds
+    }));
+  }catch(e){}
+}
+function markTodayCardDone(id){
+  try{
+    const saved=loadTodayPool();
+    if(saved.date!==getTodayDateStr()) return;
+    if(!saved.doneIds.includes(id)){
+      saved.doneIds.push(id);
+      localStorage.setItem(TODAY_KEY,JSON.stringify(saved));
+    }
+  }catch(e){}
+}
+function getTodayPoolIds(){
+  const saved=loadTodayPool();
+  if(saved.date===getTodayDateStr()) return saved.ids;
+  return [];
+}
+function getTodayDoneIds(){
+  const saved=loadTodayPool();
+  if(saved.date===getTodayDateStr()) return saved.doneIds||[];
+  return [];
+}
+
+function buildCardFromId(id){
+  // Reconstruct card object from id string
+  if(id.startsWith('v_')){
+    const fr=id.slice(2);
+    const row=VOCAB_RAW.find(v=>v[0]===fr);
+    if(row) return {id,fr:row[0],zh:row[1],tag:row[2],g:row[3]||null};
+  }
+  if(id.startsWith('vb_')){
+    const fr=id.slice(3);
+    const row=getAllVerbs().find(v=>v.v===fr);
+    if(row) return {id,fr:row.v,zh:row.zh,tag:'动词',g:null,extra:`p.p. ${row.pp} (${row.aux})`};
+  }
+  if(id.startsWith('cw_')){
+    const fr=id.slice(3);
+    const row=getCW().find(w=>w.fr===fr);
+    if(row) return {id,fr:row.fr,zh:row.zh,tag:row.tag||'自定义',g:row.g||null};
+  }
+  return null;
+}
+
+function getTodayPool(){
+  const src=todayCfg.source;
+  let base=[];
+  if(src==='all'||src==='vocab')
+    base=base.concat(VOCAB_RAW.map(v=>({id:'v_'+v[0],fr:v[0],zh:v[1],tag:v[2],g:v[3]||null})));
+  if(src==='all'||src==='verbs')
+    base=base.concat(getAllVerbs().map(v=>({id:'vb_'+v.v,fr:v.v,zh:v.zh,tag:'动词',g:null,extra:`p.p. ${v.pp} (${v.aux})`})));
+  if(src==='all'||src==='custom')
+    base=base.concat(getCW().map(w=>({id:'cw_'+w.fr,fr:w.fr,zh:w.zh,tag:w.tag||'自定义',g:w.g||null})));
+  // Dedupe
+  const seen=new Set(); const deduped=[];
+  base.forEach(c=>{if(!seen.has(c.id)){seen.add(c.id);deduped.push(c);}});
+  // Split
+  const due=deduped.filter(c=>{const s=srsDb[c.id];return s&&s.state!=='new'&&s.due<=Date.now();});
+  const newCards=deduped.filter(c=>{const s=srsDb[c.id];return !s||s.state==='new';});
+  const shuffledNew=applyOrder(newCards,'s1').slice(0,todayCfg.newCount);
+  const shuffledDue=todayCfg.includeDue?applyOrder(due,'s1'):[];
+  return{due:shuffledDue,newCards:shuffledNew,all:[...shuffledDue,...shuffledNew]};
+}
+
+function addTodayWords(btn){
+  // Build full candidate list respecting source setting
+  const src=todayCfg.source;
+  let base=[];
+  if(src==='all'||src==='vocab')
+    base=base.concat(VOCAB_RAW.map(v=>({id:'v_'+v[0],fr:v[0],zh:v[1],tag:v[2],g:v[3]||null})));
+  if(src==='all'||src==='verbs')
+    base=base.concat(getAllVerbs().map(v=>({id:'vb_'+v.v,fr:v.v,zh:v.zh,tag:'动词',g:null,extra:`p.p. ${v.pp} (${v.aux})`})));
+  if(src==='all'||src==='custom')
+    base=base.concat(getCW().map(w=>({id:'cw_'+w.fr,fr:w.fr,zh:w.zh,tag:w.tag||'自定义',g:w.g||null})));
+  const seen=new Set(); const deduped=[];
+  base.forEach(c=>{if(!seen.has(c.id)){seen.add(c.id);deduped.push(c);}});
+
+  // Existing today pool IDs
+  const existingIds=new Set(getTodayPoolIds());
+
+  // New words only (state='new' and not already in today's pool)
+  const candidates=deduped.filter(c=>{
+    if(existingIds.has(c.id)) return false;
+    const s=srsDb[c.id]; return !s||s.state==='new';
+  });
+  const toAdd=applyOrder(candidates,'s1').slice(0,todayCfg.newCount);
+
+  if(!toAdd.length){
+    btn.textContent='没有更多新词了';
+    setTimeout(()=>{ btn.textContent='＋ 添加新词'; },2000);
+    return;
+  }
+
+  // Merge into today pool
+  const allIds=[...existingIds,...toAdd.map(c=>c.id)];
+  saveTodayPool(allIds);
+
+  // Update in-memory pool and queue (append new cards to queue if session active)
+  const existingInSession=new Set(todaySession.pool.map(c=>c.id));
+  const brandNew=toAdd.filter(c=>!existingInSession.has(c.id));
+  todaySession.pool=[...todaySession.pool,...brandNew];
+  todaySession.queue=[...todaySession.queue,...brandNew];
+
+  btn.textContent=`已添加 ${toAdd.length} 个新词 ✓`;
+  setTimeout(()=>{ btn.textContent='＋ 添加新词'; },2000);
+  renderDecks();
+
+  // If we're on the choose screen or home, go back to card study
+  const chooseVisible = document.getElementById('today-choose').style.display !== 'none';
+  const homeVisible = document.getElementById('today-home').style.display !== 'none';
+  if(chooseVisible || homeVisible){
+    document.getElementById('today-home').style.display='none';
+    document.getElementById('today-choose').style.display='none';
+    document.getElementById('today-practice').style.display='none';
+    document.getElementById('today-cards').style.display='block';
+    showTodayCard();
+  }
+}
+
+function startTodaySession(){
+  const existingIds=getTodayPoolIds();
+  const existingCards=existingIds.map(buildCardFromId).filter(Boolean);
+
+  if(existingIds.length>0){
+    // Restore today's session
+    todaySession.pool=existingCards;
+    todaySession.current=null;
+    todaySession.revealed=false;
+
+    // pending = cards that are still 'new' in srsDb (never rated)
+    const pending=existingCards.filter(c=>{ const s=srsDb[c.id]; return !s||s.state==='new'; });
+    todaySession.done=existingCards.filter(c=>{ const s=srsDb[c.id]; return s&&s.state!=='new'; });
+
+    if(!pending.length){
+      // All cards have been rated today — go to practice
+      todaySession.queue=[];
+      document.getElementById('today-home').style.display='none';
+      document.getElementById('today-cards').style.display='none';
+      document.getElementById('today-practice').style.display='none';
+      document.getElementById('today-choose').style.display='block';
+      document.getElementById('today-choose-sub').textContent=
+        `今日词包共 ${existingCards.length} 个词 · 选一种方式练习，或直接完成`;
+      return;
+    }
+
+    // Resume with pending cards
+    todaySession.queue=[...pending];
+    document.getElementById('today-home').style.display='none';
+    document.getElementById('today-cards').style.display='block';
+    document.getElementById('today-choose').style.display='none';
+    document.getElementById('today-practice').style.display='none';
+    showTodayCard();
+    return;
+  }
+
+  // No pool today — start fresh
+  const pool=getTodayPool();
+  if(!pool.all.length){
+    document.getElementById('today-no-words').style.display='block';
+    return;
+  }
+
+  saveTodayPool(pool.all.map(c=>c.id));
+  todaySession.pool=pool.all;
+  todaySession.queue=[...pool.all];
+  todaySession.done=[];
+  todaySession.current=null;
+  todaySession.revealed=false;
+  todaySession.newShown=0;
+  todaySession.dueShown=pool.due.length;
+
+  document.getElementById('today-home').style.display='none';
+  document.getElementById('today-cards').style.display='block';
+  document.getElementById('today-choose').style.display='none';
+  document.getElementById('today-practice').style.display='none';
+  showTodayCard();
+}
+
+function showTodayCard(){
+  if(!todaySession.queue.length){ endTodayCards(); return; }
+  const c=todaySession.current=todaySession.queue[0];
+  todaySession.revealed=false;
+  const total=todaySession.pool.length;
+  const done=todaySession.done.length;
+  const card=srsDb[c.id];
+  const isNew=!card||card.state==='new';
+
+  document.getElementById('tc-tag').textContent=c.tag;
+  document.getElementById('tc-front').textContent=c.fr;
+  document.getElementById('tc-back').style.display='none';
+  document.getElementById('tc-back').textContent=c.zh;
+  document.getElementById('tc-extra').style.display='none';
+  if(c.extra){document.getElementById('tc-extra').textContent=c.extra;}
+  document.getElementById('tc-hint').textContent='点击显示答案';
+  document.getElementById('tc-rating').style.display='none';
+  document.getElementById('tc-interval').textContent=isNew?'🆕 新词':(card?fmtInterval(card):'');
+  document.getElementById('tc-prog').style.width=(done/total*100)+'%';
+  document.getElementById('tc-progress-txt').textContent=`${done+1}/${total}`;
+  document.getElementById('tc-new-badge').textContent=`🆕 ${todaySession.newShown}新`;
+  document.getElementById('tc-due-badge').textContent=`⏰ ${todaySession.dueShown}复`;
+  // auto-speak
+  setTimeout(()=>speak(c.fr),200);
+}
+
+function revealTodayCard(){
+  if(todaySession.revealed) return;
+  todaySession.revealed=true;
+  document.getElementById('tc-back').style.display='block';
+  if(todaySession.current.extra) document.getElementById('tc-extra').style.display='block';
+  document.getElementById('tc-hint').textContent='';
+  document.getElementById('tc-rating').style.display='grid';
+}
+
+function rateTodayCard(r){
+  const c=todaySession.current;
+  if(!c) return;
+  updateCard(c.id,r);
+  todaySession.queue.shift();
+  if(r!==1) todaySession.done.push(c);
+  else{
+    const pos=Math.min(4,todaySession.queue.length);
+    todaySession.queue.splice(pos,0,c);
+  }
+  showTodayCard();
+}
+
+function endTodayCards(){
+  document.getElementById('today-cards').style.display='none';
+  document.getElementById('today-choose').style.display='block';
+  const n=todaySession.pool.length;
+  document.getElementById('today-choose-sub').textContent=
+    `今日词包共 ${n} 个词 · 选一种方式继续强化练习，或直接完成`;
+  renderDecks(); // update SRS stats
+}
+
+function endTodaySession(){
+  document.getElementById('today-cards').style.display='none';
+  document.getElementById('today-choose').style.display='none';
+  document.getElementById('today-practice').style.display='none';
+  document.getElementById('today-home').style.display='block';
+  document.getElementById('today-no-words').style.display='none';
+  renderDecks();
+}
+
+// ── PRACTICE MODES ──
+function startTodayPractice(mode){
+  todaySession.practiceMode=mode;
+  todaySession.practiceIdx=0;
+  todaySession.practiceRight=0;
+  todaySession.practiceWrong=0;
+
+  // Build practice queue from today's pool (only relevant cards)
+  let q=[...todaySession.pool];
+  if(mode==='gender') q=q.filter(c=>c.g); // only nouns with gender
+  q=applyOrder(q,'s1'); // same fixed order as flash cards
+  todaySession.practiceQueue=q;
+
+  if(!q.length){
+    document.getElementById('tp-card-area').innerHTML=
+      '<div class="empty-state"><div class="big">🤷</div><p>今日词包中没有适合此练习的词<br>（阴阳性练习需要名词）</p></div>';
+    document.getElementById('today-choose').style.display='none';
+    document.getElementById('today-practice').style.display='block';
+    document.getElementById('tp-title').textContent='无可用词汇';
+    return;
+  }
+
+  document.getElementById('today-choose').style.display='none';
+  document.getElementById('today-practice').style.display='block';
+  document.getElementById('tp-right').textContent=0;
+  document.getElementById('tp-wrong').textContent=0;
+
+  const labels={gender:'⚥ 阴阳性练习',spell:'✏️ 中文→拼写',listen:'🔊 听力拼写'};
+  document.getElementById('tp-title').textContent=labels[mode]||mode;
+
+  showTodayPracticeCard();
+}
+
+function updateTPStats(){
+  const total=todaySession.practiceQueue.length;
+  const idx=todaySession.practiceIdx;
+  document.getElementById('tp-right').textContent=todaySession.practiceRight;
+  document.getElementById('tp-wrong').textContent=todaySession.practiceWrong;
+  document.getElementById('tp-stat').textContent=`${Math.min(idx+1,total)}/${total}`;
+  document.getElementById('tp-prog').style.width=(idx/total*100)+'%';
+}
+
+function showTodayPracticeCard(){
+  const q=todaySession.practiceQueue;
+  const idx=todaySession.practiceIdx;
+  updateTPStats();
+  const nextBtn=document.getElementById('tp-next-btn');
+  if(nextBtn) nextBtn.style.display='none';
+  if(idx>=q.length){
+    const pct=q.length?Math.round(todaySession.practiceRight/q.length*100):0;
+    document.getElementById('tp-card-area').innerHTML=`
+      <div style="text-align:center;padding:2rem;">
+        <div style="font-size:40px;margin-bottom:10px;">🎉</div>
+        <div style="font-size:18px;font-weight:700;margin-bottom:6px;">练习完成！</div>
+        <div style="font-size:13px;color:var(--muted);margin-bottom:16px;">正确 ${todaySession.practiceRight}/${q.length} · ${pct}%</div>
+        <div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap;">
+          <button class="start-btn" onclick="startTodayPractice(todaySession.practiceMode)">🔄 再练一遍</button>
+          <button onclick="endTodayPractice()" style="padding:10px 20px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;border:1.5px solid var(--border);background:var(--surface2);color:var(--text);">← 选其他练习</button>
+        </div>
+      </div>`;
+    return;
+  }
+  const c=q[idx];
+  const mode=todaySession.practiceMode;
+  if(mode==='gender') renderTPGender(c);
+  else if(mode==='spell') renderTPSpell(c);
+  else if(mode==='listen') renderTPListen(c);
+}
+
+function tpResult(correct){
+  if(correct) todaySession.practiceRight++;
+  else todaySession.practiceWrong++;
+  todaySession.practiceIdx++;
+  updateTPStats();
+  // show next button; keyboard handler will call showTodayPracticeCard
+  const nextBtn=document.getElementById('tp-next-btn');
+  if(nextBtn){ nextBtn.style.display='inline-block'; nextBtn.focus(); }
+}
+
+// Gender practice card
+function renderTPGender(c){
+  const bare=c.fr.replace(/^(le |la |l'|un |une )/i,'').split(' ')[0];
+  document.getElementById('tp-card-area').innerHTML=`
+    <div class="gm-card">
+      <div class="gm-feedback" id="tp-gm-fb"></div>
+      <div class="gm-word">${bare}</div>
+      <div class="gm-hint-txt">${c.zh} — le 还是 la？</div>
+      <div class="gm-btns">
+        <button class="btn-m" onclick="checkTPGender('m','${c.g}','${c.fr.replace(/'/g,"\\'")}')">🔵 阳性<br><small>le / un</small></button>
+        <button class="btn-f" onclick="checkTPGender('f','${c.g}','${c.fr.replace(/'/g,"\\'")}')">🔴 阴性<br><small>la / une</small></button>
+      </div>
+    </div>`;
+}
+function checkTPGender(guess,correct,fr){
+  const fb=document.getElementById('tp-gm-fb');
+  const ok=guess===correct;
+  const art=correct==='m'?'🔵 le / un':'🔴 la / une';
+  fb.textContent=ok?`✓ 正确！${art}`:`✗ 应是 ${art} — ${fr}`;
+  fb.className='gm-feedback '+(ok?'ok':'no');
+  document.querySelectorAll('.gm-btns button').forEach(b=>b.disabled=true);
+  tpResult(ok);
+}
+
+function renderTPSpell(c){
+  document.getElementById('tp-card-area').innerHTML=`
+    <div style="background:#fff;border:1px solid var(--border);border-radius:14px;padding:1.5rem;text-align:center;">
+      <div class="sc-tag" style="margin:0 auto 10px;">${c.tag}</div>
+      <div style="font-size:26px;font-weight:700;margin-bottom:16px;">${c.zh}</div>
+      <input id="tp-spell-in" class="spell-input" type="text" autocomplete="off" autocorrect="off"
+        autocapitalize="off" spellcheck="false" placeholder="输入法语（需重音符号）…"
+        onkeydown="if(event.key==='Enter'&&!this.disabled)checkTPSpell()">
+      <div style="display:flex;gap:6px;justify-content:center;margin-top:10px;flex-wrap:wrap;">
+        <button onclick="checkTPSpell()" style="background:var(--accent);color:#fff;border:none;border-radius:8px;padding:8px 18px;font-size:13px;font-weight:600;cursor:pointer;">确认</button>
+        <button onclick="showTPSpellHint()" style="background:var(--surface2);color:var(--muted);border:1.5px solid var(--border);border-radius:8px;padding:8px 12px;font-size:12px;cursor:pointer;">提示</button>
+      </div>
+      <div id="tp-spell-fb" style="min-height:20px;margin-top:10px;font-size:13px;font-weight:600;"></div>
+    </div>`;
+  setTimeout(()=>document.getElementById('tp-spell-in')?.focus(),60);
+}
+function checkTPSpell(){
+  const c=todaySession.practiceQueue[todaySession.practiceIdx];
+  const inp=document.getElementById('tp-spell-in');
+  const fb=document.getElementById('tp-spell-fb');
+  const val=inp.value.trim();
+  if(!val) return;
+  const core=c.fr.replace(/^(le |la |les |l'|un |une |des )/i,'').trim();
+  const ok=val===core||val===c.fr;
+  inp.disabled=true;
+  inp.style.borderColor=ok?'#1D9E75':'#C04A20';
+  if(ok){
+    fb.textContent='✓ 正确！';fb.style.color='var(--accent2)';
+  } else {
+    fb.innerHTML=`✗ 正确拼写：<strong>${c.fr}</strong>`;fb.style.color='var(--warn)';
+  }
+  tpResult(ok);
+}
+function showTPSpellHint(){
+  const c=todaySession.practiceQueue[todaySession.practiceIdx];
+  const core=c.fr.replace(/^(le |la |les |l'|un |une |des )/i,'').trim();
+  const inp=document.getElementById('tp-spell-in');
+  const fb=document.getElementById('tp-spell-fb');
+  if(inp&&!inp.value) inp.value=core[0];
+  if(fb){fb.textContent=`提示：首字母「${core[0].toUpperCase()}」，共 ${core.length} 个字母`;fb.style.color='var(--gold)';}
+}
+
+// Listen practice card
+function renderTPListen(c){
+  const frSafe=c.fr.replace(/\\/g,'\\\\').replace(/'/g,"\\'");
+  document.getElementById('tp-card-area').innerHTML=`
+    <div style="background:#fff;border:1px solid var(--border);border-radius:14px;padding:1.5rem;text-align:center;">
+      <div class="sc-tag" style="margin:0 auto 10px;">${c.tag}</div>
+      <div style="font-size:13px;color:var(--muted);margin-bottom:12px;">听发音，拼写法语单词</div>
+      <div style="margin-bottom:14px;">
+        <button class="play-btn" onclick="speak('${frSafe}',0.85)">🔊 播放</button>
+        <button class="slow-btn" onclick="speak('${frSafe}',0.55)">🐢 慢速</button>
+      </div>
+      <input id="tp-listen-in" class="spell-input" type="text" autocomplete="off" autocorrect="off"
+        spellcheck="false" placeholder="输入法语单词…"
+        onkeydown="if(event.key==='Enter'&&!this.disabled)checkTPListen()">
+      <div style="display:flex;gap:6px;justify-content:center;margin-top:10px;flex-wrap:wrap;">
+        <button onclick="checkTPListen()" style="background:var(--accent);color:#fff;border:none;border-radius:8px;padding:8px 18px;font-size:13px;font-weight:600;cursor:pointer;">确认</button>
+        <button onclick="showTPListenHint()" style="background:var(--surface2);color:var(--muted);border:1.5px solid var(--border);border-radius:8px;padding:8px 12px;font-size:12px;cursor:pointer;">提示</button>
+        <button onclick="skipTPListen()" style="background:var(--surface2);color:var(--muted);border:1.5px solid var(--border);border-radius:8px;padding:8px 12px;font-size:12px;cursor:pointer;">跳过</button>
+      </div>
+      <div id="tp-listen-fb" style="min-height:20px;margin-top:10px;font-size:13px;font-weight:600;"></div>
+    </div>`;
+  setTimeout(()=>{ speak(c.fr,0.85); document.getElementById('tp-listen-in')?.focus(); },300);
+}
+function normListen(s){
+  return s.trim().toLowerCase()
+    .replace(/[àâ]/g,'a').replace(/[éèêë]/g,'e').replace(/[îï]/g,'i')
+    .replace(/[ôö]/g,'o').replace(/[ùûü]/g,'u').replace(/ç/g,'c')
+    .replace(/œ/g,'oe').replace(/['\-\s]/g,'');
+}
+function checkTPListen(){
+  const c=todaySession.practiceQueue[todaySession.practiceIdx];
+  const inp=document.getElementById('tp-listen-in');
+  const fb=document.getElementById('tp-listen-fb');
+  const val=inp.value.trim();
+  if(!val) return;
+  const core=c.fr.replace(/^(le |la |les |l'|un |une |des )/i,'').trim();
+  const ok=normListen(val)===normListen(core)||normListen(val)===normListen(c.fr);
+  inp.disabled=true;
+  inp.style.borderColor=ok?'#1D9E75':'#C04A20';
+  if(ok){
+    fb.textContent='✓ 正确！';fb.style.color='var(--accent2)';
+  } else {
+    fb.innerHTML=`✗ 正确拼写：<strong>${c.fr}</strong>`;fb.style.color='var(--warn)';
+    speak(c.fr);
+  }
+  tpResult(ok);
+}
+function showTPListenHint(){
+  const c=todaySession.practiceQueue[todaySession.practiceIdx];
+  const core=c.fr.replace(/^(le |la |les |l'|un |une |des )/i,'').trim();
+  const inp=document.getElementById('tp-listen-in');
+  const fb=document.getElementById('tp-listen-fb');
+  if(inp&&!inp.value) inp.value=core[0];
+  if(fb){fb.textContent=`提示：首字母「${core[0].toUpperCase()}」，共 ${core.length} 字母`;fb.style.color='var(--gold)';}
+}
+function skipTPListen(){
+  const c=todaySession.practiceQueue[todaySession.practiceIdx];
+  const inp=document.getElementById('tp-listen-in');
+  const fb=document.getElementById('tp-listen-fb');
+  if(inp){inp.disabled=true;inp.style.borderColor='#C04A20';}
+  if(fb){fb.innerHTML=`跳过 → <strong>${c.fr}</strong> (${c.zh})`;fb.style.color='var(--muted)';}
+  speak(c.fr);
+  tpResult(false);
+}
+
+function endTodayPractice(){
+  document.getElementById('today-practice').style.display='none';
+  document.getElementById('today-choose').style.display='block';
+}
+
+// keyboard support for today flash cards
+document.addEventListener('keydown', function(e2){
+  if(['INPUT','TEXTAREA','SELECT'].includes(e2.target.tagName)) return;
+
+  // Listen page next button
+  const lsNext=document.getElementById('ls-next-btn');
+  if(lsNext&&lsNext.style.display!=='none'){
+    if(e2.code==='Space'||e2.key===' '||e2.key==='Enter'){e2.preventDefault();advanceLs();return;}
+  }
+  // Spell page next button
+  const spNext=document.getElementById('sp-next-btn');
+  if(spNext&&spNext.style.display!=='none'){
+    if(e2.code==='Space'||e2.key===' '||e2.key==='Enter'){e2.preventDefault();advanceSp();return;}
+  }
+  // Today practice next button
+  const tpNext=document.getElementById('tp-next-btn');
+  if(tpNext&&tpNext.style.display!=='none'){
+    if(e2.code==='Space'||e2.key===' '||e2.key==='Enter'){e2.preventDefault();showTodayPracticeCard();return;}
+  }
+
+  const cardsVisible=document.getElementById('today-cards')&&
+    document.getElementById('today-cards').style.display!=='none';
+  if(!cardsVisible) return;
+  const rev=document.getElementById('tc-rating').style.display!=='none';
+  if(!rev&&(e2.code==='Space'||e2.key==='ArrowDown')){e2.preventDefault();revealTodayCard();}
+  else if(rev){
+    if(e2.key==='ArrowLeft'){e2.preventDefault();rateTodayCard(1);}
+    if(e2.key==='ArrowUp'||e2.code==='Space'){e2.preventDefault();rateTodayCard(2);}
+    if(e2.key==='ArrowRight'){e2.preventDefault();rateTodayCard(3);}
+  }
+});
+
+function goPage(id,el){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById('page-'+id).classList.add('active');
+  el.classList.add('active');
+  if(id==='today'){
+    renderDecks();
+    // If a session is in progress, restore the right sub-screen
+    // (home is shown by default; cards/choose/practice persist via display style)
+  }
+}
+
+// ============================================================
+// STANDALONE SPELL PAGE
+// ============================================================
+let spCfg={useToday:false,theme:'全部',order:'s1',count:20};
+let spDeck=[],spIdx=0,spRight=0,spWrong=0,spWrongList=[];
+
+function buildSpThemeGrid(){
+  const cwThemes=[...new Set(getCW().map(w=>w.tag||'自定义'))];
+  const builtIn=[...new Set(VOCAB_RAW.map(v=>v[2]))];
+  const all=['全部',...new Set([...builtIn,...cwThemes]),'动词'];
+  document.getElementById('sp-theme-grid').innerHTML=all.map(t=>
+    `<div class="scfg-theme-btn${spCfg.theme===t?' active':''}" onclick="spCfg.theme='${t}';document.querySelectorAll('#sp-theme-grid .scfg-theme-btn').forEach(b=>b.classList.remove('active'));this.classList.add('active')">${t}</div>`
+  ).join('');
+}
+
+function buildSpDeck(){
+  if(spCfg.useToday) return applyOrder([...todaySession.pool],'s1').slice(0,spCfg.count);
+  const cwAll=getCW().map(w=>({fr:w.fr,zh:w.zh,tag:w.tag||'自定义'}));
+  let pool;
+  if(spCfg.order==='wrongs') pool=spWrongList.length?[...spWrongList]:VOCAB_RAW.map(v=>({fr:v[0],zh:v[1],tag:v[2]}));
+  else if(spCfg.theme==='动词') pool=getAllVerbs().map(v=>({fr:v.v,zh:v.zh,tag:'动词'}));
+  else if(spCfg.theme==='全部') pool=[...VOCAB_RAW.map(v=>({fr:v[0],zh:v[1],tag:v[2]})),...getAllVerbs().map(v=>({fr:v.v,zh:v.zh,tag:'动词'})),...cwAll];
+  else pool=[...VOCAB_RAW.filter(v=>v[2]===spCfg.theme).map(v=>({fr:v[0],zh:v[1],tag:v[2]})),...cwAll.filter(w=>w.tag===spCfg.theme)];
+  return applyOrder(pool,spCfg.order==='wrongs'?'s1':spCfg.order).slice(0,spCfg.count);
+}
+
+function startSpell(){
+  spDeck=buildSpDeck();spIdx=0;spRight=0;spWrong=0;
+  if(!spDeck.length){ return; }
+  document.getElementById('sp-cfg').style.display='none';
+  document.getElementById('sp-session').style.display='block';
+  updateSpStats();nextSpCard();
+}
+function endSpell(){
+  document.getElementById('sp-cfg').style.display='block';
+  document.getElementById('sp-session').style.display='none';
+  buildSpThemeGrid();
+}
+function updateSpStats(){
+  document.getElementById('sp-right').textContent=spRight;
+  document.getElementById('sp-wrong').textContent=spWrong;
+  document.getElementById('sp-stat').textContent=`${Math.min(spIdx+1,spDeck.length)}/${spDeck.length}`;
+  document.getElementById('sp-prog').style.width=(spIdx/spDeck.length*100)+'%';
+}
+function nextSpCard(){
+  if(spIdx>=spDeck.length){
+    document.getElementById('sp-card').innerHTML=`<div class="ls-inner">
+      <div style="font-size:40px;margin-bottom:8px;">🎉</div>
+      <div style="font-size:18px;font-weight:700;margin-bottom:5px;">完成！</div>
+      <div style="font-size:13px;color:var(--muted)">正确 ${spRight}/${spDeck.length} · ${spDeck.length?Math.round(spRight/spDeck.length*100):0}%</div>
+      <div style="display:flex;gap:8px;justify-content:center;margin-top:14px;">
+        <button class="start-btn" onclick="startSpell()">再来一遍</button>
+        <button onclick="endSpell()" style="padding:10px 16px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;border:1.5px solid var(--border);background:var(--surface2);color:var(--text);">返回配置</button>
+      </div></div>`;
+    return;
+  }
+  const c=spDeck[spIdx];
+  document.getElementById('sp-card').innerHTML=`<div class="ls-inner">
+    <div class="sc-tag" style="margin:0 auto 10px;">${c.tag}</div>
+    <div style="font-size:26px;font-weight:700;margin-bottom:16px;">${c.zh}</div>
+    <input id="sp-in" class="spell-input" type="text" autocomplete="off" autocorrect="off"
+      autocapitalize="off" spellcheck="false" placeholder="输入法语（需重音符号）…"
+      onkeydown="if(event.key==='Enter'&&!this.disabled)checkSp()">
+    <div style="display:flex;gap:6px;justify-content:center;margin-top:10px;flex-wrap:wrap;">
+      <button onclick="checkSp()" style="background:var(--accent);color:#fff;border:none;border-radius:8px;padding:8px 18px;font-size:13px;font-weight:600;cursor:pointer;">确认</button>
+      <button onclick="showSpHint()" style="background:var(--surface2);color:var(--muted);border:1.5px solid var(--border);border-radius:8px;padding:8px 12px;font-size:12px;cursor:pointer;">提示</button>
+      <button id="sp-next-btn" onclick="advanceSp()" style="display:none;background:var(--accent2);color:#fff;border:none;border-radius:8px;padding:8px 16px;font-size:13px;font-weight:600;cursor:pointer;">下一个 →</button>
+    </div>
+    <div id="sp-fb" style="min-height:20px;margin-top:10px;font-size:13px;font-weight:600;"></div>
+  </div>`;
+  setTimeout(()=>document.getElementById('sp-in')?.focus(),60);
+}
+function checkSp(){
+  const c=spDeck[spIdx];
+  const inp=document.getElementById('sp-in');
+  const fb=document.getElementById('sp-fb');
+  const val=inp.value.trim();if(!val)return;
+  const core=c.fr.replace(/^(le |la |les |l'|un |une |des )/i,'').trim();
+  const ok=val===core||val===c.fr;
+  inp.disabled=true;inp.style.borderColor=ok?'#1D9E75':'#C04A20';
+  if(ok){
+    fb.textContent='✓ 正确！';fb.style.color='var(--accent2)';
+    spRight++;
+  } else {
+    fb.innerHTML=`✗ 正确拼写：<strong>${c.fr}</strong>`;fb.style.color='var(--warn)';
+    if(!spWrongList.find(w=>w.fr===c.fr))spWrongList.push(c);
+    spWrong++;
+  }
+  spIdx++;updateSpStats();
+  const nb=document.getElementById('sp-next-btn');
+  if(nb){nb.style.display='inline-block';nb.focus();}
+}
+function advanceSp(){
+  const nb=document.getElementById('sp-next-btn');
+  if(nb) nb.style.display='none';
+  nextSpCard();
+}
+// ============================================================
+// KEYBOARD SHORTCUTS (SRS)
+// ============================================================
+document.addEventListener('keydown', e => {
+  // Don't hijack shortcuts if user is typing in an input
+  if(['INPUT','TEXTAREA','SELECT'].includes(e.target.tagName)) return;
+  // Only active when SRS study panel is visible
+  const studyVisible = document.getElementById('srs-study') &&
+                       document.getElementById('srs-study').style.display !== 'none';
+  if(!studyVisible) return;
+  const revealed = document.getElementById('ratingBtns').style.display !== 'none';
+  const spellRevealed = isSpellMode() && srsRevealed;
+  if(spellRevealed){
+    if(e.code==='Space'||e.key===' '||e.key==='Enter'){ e.preventDefault(); spellNext(); }
+    return;
+  }
+  if((e.code==='Space'||e.key===' '||e.key==='ArrowDown') && !revealed){
+    if(isSpellMode()) return; // let input handle it
+    e.preventDefault(); revealSRS();
+  } else if(revealed){
+    if(e.key==='ArrowLeft')  { e.preventDefault(); rateSRS(1); } // 不认识
+    if(e.key==='ArrowUp')    { e.preventDefault(); rateSRS(2); } // 想起来了
+    if(e.key==='ArrowRight') { e.preventDefault(); rateSRS(3); } // 很熟
+    if(e.code==='Space'||e.key===' '){ e.preventDefault(); rateSRS(2); } // Space = 想起来了
+  }
+});
+
+// ============================================================
+// INIT
+// ============================================================
+renderVocabTable();
+renderDecks();
+renderCustomList();
+renderCustomVerbList();
+buildGMThemeGrid();
+buildLsThemeGrid();
+buildSpThemeGrid();
+initVerbSel();
+renderCustomList();
+refreshCWTaglist();
+if(synth.getVoices().length)getFrVoice();
+</script>
+</body>
+</html>
