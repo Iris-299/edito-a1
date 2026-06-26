@@ -3063,10 +3063,10 @@ function syncSaveToken(){
 
 // Fetch a single Gist file's content via the API (avoids CORS raw_url issues)
 async function fetchGistFile(token, gistId, filename){
-  // Use Accept: application/vnd.github.raw to get raw file content directly
+  // Use the Gist API first; only fall back to raw_url when GitHub truncates the file.
   const res = await fetch(
     'https://api.github.com/gists/' + gistId,
-    { headers:{ 'Authorization':'Bearer '+token, 'Accept':'application/vnd.github+json', 'Cache-Control':'no-cache' } }
+    { headers:{ 'Authorization':'Bearer '+token, 'Accept':'application/vnd.github+json' } }
   );
   if(!res.ok) throw new Error('Gist 请求失败 HTTP '+res.status);
   const data = await res.json();
@@ -3074,12 +3074,18 @@ async function fetchGistFile(token, gistId, filename){
   if(!file) return null;
   // content field is populated for files < 1MB and not truncated
   if(!file.truncated && file.content) return file.content;
-  // For truncated files, use raw_url but with auth header (works from GitHub Pages)
-  const r2 = await fetch(file.raw_url, {
-    headers:{ 'Authorization':'Bearer '+token }
-  });
-  if(!r2.ok) throw new Error('raw_url 失败 '+r2.status);
-  return await r2.text();
+  // For truncated files, try raw_url without auth first to avoid CORS preflight issues.
+  const rawFetch = async function(withAuth){
+    const init = withAuth ? { headers:{ 'Authorization':'Bearer '+token } } : {};
+    const r2 = await fetch(file.raw_url, init);
+    if(!r2.ok) throw new Error('raw_url 失败 '+r2.status);
+    return await r2.text();
+  };
+  try{
+    return await rawFetch(false);
+  }catch(e){
+    return await rawFetch(true);
+  }
 }
 
 async function syncPush(){
@@ -3173,9 +3179,10 @@ async function syncPull(){
       localStorage.setItem(SYNC_GIST_KEY, gistId);
     }
 
-    syncLog('正在拉取数据…');
+    syncLog('正在拉取主数据…');
     const mainRaw = await fetchGistFile(token, gistId, SYNC_FILE_MAIN);
     if(!mainRaw) throw new Error('主数据文件为空');
+    syncLog('正在拉取 SRS 数据…');
     const srsRaw  = await fetchGistFile(token, gistId, SYNC_FILE_SRS);
 
     // Parse and apply
