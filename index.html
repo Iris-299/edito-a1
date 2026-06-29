@@ -552,6 +552,10 @@ body{padding-top:40px!important;}
   <div class="page-title">动词变位练习</div>
   <div class="page-sub">填写空格 → 检查 → 错误重练</div>
   <div class="vd-header">
+    <div class="seg" id="vd-src-seg">
+      <button onclick="setVDSource(false);syncSeg('vd-src-seg',0)" class="active">全部动词</button>
+      <button onclick="setVDSource(true);syncSeg('vd-src-seg',1)">今日词包</button>
+    </div>
     <select id="vd-verb-sel"></select>
     <select id="vd-tense-sel">
       <option value="present">现在时</option>
@@ -1556,6 +1560,15 @@ function speakCW_verb(idx){
 }
 
 function getAllThemes(){return[...new Set([...BUILT_IN_THEMES,...getCW().map(w=>w.tag||'自定义')])].sort();}
+function normCWKey(s){return (s||'').trim().toLowerCase().replace(/\s+/g,' ');}
+function findCWByFr(fr){
+  const k=normCWKey(fr);
+  return getCW().find(w=>normCWKey(w.fr)===k);
+}
+function hasBuiltinFr(fr){
+  const k=normCWKey(fr);
+  return VOCAB_RAW.some(v=>normCWKey(v[0])===k);
+}
 
 function refreshCWTaglist(){
   const dl=document.getElementById('cw-tag-list');
@@ -1567,16 +1580,16 @@ function checkCWDupe(val){
   const fr = val.trim();
   if(!fr){ hint.textContent=''; return; }
   // Check against built-in VOCAB_RAW
-  const inBuiltin = VOCAB_RAW.some(v => v[0].toLowerCase()===fr.toLowerCase());
+  const inBuiltin = hasBuiltinFr(fr);
   // Check against custom words
-  const inCustom = getCW().find(w => w.fr.toLowerCase()===fr.toLowerCase());
+  const inCustom = findCWByFr(fr);
   if(inCustom){
     hint.textContent = `⚠️ 自定义词库中已有「${inCustom.fr}」(${inCustom.zh})`;
     hint.style.color = 'var(--warn)';
   } else if(inBuiltin){
-    const found = VOCAB_RAW.find(v => v[0].toLowerCase()===fr.toLowerCase());
-    hint.textContent = `ℹ️ 内置词库已有「${found[0]}」(${found[1]})，仍可添加到自定义`;
-    hint.style.color = 'var(--muted)';
+    const found = VOCAB_RAW.find(v => normCWKey(v[0])===normCWKey(fr));
+    hint.textContent = `⚠️ 内置词库已有「${found[0]}」(${found[1]})，不能重复添加`;
+    hint.style.color = 'var(--warn)';
   } else {
     hint.textContent = '';
   }
@@ -1588,14 +1601,18 @@ function addCustomWord(){
   const tag=document.getElementById('cw-tag').value.trim()||'自定义';
   const g=document.getElementById('cw-gender').value;
   if(!fr||!zh){alert('请填写法语和中文！');return;}
-  const words=getCW();
-  const idx=words.findIndex(w=>w.fr.toLowerCase()===fr.toLowerCase());
-  const obj={fr,zh,tag,g:g||null};
-  if(idx>=0){
-    words[idx]=obj; // silently overwrite
-  } else {
-    words.push(obj);
+  if(hasBuiltinFr(fr)){
+    alert('该词已存在于内置词库，不能重复添加。');
+    return;
   }
+  const existed=findCWByFr(fr);
+  if(existed){
+    alert(`该词已存在于自定义词库：${existed.fr}（${existed.zh}）`);
+    return;
+  }
+  const words=getCW();
+  const obj={fr,zh,tag,g:g||null};
+  words.push(obj);
   saveCW(words);
   document.getElementById('cw-fr').value='';
   document.getElementById('cw-zh').value='';
@@ -1632,16 +1649,31 @@ function renderCustomList(){
 }
 function importCustomWords(){
   const txt=document.getElementById('cw-import').value.trim();if(!txt)return;
-  const words=getCW();let count=0;
+  const words=getCW();
+  const existingKeys=new Set(words.map(w=>normCWKey(w.fr)));
+  const batchKeys=new Set();
+  let count=0,skippedDup=0,skippedInvalid=0;
   txt.split('\n').forEach(line=>{
-    const p=line.trim().split(/[,，\t]+/);if(p.length<2)return;
-    const fr=p[0].trim(),zh=p[1].trim(),tag=p[2]?.trim()||'自定义',g=p[3]?.trim()||null;
-    if(!words.find(w=>w.fr.toLowerCase()===fr.toLowerCase())){words.push({fr,zh,tag,g});count++;}
+    const p=line.trim().split(/[,，\t]+/);
+    if(p.length<2){skippedInvalid++;return;}
+    const fr=p[0].trim(),zh=p[1].trim(),tag=p[2]?.trim()||'自定义';
+    const gRaw=(p[3]||'').trim().toLowerCase();
+    const g=(gRaw==='m'||gRaw==='f')?gRaw:null;
+    if(!fr||!zh){skippedInvalid++;return;}
+    const k=normCWKey(fr);
+    if(batchKeys.has(k)||existingKeys.has(k)||hasBuiltinFr(fr)){
+      skippedDup++;
+      return;
+    }
+    words.push({fr,zh,tag,g});
+    existingKeys.add(k);
+    batchKeys.add(k);
+    count++;
   });
   saveCW(words);document.getElementById('cw-import').value='';
   renderCustomList();refreshCWTaglist();
   renderVocabTable();renderDecks();buildGMThemeGrid();buildLsThemeGrid();buildSpThemeGrid();
-  alert(`成功导入 ${count} 个单词！`);
+  alert(`成功导入 ${count} 个；跳过重复 ${skippedDup} 个；无效行 ${skippedInvalid} 个。`);
 }
 function exportCustomWords(){
   const txt=getCW().map(w=>[w.fr,w.zh,w.tag||'自定义',w.g||''].join(',')).join('\n');
@@ -2165,11 +2197,42 @@ function updateGMStats(){
 const PROS=['je/j\'','tu','il/elle','nous','vous','ils/elles'];
 const IMP_PROS=['tu','nous','vous'];
 const TLBLS={present:'现在时',imperatif:'命令式',passe:'复合过去时',futur:'近期将来时'};
+let vdCfg={useToday:false};
 let vdTotal=0,vdOk=0,vdStreak=0,vdWrong=[],vdCurV=null,vdCurT=null,vdChecked=false;
 
+function getVDVerbPool(){
+  if(!vdCfg.useToday) return [...getAllVerbs()];
+  const fromToday=(todaySession.pool||[])
+    .filter(c=>c&&(c.tag==='动词'||(c.id&&c.id.startsWith('vb_'))))
+    .map(c=>c.fr);
+  const seen=new Set();
+  const pool=[];
+  fromToday.forEach(fr=>{
+    const key=(fr||'').toLowerCase();
+    if(seen.has(key)) return;
+    const vb=getAllVerbs().find(v=>(v.v||'').toLowerCase()===key);
+    if(vb){seen.add(key);pool.push(vb);}
+  });
+  return pool;
+}
+
+function setVDSource(useToday){
+  vdCfg.useToday=!!useToday;
+  initVerbSel();
+}
+
 function initVerbSel(){
-  document.getElementById('vd-verb-sel').innerHTML='<option value="random">随机动词</option>'
-    +getAllVerbs().map(v=>`<option value="${v.v}">${v.v} (${v.zh})</option>`).join('');
+  const sel=document.getElementById('vd-verb-sel');
+  if(!sel) return;
+  const prev=sel.value;
+  const pool=getVDVerbPool();
+  if(vdCfg.useToday && !pool.length){
+    sel.innerHTML='<option value="">今日词包暂无动词</option>';
+    return;
+  }
+  sel.innerHTML='<option value="random">随机动词</option>'
+    +pool.map(v=>`<option value="${v.v}">${v.v} (${v.zh})</option>`).join('');
+  if(prev && [...sel.options].some(o=>o.value===prev)) sel.value=prev;
 }
 function vdGetRows(vb,t){
   if(t==='present')return PROS.map((p,i)=>({pro:p,answer:vb.pres[i]}));
@@ -2184,7 +2247,16 @@ function vdNew(){
   const vs=document.getElementById('vd-verb-sel').value;
   const ts=document.getElementById('vd-tense-sel').value;
   const ord=document.getElementById('vd-order-sel').value;
-  let pool=vs==='random'?[...getAllVerbs()]:getAllVerbs().filter(v=>v.v===vs);
+  let pool=getVDVerbPool();
+  if(vdCfg.useToday && !pool.length){
+    alert('今日词包中没有动词，请先在「今日学习」里把词包来源切到包含动词并开始一次。');
+    return;
+  }
+  pool=vs==='random'?pool:pool.filter(v=>v.v===vs);
+  if(!pool.length){
+    alert('当前条件下没有可用动词。');
+    return;
+  }
   pool=applyOrder(pool,ord);
   vdCurV=pool[Math.floor(Math.random()*pool.length)];
   vdCurT=ts==='random'?['present','imperatif','passe','futur'][Math.floor(Math.random()*4)]:ts;
@@ -2606,6 +2678,7 @@ function addTodayWords(btn){
   btn.textContent=`已添加 ${toAdd.length} 个新词 ✓`;
   setTimeout(()=>{ btn.textContent='＋ 添加新词'; },2000);
   renderDecks();
+  initVerbSel();
 
   // If we're on the choose screen or home, go back to card study
   const chooseVisible = document.getElementById('today-choose').style.display !== 'none';
@@ -2658,6 +2731,7 @@ function startTodaySession(){
     document.getElementById('today-choose').style.display='none';
     document.getElementById('today-practice').style.display='none';
     showTodayCard();
+    initVerbSel();
     return;
   }
 
@@ -2682,6 +2756,7 @@ function startTodaySession(){
   document.getElementById('today-choose').style.display='none';
   document.getElementById('today-practice').style.display='none';
   showTodayCard();
+  initVerbSel();
 }
 
 function showTodayCard(){
@@ -2748,6 +2823,7 @@ function endTodaySession(){
   document.getElementById('today-home').style.display='block';
   document.getElementById('today-no-words').style.display='none';
   renderDecks();
+  initVerbSel();
 }
 
 // ── PRACTICE MODES ──
