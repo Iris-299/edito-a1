@@ -502,6 +502,13 @@ body{padding-top:40px!important;}
         </div>
       </div>
       <div class="scfg-row">
+        <div class="scfg-label">错题库范围<small>错误重练时生效</small></div>
+        <div class="seg" id="gm-wscope-seg">
+          <button onclick="gmCfg.wrongScope='today';syncSeg('gm-wscope-seg',0)" class="active">今日错题库</button>
+          <button onclick="gmCfg.wrongScope='all';syncSeg('gm-wscope-seg',1)">全部错题库</button>
+        </div>
+      </div>
+      <div class="scfg-row">
         <div class="scfg-label">每次题数<small>从该主题中抽取的题目数量</small></div>
         <div class="seg" id="gm-count-seg">
           <button onclick="gmCfg.count=20;syncSeg('gm-count-seg',0)" class="active">20</button>
@@ -597,6 +604,13 @@ body{padding-top:40px!important;}
         </div>
       </div>
       <div class="scfg-row">
+        <div class="scfg-label">错题库范围<small>错误重练时生效</small></div>
+        <div class="seg" id="sp-wscope-seg">
+          <button onclick="spCfg.wrongScope='today';syncSeg('sp-wscope-seg',0)" class="active">今日错题库</button>
+          <button onclick="spCfg.wrongScope='all';syncSeg('sp-wscope-seg',1)">全部错题库</button>
+        </div>
+      </div>
+      <div class="scfg-row">
         <div class="scfg-label">每次题数</div>
         <div class="seg" id="sp-count-seg">
           <button onclick="spCfg.count=20;syncSeg('sp-count-seg',0)" class="active">20</button>
@@ -648,6 +662,13 @@ body{padding-top:40px!important;}
           <button onclick="lsCfg.order='s1';syncSeg('ls-order-seg',1)" class="active">乱一</button>
           <button onclick="lsCfg.order='s2';syncSeg('ls-order-seg',2)">乱二</button>
           <button onclick="lsCfg.order='wrongs';syncSeg('ls-order-seg',3)">❌ 错误重练</button>
+        </div>
+      </div>
+      <div class="scfg-row">
+        <div class="scfg-label">错题库范围<small>错误重练时生效</small></div>
+        <div class="seg" id="ls-wscope-seg">
+          <button onclick="lsCfg.wrongScope='today';syncSeg('ls-wscope-seg',0)" class="active">今日错题库</button>
+          <button onclick="lsCfg.wrongScope='all';syncSeg('ls-wscope-seg',1)">全部错题库</button>
         </div>
       </div>
       <div class="scfg-row">
@@ -1346,6 +1367,84 @@ let cvAux='avoir', cvG='G1';
 function getCV(){try{return JSON.parse(localStorage.getItem(CV_KEY)||'[]');}catch(e){return[];}}
 function saveCV(a){try{localStorage.setItem(CV_KEY,JSON.stringify(a));}catch(e){}}
 
+// ── WRONG BANK (all + today) ──
+const WRONG_BANK_KEY='edito_a1_wrong_bank_v1';
+
+function loadWrongBank(){
+  try{
+    const raw=localStorage.getItem(WRONG_BANK_KEY);
+    if(!raw) return {all:{},daily:{}};
+    const data=JSON.parse(raw);
+    if(!data.all) data.all={};
+    if(!data.daily) data.daily={};
+    return data;
+  }catch(e){
+    return {all:{},daily:{}};
+  }
+}
+function saveWrongBank(data){
+  try{ localStorage.setItem(WRONG_BANK_KEY, JSON.stringify(data)); }catch(e){}
+}
+function wrongCardId(card,module){
+  if(card&&card.id) return card.id;
+  const fr=(card&&card.fr)||'';
+  const zh=(card&&card.zh)||'';
+  return `${module}::${fr}::${zh}`;
+}
+function normalizeWrongCard(card,module){
+  const c=card||{};
+  return {
+    id: wrongCardId(c,module),
+    fr: c.fr||'',
+    zh: c.zh||'',
+    tag: c.tag||'',
+    g: c.g||null,
+  };
+}
+function recordWrongOutcome(module, card, isCorrect){
+  if(!module || !card) return;
+  const payload=normalizeWrongCard(card,module);
+  const now=Date.now();
+  const today=getTodayDateStr();
+  const bank=loadWrongBank();
+  if(!bank.all[module]) bank.all[module]={};
+  if(!bank.daily[today]) bank.daily[today]={};
+  if(!bank.daily[today][module]) bank.daily[today][module]={};
+
+  [bank.all[module], bank.daily[today][module]].forEach(bucket=>{
+    const prev=bucket[payload.id] || { ...payload, wrongCount:0, rightCount:0, lastWrongAt:0, lastRightAt:0 };
+    prev.fr=payload.fr;
+    prev.zh=payload.zh;
+    prev.tag=payload.tag;
+    prev.g=payload.g;
+    if(isCorrect){
+      prev.rightCount=(prev.rightCount||0)+1;
+      prev.lastRightAt=now;
+    } else {
+      prev.wrongCount=(prev.wrongCount||0)+1;
+      prev.lastWrongAt=now;
+    }
+    bucket[payload.id]=prev;
+  });
+
+  saveWrongBank(bank);
+  if(typeof syncAutoSchedule==='function') syncAutoSchedule();
+}
+function getWrongEntries(module, scope){
+  const bank=loadWrongBank();
+  if(scope==='today'){
+    const today=getTodayDateStr();
+    return Object.values((((bank.daily||{})[today]||{})[module])||{});
+  }
+  return Object.values(((bank.all||{})[module])||{});
+}
+function getWrongPracticeDeck(module, scope){
+  return getWrongEntries(module, scope)
+    .filter(e=>(e.wrongCount||0)>0)
+    .sort((a,b)=>(b.lastWrongAt||0)-(a.lastWrongAt||0))
+    .map(e=>({id:e.id,fr:e.fr,zh:e.zh,tag:e.tag,g:e.g}));
+}
+
 // Merge custom verbs into VERBS array at runtime
 function getAllVerbs(){
   return [...VERBS, ...getCV()];
@@ -1974,8 +2073,8 @@ function endSRS(finished){
 // ============================================================
 // GENDER MODULE
 // ============================================================
-let gmCfg={theme:'全部',order:'s1',count:20,useToday:false};
-let gmDeck=[],gmIdx=0,gmRight=0,gmWrong=0,gmWrongList=[];
+let gmCfg={theme:'全部',order:'s1',count:20,useToday:false,wrongScope:'today'};
+let gmDeck=[],gmIdx=0,gmRight=0,gmWrong=0;
 const NOUNS_GM=VOCAB_RAW.filter(v=>v[3]);
 
 function syncSeg(id,activeIdx){
@@ -1995,13 +2094,20 @@ function buildGMThemeGrid(){
 function startGM(){
   const NOUNS_GM_FULL=[...NOUNS_GM,...getCW().filter(w=>w.g).map(w=>([w.fr,w.zh,w.tag,w.g]))];
   let pool;
-  if(gmCfg.useToday){
+  if(gmCfg.useToday && gmCfg.order!=='wrongs'){
     // use today's session pool, filter to nouns with gender
     pool=todaySession.pool.filter(c=>c.g).map(c=>({fr:c.fr,zh:c.zh,g:c.g}));
     if(!pool.length){ alert('今日词包中没有名词，请先完成「今日学习」配置'); return; }
   } else {
-    pool=gmCfg.order==='wrongs'?gmWrongList.length?[...gmWrongList]:NOUNS_GM_FULL.map(v=>Array.isArray(v)?{fr:v[0],zh:v[1],g:v[3]}:v)
-      :gmCfg.theme==='全部'?NOUNS_GM_FULL:NOUNS_GM_FULL.filter(v=>(Array.isArray(v)?v[2]:v.tag)===gmCfg.theme);
+    if(gmCfg.order==='wrongs'){
+      pool=getWrongPracticeDeck('gender', gmCfg.wrongScope);
+      if(!pool.length){
+        alert(gmCfg.wrongScope==='today'?'今日错题库为空':'全部错题库为空');
+        return;
+      }
+    } else {
+      pool=gmCfg.theme==='全部'?NOUNS_GM_FULL:NOUNS_GM_FULL.filter(v=>(Array.isArray(v)?v[2]:v.tag)===gmCfg.theme);
+    }
     pool=pool.map(v=>Array.isArray(v)?{fr:v[0],zh:v[1],g:v[3]}:{fr:v.fr,zh:v.zh,g:v.g});
   }
   pool=applyOrder(pool,gmCfg.order==='wrongs'?'s1':gmCfg.order);
@@ -2020,7 +2126,7 @@ function showGMCard(){
   document.getElementById('gm-fb').textContent='';document.getElementById('gm-fb').className='gm-feedback';
   if(gmIdx>=gmDeck.length){
     document.getElementById('gm-word').textContent='🎉';
-    document.getElementById('gm-hint').textContent=`完成！正确率 ${Math.round(gmRight/gmDeck.length*100)}%  · 错误池 ${gmWrongList.length} 词`;
+    document.getElementById('gm-hint').textContent=`完成！正确率 ${Math.round(gmRight/gmDeck.length*100)}%`;
     return;
   }
   const n=gmDeck[gmIdx];
@@ -2035,8 +2141,10 @@ function guessGM(guess){
   if(gmIdx>=gmDeck.length)return;
   const n=gmDeck[gmIdx];const fb=document.getElementById('gm-fb');
   const art=n.g==='m'?'🔵 le / un':'🔴 la / une';
-  if(guess===n.g){gmRight++;fb.textContent=`✓ ${art}`;fb.className='gm-feedback ok';gmWrongList=gmWrongList.filter(w=>w.fr!==n.fr);}
-  else{gmWrong++;fb.textContent=`✗ 应是 ${art} — ${n.fr}`;fb.className='gm-feedback no';if(!gmWrongList.find(w=>w.fr===n.fr))gmWrongList.push(n);}
+  const ok=guess===n.g;
+  if(ok){gmRight++;fb.textContent=`✓ ${art}`;fb.className='gm-feedback ok';}
+  else{gmWrong++;fb.textContent=`✗ 应是 ${art} — ${n.fr}`;fb.className='gm-feedback no';}
+  recordWrongOutcome('gender', n, ok);
   gmIdx++;updateGMStats();setTimeout(showGMCard,1000);
 }
 function updateGMStats(){
@@ -2151,8 +2259,8 @@ function speak(text,rate=0.85){synth.cancel();const u=new SpeechSynthesisUtteran
 // ============================================================
 // LISTEN MODULE
 // ============================================================
-let lsCfg={theme:'全部',order:'s1',count:15,useToday:false};
-let lsDeck=[],lsIdx=0,lsRight=0,lsWrong=0,lsCurrent=null,lsWrongList=[];
+let lsCfg={theme:'全部',order:'s1',count:15,useToday:false,wrongScope:'today'};
+let lsDeck=[],lsIdx=0,lsRight=0,lsWrong=0,lsCurrent=null;
 
 const LS_BASE_THEMES=['全部',...new Set(VOCAB_RAW.map(v=>v[2])),'动词','自定义'];
 
@@ -2166,14 +2274,16 @@ function buildLsThemeGrid(){
 }
 
 function buildLsDeck(){
-  if(lsCfg.useToday){
+  if(lsCfg.useToday && lsCfg.order!=='wrongs' && lsCfg.theme!=='错误重练'){
     const pool=todaySession.pool.length?[...todaySession.pool]:[];
     return applyOrder(pool,'s1').slice(0,lsCfg.count);
   }
   let pool;
   const cwAll=getCW().map(w=>({fr:w.fr,zh:w.zh,tag:w.tag||'自定义'}));
-  if(lsCfg.theme==='动词') pool=getAllVerbs().map(v=>({fr:v.v,zh:v.zh,tag:'动词'}));
-  else if(lsCfg.theme==='错误重练') pool=lsWrongList.length?[...lsWrongList]:VOCAB_RAW.map(v=>({fr:v[0],zh:v[1],tag:v[2]}));
+  if(lsCfg.order==='wrongs' || lsCfg.theme==='错误重练'){
+    pool=getWrongPracticeDeck('listen', lsCfg.wrongScope);
+    if(!pool.length) return [];
+  } else if(lsCfg.theme==='动词') pool=getAllVerbs().map(v=>({fr:v.v,zh:v.zh,tag:'动词'}));
   else if(lsCfg.theme==='全部'){
     pool=VOCAB_RAW.map(v=>({fr:v[0],zh:v[1],tag:v[2]}))
       .concat(getAllVerbs().map(v=>({fr:v.v,zh:v.zh,tag:'动词'})))
@@ -2190,6 +2300,12 @@ function buildLsDeck(){
 
 function startListen(){
   lsDeck=buildLsDeck();lsIdx=0;lsRight=0;lsWrong=0;lsCurrent=null;
+  if(!lsDeck.length){
+    if(lsCfg.order==='wrongs' || lsCfg.theme==='错误重练'){
+      alert(lsCfg.wrongScope==='today'?'今日错题库为空':'全部错题库为空');
+    }
+    return;
+  }
   document.getElementById('ls-cfg').style.display='none';
   document.getElementById('ls-session').style.display='block';
   updateLsStats();nextListenCard();
@@ -2254,7 +2370,7 @@ function checkSpell(){
     setTimeout(()=>renderMeaningCard(c),400);
   } else {
     lsWrong++;fb.innerHTML=`✗ 正确拼写：<strong>${c.fr}</strong>`;fb.style.color='var(--warn)';
-    if(!lsWrongList.find(w=>w.fr===c.fr))lsWrongList.push(c);
+    recordWrongOutcome('listen', c, false);
     updateLsStats();
     showLsNext();
   }
@@ -2280,10 +2396,13 @@ function checkMeaning(chosen,correct,fr){
     if(b.textContent.trim()===chosen&&chosen!==correct)b.style.background='#FCEAE6';
   });
   const fb=document.getElementById('mean-fb');
-  if(chosen===correct){fb.textContent='🎉 正确！';fb.style.color='var(--accent2)';}
+  if(chosen===correct){
+    fb.textContent='🎉 正确！';fb.style.color='var(--accent2)';
+    recordWrongOutcome('listen', {fr,zh:correct,tag:lsCurrent?lsCurrent.tag:''}, true);
+  }
   else{
     fb.textContent=`✗ 应选「${correct}」`;fb.style.color='var(--warn)';
-    if(!lsWrongList.find(w=>w.fr===fr))lsWrongList.push({fr,zh:correct,tag:'复习'});
+    recordWrongOutcome('listen', {fr,zh:correct,tag:lsCurrent?lsCurrent.tag:'复习'}, false);
   }
   showLsNext();
 }
@@ -2306,7 +2425,7 @@ function skipListen(){
   const c=lsCurrent;lsWrong++;
   const fb=document.getElementById('spell-fb');
   if(fb){fb.innerHTML=`跳过 → <strong>${c.fr}</strong> (${c.zh})`;fb.style.color='var(--muted)';}
-  if(!lsWrongList.find(w=>w.fr===c.fr))lsWrongList.push(c);
+  recordWrongOutcome('listen', c, false);
   updateLsStats();showLsNext();
 }
 
@@ -2728,10 +2847,12 @@ function renderTPGender(c){
 function checkTPGender(guess,correct,fr){
   const fb=document.getElementById('tp-gm-fb');
   const ok=guess===correct;
+  const c=todaySession.practiceQueue[todaySession.practiceIdx];
   const art=correct==='m'?'🔵 le / un':'🔴 la / une';
   fb.textContent=ok?`✓ 正确！${art}`:`✗ 应是 ${art} — ${fr}`;
   fb.className='gm-feedback '+(ok?'ok':'no');
   document.querySelectorAll('.gm-btns button').forEach(b=>b.disabled=true);
+  recordWrongOutcome('gender', c||{fr,g:correct}, ok);
   tpResult(ok);
 }
 
@@ -2767,6 +2888,7 @@ function checkTPSpell(){
   } else {
     fb.innerHTML=`✗ 正确拼写：<strong>${c.fr}</strong>`;fb.style.color='var(--warn)';
   }
+  recordWrongOutcome('spell', c, ok);
   tpResult(ok);
   setTimeout(()=>inp.focus(),0);
 }
@@ -2825,6 +2947,7 @@ function checkTPListen(){
     fb.innerHTML=`✗ 正确拼写：<strong>${c.fr}</strong>`;fb.style.color='var(--warn)';
     speak(c.fr);
   }
+  recordWrongOutcome('listen', c, ok);
   tpResult(ok);
   setTimeout(()=>inp.focus(),0);
 }
@@ -2843,6 +2966,7 @@ function skipTPListen(){
   if(inp){setSpellEnterState(inp, 'confirmed');inp.style.borderColor='#C04A20';}
   if(fb){fb.innerHTML=`跳过 → <strong>${c.fr}</strong> (${c.zh})`;fb.style.color='var(--muted)';}
   speak(c.fr);
+  recordWrongOutcome('listen', c, false);
   tpResult(false);
   setTimeout(()=>inp?.focus(),0);
 }
@@ -2910,23 +3034,26 @@ function goPage(id,el){
 // ============================================================
 // STANDALONE SPELL PAGE
 // ============================================================
-let spCfg={useToday:false,theme:'全部',order:'s1',count:20};
-let spDeck=[],spIdx=0,spRight=0,spWrong=0,spWrongList=[];
+let spCfg={useToday:false,theme:'全部',order:'s1',count:20,wrongScope:'today'};
+let spDeck=[],spIdx=0,spRight=0,spWrong=0;
 
 function buildSpThemeGrid(){
   const cwThemes=[...new Set(getCW().map(w=>w.tag||'自定义'))];
   const builtIn=[...new Set(VOCAB_RAW.map(v=>v[2]))];
-  const all=['全部',...new Set([...builtIn,...cwThemes]),'动词'];
+  const all=['全部',...new Set([...builtIn,...cwThemes]),'动词','错误重练'];
   document.getElementById('sp-theme-grid').innerHTML=all.map(t=>
     `<div class="scfg-theme-btn${spCfg.theme===t?' active':''}" onclick="spCfg.theme='${t}';document.querySelectorAll('#sp-theme-grid .scfg-theme-btn').forEach(b=>b.classList.remove('active'));this.classList.add('active')">${t}</div>`
   ).join('');
 }
 
 function buildSpDeck(){
-  if(spCfg.useToday) return applyOrder([...todaySession.pool],'s1').slice(0,spCfg.count);
+  if(spCfg.useToday && spCfg.order!=='wrongs' && spCfg.theme!=='错误重练') return applyOrder([...todaySession.pool],'s1').slice(0,spCfg.count);
   const cwAll=getCW().map(w=>({fr:w.fr,zh:w.zh,tag:w.tag||'自定义'}));
   let pool;
-  if(spCfg.order==='wrongs') pool=spWrongList.length?[...spWrongList]:VOCAB_RAW.map(v=>({fr:v[0],zh:v[1],tag:v[2]}));
+  if(spCfg.order==='wrongs' || spCfg.theme==='错误重练'){
+    pool=getWrongPracticeDeck('spell', spCfg.wrongScope);
+    if(!pool.length) return [];
+  }
   else if(spCfg.theme==='动词') pool=getAllVerbs().map(v=>({fr:v.v,zh:v.zh,tag:'动词'}));
   else if(spCfg.theme==='全部') pool=[...VOCAB_RAW.map(v=>({fr:v[0],zh:v[1],tag:v[2]})),...getAllVerbs().map(v=>({fr:v.v,zh:v.zh,tag:'动词'})),...cwAll];
   else pool=[...VOCAB_RAW.filter(v=>v[2]===spCfg.theme).map(v=>({fr:v[0],zh:v[1],tag:v[2]})),...cwAll.filter(w=>w.tag===spCfg.theme)];
@@ -2935,7 +3062,12 @@ function buildSpDeck(){
 
 function startSpell(){
   spDeck=buildSpDeck();spIdx=0;spRight=0;spWrong=0;
-  if(!spDeck.length){ return; }
+  if(!spDeck.length){
+    if(spCfg.order==='wrongs' || spCfg.theme==='错误重练'){
+      alert(spCfg.wrongScope==='today'?'今日错题库为空':'全部错题库为空');
+    }
+    return;
+  }
   document.getElementById('sp-cfg').style.display='none';
   document.getElementById('sp-session').style.display='block';
   updateSpStats();nextSpCard();
@@ -2992,9 +3124,10 @@ function checkSp(){
   if(ok){
     fb.textContent='✓ 正确！';fb.style.color='var(--accent2)';
     spRight++;
+    recordWrongOutcome('spell', c, true);
   } else {
     fb.innerHTML=`✗ 正确拼写：<strong>${c.fr}</strong>`;fb.style.color='var(--warn)';
-    if(!spWrongList.find(w=>w.fr===c.fr))spWrongList.push(c);
+    recordWrongOutcome('spell', c, false);
     spWrong++;
   }
   spIdx++;updateSpStats();
@@ -3076,7 +3209,7 @@ function syncSetBadge(text, color){
 }
 
 function hasLocalSyncData(){
-  return getCW().length > 0 || getCV().length > 0 || !!localStorage.getItem('edito_today_pool_v1') || Object.keys(srsDb).length > 0;
+  return getCW().length > 0 || getCV().length > 0 || !!localStorage.getItem('edito_today_pool_v1') || !!localStorage.getItem(WRONG_BANK_KEY) || Object.keys(srsDb).length > 0;
 }
 
 function syncSaveToken(){
@@ -3139,6 +3272,7 @@ async function syncPush(){
       cw: getCW(),
       cv: getCV(),
       today: localStorage.getItem('edito_today_pool_v1')||'',
+      wrongBank: localStorage.getItem(WRONG_BANK_KEY)||'',
       ts: Date.now()
     });
     const srsData = JSON.stringify(srsDb);
@@ -3224,6 +3358,7 @@ async function syncPull(){
     if(d.cw !== undefined) localStorage.setItem(CW_KEY, JSON.stringify(d.cw));
     if(d.cv !== undefined) localStorage.setItem(CV_KEY, JSON.stringify(d.cv));
     if(d.today) localStorage.setItem('edito_today_pool_v1', d.today);
+    if(d.wrongBank) localStorage.setItem(WRONG_BANK_KEY, d.wrongBank);
     if(srsRaw){ try{ srsDb = JSON.parse(srsRaw); saveSRS(); }catch(e){ console.warn('SRS parse error',e); } }
 
     // Refresh all UI
