@@ -1704,11 +1704,20 @@ function getCard(id){
     }
     delete c.ef; // clean up old field
   }
+  // Normalize legacy minute-based relearning cards into day-based rhythm.
+  if(c.state==='learning' && c.due<=Date.now()+12*60*60*1000){
+    c.due=Date.now()+DAY;
+  }
+  if(c.state==='review' && c.interval<1){
+    c.interval=1;
+    c.due=Math.max(c.due||0, Date.now()+DAY);
+  }
   return c;
 }
 
-// New card learning steps (in minutes): 5 → 30 → graduate to 1 day
-const LEARN_STEPS = [5, 30];
+// Day-based learning steps for once-daily study rhythm.
+// New/failed cards come back next day instead of within minutes.
+const LEARN_STEPS_DAYS = [1, 2];
 
 function updateCard(id, rating){
   // rating: 1=不认识, 2=想起来了, 3=很熟
@@ -1721,54 +1730,54 @@ function updateCard(id, rating){
       c.step = 0;
       c.lapses++;
       c.difficulty = Math.min(10, c.difficulty + 1);
-      c.due = now + LEARN_STEPS[0] * MIN;
+      c.due = now + LEARN_STEPS_DAYS[0] * DAY;
       c.state = 'learning';
     } else if(rating === 2){
       // Fuzzy: advance one step
-      c.step = Math.min(c.step + 1, LEARN_STEPS.length);
-      if(c.step >= LEARN_STEPS.length){
-        // Graduate to review with 1 day
+      c.step = Math.min(c.step + 1, LEARN_STEPS_DAYS.length);
+      if(c.step >= LEARN_STEPS_DAYS.length){
+        // Graduate to review with short day-level interval
         c.state = 'review';
-        c.interval = 1;
-        c.stability = 1;
+        c.interval = 2;
+        c.stability = 2;
         c.reps++;
-        c.due = now + 1 * DAY;
+        c.due = now + 2 * DAY;
       } else {
-        c.due = now + LEARN_STEPS[c.step] * MIN;
+        c.due = now + LEARN_STEPS_DAYS[c.step] * DAY;
         c.state = 'learning';
       }
     } else {
-      // Know: skip steps, graduate immediately with bonus
+      // Know: skip steps, graduate with a slightly longer first interval
       c.state = 'review';
-      c.interval = 1;
-      c.stability = 2;
+      c.interval = 3;
+      c.stability = 3;
       c.difficulty = Math.max(1, c.difficulty - 0.5);
       c.reps++;
-      c.due = now + 1 * DAY;
+      c.due = now + 3 * DAY;
     }
   } else {
     // review state
     if(rating === 1){
-      // Lapse: back to learning
+      // Lapse: back to next-day relearning
       c.lapses++;
       c.difficulty = Math.min(10, c.difficulty + 1);
       c.stability = Math.max(1, c.stability * 0.3);
       c.step = 0;
       c.state = 'learning';
       c.interval = 1;
-      c.due = now + LEARN_STEPS[0] * MIN;
+      c.due = now + LEARN_STEPS_DAYS[0] * DAY;
     } else if(rating === 2){
-      // Fuzzy: moderate growth
+      // Fuzzy: moderate growth (day-based)
       c.difficulty = Math.min(10, c.difficulty + 0.2);
-      c.stability = c.stability * 1.8;
-      c.interval = Math.max(c.interval + 1, Math.round(c.interval * 1.6));
+      c.stability = c.stability * 1.5;
+      c.interval = Math.max(c.interval + 1, Math.round(c.interval * 1.4));
       c.reps++;
       c.due = now + c.interval * DAY;
     } else {
-      // Know: strong growth
+      // Know: stronger growth, but still tuned for once-daily sessions
       c.difficulty = Math.max(1, c.difficulty - 0.2);
-      c.stability = c.stability * 2.8;
-      c.interval = Math.max(c.interval + 1, Math.round(c.interval * 2.8));
+      c.stability = c.stability * 2.1;
+      c.interval = Math.max(c.interval + 1, Math.round(c.interval * 2.0));
       c.reps++;
       c.due = now + c.interval * DAY;
     }
@@ -1801,13 +1810,8 @@ function isNew(id){return getCard(id).state==='new';}
 
 function fmtInterval(c){
   if(c.state==='new') return '🆕 新词';
-  if(c.state==='learning'){
-    const mins=Math.round((c.due-Date.now())/MIN);
-    if(mins<=1) return '⏱ 即将再来';
-    if(mins<60) return `⏱ ${mins}分钟后`;
-    return `⏱ ${Math.round(mins/60)}小时后`;
-  }
-  if(c.interval<1) return `📅 ${Math.round(c.interval*1440)}分钟后`;
+  if(c.state==='learning') return '⏱ 明天再练';
+  if(c.interval<1) return '📅 明天';
   if(c.interval===1) return '📅 明天';
   return `📅 ${c.interval}天后`;
 }
