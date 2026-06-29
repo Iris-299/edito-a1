@@ -2474,6 +2474,7 @@ let todaySession = {
   revealed:false,newShown:0,dueShown:0,
   practiceMode:null,practiceQueue:[],practiceIdx:0,
   practiceRight:0,practiceWrong:0,
+  lastPracticeSig:{},
 };
 
 // ── Persist today's pool by calendar date ──
@@ -2624,9 +2625,15 @@ function startTodaySession(){
     todaySession.current=null;
     todaySession.revealed=false;
 
-    // pending = cards that are still 'new' in srsDb (never rated)
-    const pending=existingCards.filter(c=>{ const s=srsDb[c.id]; return !s||s.state==='new'; });
-    todaySession.done=existingCards.filter(c=>{ const s=srsDb[c.id]; return s&&s.state!=='new'; });
+    // pending = cards that still need to continue today (new + learning)
+    const pending=existingCards.filter(c=>{
+      const s=srsDb[c.id];
+      return !s || s.state==='new' || s.state==='learning';
+    });
+    todaySession.done=existingCards.filter(c=>{
+      const s=srsDb[c.id];
+      return s && s.state==='review';
+    });
 
     if(!pending.length){
       // All cards have been rated today — go to practice
@@ -2749,7 +2756,15 @@ function startTodayPractice(mode){
   // Build practice queue from today's pool (only relevant cards)
   let q=[...todaySession.pool];
   if(mode==='gender') q=q.filter(c=>c.g); // only nouns with gender
-  q=trueShuf(q); // default shuffled order for today's three practice modes
+  q=trueShuf(q);
+  // Avoid showing the exact same order on consecutive starts of the same mode.
+  if(q.length>1){
+    const sig=q.map(c=>c.id||`${c.fr}|${c.zh}`).join('||');
+    if(todaySession.lastPracticeSig[mode]===sig){
+      q=q.slice(1).concat(q[0]);
+    }
+    todaySession.lastPracticeSig[mode]=q.map(c=>c.id||`${c.fr}|${c.zh}`).join('||');
+  }
   todaySession.practiceQueue=q;
 
   if(!q.length){
