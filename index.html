@@ -2093,8 +2093,9 @@ function buildGMThemeGrid(){
 
 function startGM(){
   const NOUNS_GM_FULL=[...NOUNS_GM,...getCW().filter(w=>w.g).map(w=>([w.fr,w.zh,w.tag,w.g]))];
+  const fromToday = gmCfg.useToday && gmCfg.order!=='wrongs';
   let pool;
-  if(gmCfg.useToday && gmCfg.order!=='wrongs'){
+  if(fromToday){
     // use today's session pool, filter to nouns with gender
     pool=todaySession.pool.filter(c=>c.g).map(c=>({fr:c.fr,zh:c.zh,g:c.g}));
     if(!pool.length){ alert('今日词包中没有名词，请先完成「今日学习」配置'); return; }
@@ -2110,8 +2111,8 @@ function startGM(){
     }
     pool=pool.map(v=>Array.isArray(v)?{fr:v[0],zh:v[1],g:v[3]}:{fr:v.fr,zh:v.zh,g:v.g});
   }
-  pool=applyOrder(pool,gmCfg.order==='wrongs'?'s1':gmCfg.order);
-  gmDeck=pool.slice(0,gmCfg.useToday?9999:gmCfg.count);
+  pool=gmCfg.order==='wrongs' ? trueShuf(pool) : applyOrder(pool,gmCfg.order);
+  gmDeck=pool.slice(0,fromToday?9999:gmCfg.count);
   gmIdx=0;gmRight=0;gmWrong=0;
   document.getElementById('gm-cfg').style.display='none';
   document.getElementById('gm-session').style.display='block';
@@ -2294,7 +2295,7 @@ function buildLsDeck(){
     const custom=cwAll.filter(w=>w.tag===lsCfg.theme);
     pool=[...builtIn,...custom];
   }
-  const ordered=applyOrder(pool,lsCfg.order==='wrongs'?'s1':lsCfg.order);
+  const ordered=(lsCfg.order==='wrongs' || lsCfg.theme==='错误重练') ? trueShuf(pool) : applyOrder(pool,lsCfg.order);
   return ordered.slice(0,lsCfg.count);
 }
 
@@ -2748,7 +2749,7 @@ function startTodayPractice(mode){
   // Build practice queue from today's pool (only relevant cards)
   let q=[...todaySession.pool];
   if(mode==='gender') q=q.filter(c=>c.g); // only nouns with gender
-  q=applyOrder(q,'s1'); // same fixed order as flash cards
+  q=trueShuf(q); // default shuffled order for today's three practice modes
   todaySession.practiceQueue=q;
 
   if(!q.length){
@@ -3057,7 +3058,8 @@ function buildSpDeck(){
   else if(spCfg.theme==='动词') pool=getAllVerbs().map(v=>({fr:v.v,zh:v.zh,tag:'动词'}));
   else if(spCfg.theme==='全部') pool=[...VOCAB_RAW.map(v=>({fr:v[0],zh:v[1],tag:v[2]})),...getAllVerbs().map(v=>({fr:v.v,zh:v.zh,tag:'动词'})),...cwAll];
   else pool=[...VOCAB_RAW.filter(v=>v[2]===spCfg.theme).map(v=>({fr:v[0],zh:v[1],tag:v[2]})),...cwAll.filter(w=>w.tag===spCfg.theme)];
-  return applyOrder(pool,spCfg.order==='wrongs'?'s1':spCfg.order).slice(0,spCfg.count);
+  const ordered=(spCfg.order==='wrongs' || spCfg.theme==='错误重练') ? trueShuf(pool) : applyOrder(pool,spCfg.order);
+  return ordered.slice(0,spCfg.count);
 }
 
 function startSpell(){
