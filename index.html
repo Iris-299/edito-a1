@@ -1626,6 +1626,7 @@ function deleteCustomWord(idx){
   if(idx<0||idx>=words.length) return;
   words.splice(idx,1);
   saveCW(words);
+  cleanupTodayPool();
   renderCustomList();refreshCWTaglist();
   renderVocabTable();renderDecks();buildGMThemeGrid();buildLsThemeGrid();buildSpThemeGrid();
 }
@@ -1907,7 +1908,7 @@ function renderDecks(){
   // Show today's pool info
   const poolInfo=document.getElementById('today-pool-info');
   if(poolInfo){
-    const saved=loadTodayPool();
+    const saved=cleanupTodayPool()||loadTodayPool();
     if(saved.date===getTodayDateStr()&&saved.ids.length){
       poolInfo.textContent=`今日词包：已累计 ${saved.ids.length} 个词`;
     } else {
@@ -2633,6 +2634,30 @@ function getTodayPoolCards(){
   const savedCards=getTodayPoolIds().map(buildCardFromId).filter(Boolean);
   if(savedCards.length) return savedCards;
   return [...(todaySession.pool||[])];
+}
+
+function cleanupTodayPool(){
+  const saved=loadTodayPool();
+  if(saved.date!==getTodayDateStr()) return saved;
+  const seen=new Set();
+  const ids=[];
+  (saved.ids||[]).forEach(id=>{
+    if(seen.has(id)) return;
+    if(buildCardFromId(id)){
+      seen.add(id);
+      ids.push(id);
+    }
+  });
+  const doneIds=(saved.doneIds||[]).filter(id=>seen.has(id));
+  if(ids.length!==(saved.ids||[]).length||doneIds.length!==(saved.doneIds||[]).length){
+    const cleaned={...saved,ids,doneIds};
+    localStorage.setItem(TODAY_KEY,JSON.stringify(cleaned));
+    todaySession.pool=(todaySession.pool||[]).filter(c=>c&&seen.has(c.id));
+    todaySession.queue=(todaySession.queue||[]).filter(c=>c&&seen.has(c.id));
+    todaySession.done=(todaySession.done||[]).filter(c=>c&&seen.has(c.id));
+    return cleaned;
+  }
+  return saved;
 }
 
 function getTodayPool(){
