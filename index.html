@@ -2237,9 +2237,17 @@ function initVerbSel(){
 function vdGetRows(vb,t){
   if(t==='present')return PROS.map((p,i)=>({pro:p,answer:vb.pres[i]}));
   if(t==='imperatif')return IMP_PROS.map((p,i)=>({pro:p,answer:vb.imp[i]}));
+  const isRefl=vb.g==='反身'||/^se\s/i.test(vb.v)||/^s['’]/i.test(vb.v);
+  const reflInf=vb.v.replace(/^se\s+/i,'').replace(/^s['’]/i,'');
   if(t==='passe'){
     const af=['ai','as','a','avons','avez','ont'],ef=['suis','es','est','sommes','êtes','sont'];
+    const rp=['me','t\'','s\'','nous','vous','se'];
+    if(isRefl) return PROS.map((p,i)=>({pro:p,answer:`${rp[i]}${i===1||i===2?'':' '}${ef[i]} ${vb.pp}`}));
     return PROS.map((p,i)=>({pro:p,answer:`${vb.aux==='être'?ef[i]:af[i]} ${vb.pp}`}));
+  }
+  if(isRefl){
+    const rp=['me','te','se','nous','vous','se'];
+    return PROS.map((p,i)=>({pro:p,answer:`${['vais','vas','va','allons','allez','vont'][i]} ${rp[i]} ${reflInf}`}));
   }
   return PROS.map((p,i)=>({pro:p,answer:`${['vais','vas','va','allons','allez','vont'][i]} ${vb.v}`}));
 }
@@ -2292,7 +2300,12 @@ function renderVDCard(){
     <div class="vd-result" id="vdResult"></div>`;
   setTimeout(()=>document.getElementById('ci0')?.focus(),50);
 }
-function normV(s){return s.trim().toLowerCase().replace(/[!]/g,'').replace(/'/g,"'");}
+function normV(s){
+  return s.toLowerCase()
+    .replace(/[!！]/g,'')
+    .replace(/\s+/g,' ')
+    .trim();
+}
 function vdCheck(){
   if(vdChecked)return;
   const rows=vdGetRows(vdCurV,vdCurT);let correct=0;
@@ -2991,6 +3004,7 @@ function checkTPSpell(){
     fb.innerHTML=`✗ 正确拼写：<strong>${c.fr}</strong>`;fb.style.color='var(--warn)';
   }
   recordWrongOutcome('spell', c, ok);
+  speak(c.fr);
   tpResult(ok);
   setTimeout(()=>inp.focus(),0);
 }
@@ -3011,8 +3025,8 @@ function renderTPListen(c){
       <div class="sc-tag" style="margin:0 auto 10px;">${c.tag}</div>
       <div style="font-size:13px;color:var(--muted);margin-bottom:12px;">听发音，拼写法语单词</div>
       <div style="margin-bottom:14px;">
-        <button class="play-btn" onclick="speak('${frSafe}',0.85)">🔊 播放</button>
-        <button class="slow-btn" onclick="speak('${frSafe}',0.55)">🐢 慢速</button>
+        <button class="play-btn" onclick="speak('${frSafe}',0.85)">🔊 播放 <small style="opacity:.75;">⌘/Ctrl+Enter</small></button>
+        <button class="slow-btn" onclick="speak('${frSafe}',0.55)">🐢 慢速 <small style="opacity:.7;">+Shift</small></button>
       </div>
       <input id="tp-listen-in" class="spell-input" type="text" autocomplete="off" autocorrect="off"
         spellcheck="false" placeholder="输入法语单词…"
@@ -3080,6 +3094,15 @@ function endTodayPractice(){
 
 // keyboard support for today flash cards
 document.addEventListener('keydown', function(e2){
+  const tpPracticeVisible=document.getElementById('today-practice')&&
+    document.getElementById('today-practice').style.display!=='none';
+  if(tpPracticeVisible && todaySession.practiceMode==='listen' && (e2.metaKey||e2.ctrlKey) && e2.key==='Enter'){
+    const tpNextForListen=document.getElementById('tp-next-btn');
+    if(tpNextForListen&&tpNextForListen.style.display!=='none') return;
+    const c=todaySession.practiceQueue[todaySession.practiceIdx];
+    if(c){e2.preventDefault();speak(c.fr,e2.shiftKey?0.55:0.85);return;}
+  }
+
   if(['INPUT','TEXTAREA','SELECT'].includes(e2.target.tagName)) return;
 
   // Listen page next button
@@ -3098,8 +3121,6 @@ document.addEventListener('keydown', function(e2){
     if(e2.code==='Space'||e2.key===' '||e2.key==='Enter'){e2.preventDefault();showTodayPracticeCard();return;}
   }
 
-  const tpPracticeVisible=document.getElementById('today-practice')&&
-    document.getElementById('today-practice').style.display!=='none';
   if(tpPracticeVisible && todaySession.practiceMode==='gender'){
     const c=todaySession.practiceQueue[todaySession.practiceIdx];
     const tpNextVisible=tpNext&&tpNext.style.display!=='none';
