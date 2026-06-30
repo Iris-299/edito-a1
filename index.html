@@ -3254,6 +3254,7 @@ function checkSp(){
     recordWrongOutcome('spell', c, false);
     spWrong++;
   }
+  speak(c.fr);
   spIdx++;updateSpStats();
   const nb=document.getElementById('sp-next-btn');
   if(nb){nb.style.display='inline-block';nb.focus();}
