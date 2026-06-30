@@ -2133,7 +2133,7 @@ function startGM(){
   let pool;
   if(fromToday){
     // use today's session pool, filter to nouns with gender
-    pool=todaySession.pool.filter(c=>c.g).map(c=>({fr:c.fr,zh:c.zh,g:c.g}));
+    pool=getTodayPoolCards().filter(c=>c.g).map(c=>({fr:c.fr,zh:c.zh,g:c.g}));
     if(!pool.length){ alert('今日词包中没有名词，请先完成「今日学习」配置'); return; }
   } else {
     if(gmCfg.order==='wrongs'){
@@ -2202,7 +2202,7 @@ let vdTotal=0,vdOk=0,vdStreak=0,vdWrong=[],vdCurV=null,vdCurT=null,vdChecked=fal
 
 function getVDVerbPool(){
   if(!vdCfg.useToday) return [...getAllVerbs()];
-  const fromToday=(todaySession.pool||[])
+  const fromToday=getTodayPoolCards()
     .filter(c=>c&&(c.tag==='动词'||(c.id&&c.id.startsWith('vb_'))))
     .map(c=>c.fr);
   const seen=new Set();
@@ -2352,7 +2352,7 @@ function buildLsThemeGrid(){
 
 function buildLsDeck(){
   if(lsCfg.useToday && lsCfg.order!=='wrongs' && lsCfg.theme!=='错误重练'){
-    const pool=todaySession.pool.length?[...todaySession.pool]:[];
+    const pool=getTodayPoolCards();
     return applyOrder(pool,'s1').slice(0,lsCfg.count);
   }
   let pool;
@@ -2616,6 +2616,12 @@ function buildCardFromId(id){
   return null;
 }
 
+function getTodayPoolCards(){
+  const savedCards=getTodayPoolIds().map(buildCardFromId).filter(Boolean);
+  if(savedCards.length) return savedCards;
+  return [...(todaySession.pool||[])];
+}
+
 function getTodayPool(){
   const src=todayCfg.source;
   let base=[];
@@ -2834,7 +2840,7 @@ function startTodayPractice(mode){
   todaySession.practiceWrong=0;
 
   // Build practice queue from today's pool (only relevant cards)
-  let q=[...todaySession.pool];
+  let q=getTodayPoolCards();
   if(mode==='gender') q=q.filter(c=>c.g); // only nouns with gender
   q=trueShuf(q);
   // Avoid showing the exact same order on consecutive starts of the same mode.
@@ -3143,7 +3149,7 @@ function buildSpThemeGrid(){
 }
 
 function buildSpDeck(){
-  if(spCfg.useToday && spCfg.order!=='wrongs' && spCfg.theme!=='错误重练') return applyOrder([...todaySession.pool],'s1').slice(0,spCfg.count);
+  if(spCfg.useToday && spCfg.order!=='wrongs' && spCfg.theme!=='错误重练') return applyOrder(getTodayPoolCards(),'s1').slice(0,spCfg.count);
   const cwAll=getCW().map(w=>({fr:w.fr,zh:w.zh,tag:w.tag||'自定义'}));
   let pool;
   if(spCfg.order==='wrongs' || spCfg.theme==='错误重练'){
